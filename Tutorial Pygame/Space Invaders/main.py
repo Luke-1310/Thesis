@@ -28,12 +28,28 @@ enemyY = random.randint(50,150)
 enemyX_change = 0.3
 enemyY_change = 10
 
+#bullet position and image
+#ready = you can't see it on the screen
+#fire = you can see it on the screen
+bulletImg = pygame.image.load('Tutorial Pygame/Space Invaders/bullet.png')
+bulletX = 0
+bulletY = 480
+bulletX_change = 0
+bulletY_change = 0.7
+bullet_state = "ready"
+
+
 #"we are drawing on the screen"
 def player(x,y):
     screen.blit(playerImg, (x, y))
 
 def enemy(x,y):
     screen.blit(enemyImg, (x, y))
+
+def fire_bullet(x,y):
+    global bullet_state
+    bullet_state = "fire"
+    screen.blit(bulletImg, (x+16, y+10))
 
 #variable 
 running = True
@@ -57,9 +73,12 @@ while running:
         if event.type == pygame.KEYDOWN:
             
             if event.key == pygame.K_LEFT:
-                playerX_change = -0.3
+                playerX_change = -0.6
             if event.key == pygame.K_RIGHT:
-                playerX_change = +0.3
+                playerX_change = +0.6
+            if event.key == pygame.K_SPACE:
+                bulletX = playerX
+                fire_bullet(bulletX,bulletY)
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -79,12 +98,17 @@ while running:
     enemyX += enemyX_change
 
     if enemyX <= 0:
-        enemyX_change = 0.3
+        enemyX_change = 0.4
         enemyY += enemyY_change
 
     elif enemyX >= 736:
-        enemyX_change = -0.3
+        enemyX_change = -0.4
         enemyY += enemyY_change
+
+    #bullet movement
+    if bullet_state == "fire":
+        fire_bullet(bulletX, bulletY)
+        bulletY -= bulletY_change
 
     player(playerX, playerY)
     enemy(enemyX, enemyY)
