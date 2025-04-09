@@ -1,4 +1,5 @@
 import pygame #pygame library 
+import random
 
 #intialize the pygame
 pygame.init()
@@ -15,13 +16,21 @@ pygame.display.set_icon(icon)
 playerImg = pygame.image.load('Tutorial Pygame/Space Invaders/spaceship_pl_1.png')
 playerX = 370
 playerY = 480
-
 playerX_change = 0
+
+#enemy position and image
+enemyImg = pygame.image.load('Tutorial Pygame/Space Invaders/alien.png')
+enemyX = random.randint(0,800)
+enemyY = random.randint(50,150)
+enemyX_change = 0.3
+enemyY_change = 10
 
 #"we are drawing on the screen"
 def player(x,y):
     screen.blit(playerImg, (x, y))
 
+def enemy(x,y):
+    screen.blit(enemyImg, (x, y))
 
 #variable 
 running = True
@@ -29,7 +38,7 @@ running = True
 while running:
     
     #background color
-    screen.fill((0,0,0))
+    screen.fill((20,24,82))
 
     #here there're the events that will happen in the game window
     for event in pygame.event.get():
@@ -60,7 +69,19 @@ while running:
     elif playerX >= 736:
         playerX = 736
 
+    #enemy movements
+    enemyX += enemyX_change
+
+    if enemyX <= 0:
+        enemyX_change = 0.3
+        enemyY += enemyY_change
+
+    elif enemyX >= 736:
+        enemyX_change = -0.3
+        enemyY += enemyY_change
+
     player(playerX, playerY)
+    enemy(enemyX, enemyY)
     pygame.display.update()    
 
     pass
