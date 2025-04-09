@@ -54,7 +54,7 @@ for i in range(num_of_enemies):
     enemyX.append(random.randint(0,735))
     enemyY.append(random.randint(50,150))
     enemyX_change.append(0.3)
-    enemyY_change.append(10)
+    enemyY_change.append(60)
 
 #bullet position and image
 #ready = you can't see it on the screen
@@ -73,7 +73,7 @@ def show_score(x,y):
     screen.blit(score, (x, y))
 
 def show_gameover():
-    gameover = game_over_font.render("GAME OVER", True, (255,0,0))
+    gameover = game_over_font.render("GAME OVER >:(", True, (255,0,0))
     screen.blit(gameover, (200, 250))
 
 def player(x,y):
@@ -147,18 +147,25 @@ while running:
         #game over
         if enemyY[i] > 450:
             for j in range(num_of_enemies):
-                enemyY[j] = 9999
-            game_over_text()
-            break
+                enemyY[j] = 2000
+            show_gameover()
+            pygame.display.update()
+            
+            game_over = True
+            while game_over:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        game_over = False
+                        running = False
 
         enemyX[i] += enemyX_change[i]
 
         if enemyX[i] <= 0:
-            enemyX_change[i] = 2
+            enemyX_change[i] = 0.5
             enemyY[i] += enemyY_change[i]
 
         elif enemyX[i] >= 736:
-            enemyX_change[i] = -2
+            enemyX_change[i] = -0.5
             enemyY[i] += enemyY_change[i]
 
         #Collision
