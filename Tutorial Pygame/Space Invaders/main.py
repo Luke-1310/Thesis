@@ -12,6 +12,9 @@ pygame.display.set_caption("Space Invaders")
 icon = pygame.image.load('Tutorial Pygame/Space Invaders/spaceship_icon.png')
 pygame.display.set_icon(icon)
 
+#background
+background = pygame.image.load('Tutorial Pygame/Space Invaders/background_img.jpg')
+
 #player position and image
 playerImg = pygame.image.load('Tutorial Pygame/Space Invaders/spaceship_pl_1.png')
 playerX = 370
@@ -39,6 +42,9 @@ while running:
     
     #background color
     screen.fill((20,24,82))
+
+    #background image
+    screen.blit(background, (0,0))
 
     #here there're the events that will happen in the game window
     for event in pygame.event.get():
