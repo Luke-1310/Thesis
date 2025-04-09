@@ -16,9 +16,11 @@ playerImg = pygame.image.load('Tutorial Pygame/Space Invaders/spaceship_pl_1.png
 playerX = 370
 playerY = 480
 
+playerX_change = 0
+
 #"we are drawing on the screen"
-def player():
-    screen.blit(playerImg, (playerX, playerY))
+def player(x,y):
+    screen.blit(playerImg, (x, y))
 
 
 #variable 
@@ -36,7 +38,29 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
-    player()
+        #if keystroke happens, check it
+        if event.type == pygame.KEYDOWN:
+            
+            if event.key == pygame.K_LEFT:
+                playerX_change = -0.3
+            if event.key == pygame.K_RIGHT:
+                playerX_change = +0.3
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                playerX_change = 0
+
+    playerX += playerX_change
+
+    #implements the borders for the spaceship
+    if playerX <= 0:
+        playerX = 0
+
+    #the spaceship is 64x64 pixels big
+    elif playerX >= 736:
+        playerX = 736
+
+    player(playerX, playerY)
     pygame.display.update()    
 
     pass
