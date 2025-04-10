@@ -3,23 +3,33 @@ import pygame
 
 class VirtualEnvironment:
     def __init__(self, width, height, cell_size):
-        self.width = width
-        self.height = height
-        self.cell_size = cell_size
-        self.start_position=[2, 24]
+
+        # Inizializzazione dei parametri di base dell'ambiente
+        self.width = width  # larghezza della griglia
+        self.height = height  # altezza della griglia
+        self.cell_size = cell_size  # dimensione di ogni cella (in pixel)
+
+        # Posizione iniziale e obiettivo dell'agente
+        self.start_position = [2, 24]
         self.agent_position = self.start_position
-        self.goal_positions = [(41, 5)]  # Posizione di arrivo
-        self.agent_rotation = 0  # Rotazione iniziale della macchina (0 gradi)
-        self.FPS=60
-        self.clock= pygame.time.Clock()
+        self.goal_positions = [(41, 5)]  # destinazione finale (parcheggio)
+
+        self.agent_rotation = 0  # orientamento iniziale dell'agente (0 = su)
+        self.FPS = 60  # frame per secondo per la simulazione
+        self.clock = pygame.time.Clock()
+
+        # Inizializzazione auto "nemica" 1
         self.car_position  = [14, 24]
         self.car_rotation = 0
         self.prev_agent_position = []
         self.prev_car_position = []
         self.prev_car2_position = []
         self.prev_car3_position = []
-        self.car_in_vision = False 
-        self.car_route_index = 0  # Indice per tracciare la posizione corrente nel percorso
+        
+        self.car_in_vision = False  # flag che indica se un'auto è nella zona visiva dell'agente
+        self.car_route_index = 0  # indice posizione attuale del percorso
+
+        # lista delle coordinate del percorso della prima auto
         self.car_route=[[14, 24],[14, 23],[14, 22],[14, 21],[14, 20],[15, 20],[16, 20],[17, 20],[18, 20],[19, 20],[20, 20],
                         [21, 20],[22, 20],[23, 20],[24, 20],[25, 20],[26, 20],[27, 20],[28, 20],[29, 20],[30, 20],
                         [31, 20],[32, 20],[33, 20],[34, 20],[35, 20],[36, 20],[37, 20],[38, 20],[39, 20],[40, 20],
@@ -32,6 +42,8 @@ class VirtualEnvironment:
                         [6, 1],[5, 1],[4, 1],[3, 1],[2, 1],[1, 1],[1, 2],[1, 3],[1, 4],[1, 5],[1, 6],[1, 7],
                         [1, 8],[1, 9],[1, 10],[1, 11],[1, 12],[1, 13],[1, 14],[1, 15],[1, 16],[1, 17],[1, 18],[1, 19],
                         [1, 20],[1, 21],[1, 22],[1, 23],[1, 24]]
+        
+        # Percorsi e stati iniziali di altre due auto "nemiche"
         self.car2_route = [[15, 15],[16, 15],[17, 15],[18, 15],[19, 15],[20, 15],[21, 15],[22, 15],[23, 15],[24, 15],[25, 15],[26, 15],
                            [27, 15],[28, 15],[29, 15],[30, 15],[31, 15],[32, 15],[33, 15],[34, 15],[34, 14],[34, 13],[34, 12],[34, 11],
                            [34, 10],[34, 9],[33, 9],[32, 9],[31, 9],[30, 9],[29, 9],[28, 9],[27, 9],[26, 9],[25, 9],[24, 9],[23, 9],
@@ -42,12 +54,15 @@ class VirtualEnvironment:
         self.car2_position = [15, 15]
         self.car2_rotation = 0
         self.car2_route_index = 0
-
         self.car3_position = [2, 8]
         self.car3_rotation = 0
         self.car3_route_index = 0
+
+        # Q-table: mappa Q con dimensioni (altezza, larghezza, visione_macchine, azioni)
         self.q_values = np.zeros((self.height, self.width, 2, 4))  # Aggiunta della dimensione per car_in_vision
         self.actions = ['up', 'down', 'right', 'left']
+
+        # Semafori e ciclo di aggiornamento
         self.traffic_lights = {
             (14, 11): 'green',
             (13, 11): 'green',
@@ -64,9 +79,12 @@ class VirtualEnvironment:
         }
         self.traffic_light_cycle = 0  # Contatore per il ciclo dei semafori
         self.traffic_light_duration = 120  # Durata del ciclo del semaforo in frame
+
+        # Zone "sicure" dove fermarsi anche se il semaforo è rosso
         self.safe_zones = [(14, 10), (13, 10),(14, 9), (13, 9),
                       (34, 19), (33, 19),(34, 20), (33, 20)]
 
+        # Mappa stradale: 0 = muro, 1 = strada
         self.map = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -94,6 +112,8 @@ class VirtualEnvironment:
             [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
+
+        # Matrice dei reward (premi e penalità)
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
         # Assegna +10000 alle celle del parcheggio
         for pos in self.goal_positions:
@@ -113,6 +133,7 @@ class VirtualEnvironment:
         # Carica l'immagine della macchina
         self.agent_image = pygame.image.load("car.png")
         self.agent_image = pygame.transform.scale(self.agent_image, (cell_size // 2, cell_size))
+
         # Carica l'immagine originale
         self.car_image = pygame.image.load("car2.png")
 
@@ -139,6 +160,7 @@ class VirtualEnvironment:
         pygame.font.init()
         self.font = pygame.font.Font('8-Bit-Madness.ttf', 24)
     
+    # Verifica se una delle auto si trova nel campo visivo dell'agente
     def is_car_in_vision(self):
         agent_x, agent_y = self.agent_position
         vision_min_x = max(0, agent_x - 2)
@@ -153,7 +175,8 @@ class VirtualEnvironment:
                 return True
         
         return False
-
+    
+    # Aggiorna la posizione di una singola auto secondo il suo percorso
     def _update_single_car_position(self, car_position, car_route, car_route_index, car_rotation):
         if car_route_index > 0:
             prev_position = car_route[car_route_index - 1]
@@ -181,6 +204,7 @@ class VirtualEnvironment:
         
         return car_position, car_rotation, car_route_index
 
+     # Aggiorna posizione e rotazione di tutte e 3 le auto
     def update_car_position(self):
         self.car_position, self.car_rotation, self.car_route_index = self._update_single_car_position(
             self.car_position, self.car_route, self.car_route_index, self.car_rotation
@@ -192,18 +216,20 @@ class VirtualEnvironment:
             self.car3_position, self.car3_route, self.car3_route_index, self.car3_rotation
         )
             
-
+    # Restituisce la prossima azione secondo epsilon-greedy
     def get_next_action(self, epsilon):
         if np.random.random() < epsilon:
             return np.argmax(self.q_values[self.agent_position[1], self.agent_position[0], int(self.car_in_vision)])
         else:
             return np.random.randint(4)
-        
+    
+    # Controlla se una mossa è valida (non esce dai bordi e non va sui muri)
     def is_valid_move(self, new_position):
         if 0 <= new_position[0] < self.width and 0 <= new_position[1] < self.height:
             return self.map[new_position[1]][new_position[0]] == 1
         return False
     
+    # Calcola la nuova posizione dell'agente in base all'azione scelta
     def get_next_location(self, action_index):
         new_position = self.agent_position[:]
         if self.actions[action_index] == "up":
@@ -228,12 +254,13 @@ class VirtualEnvironment:
             self.agent_position = new_position
         return is_valid
         
-
+    # Verifica se l'agente ha raggiunto l'obiettivo
     def check_goal(self):
         if tuple(self.agent_position) in self.goal_positions:
             return True
         return False
     
+    # Verifica se l'agente ha fatto collisione
     def check_loss(self):
         if (self.agent_position in [self.car_position, self.car2_position, self.car3_position] or
             (self.agent_position == self.prev_car_position and self.car_position == self.prev_agent_position) or
@@ -242,6 +269,7 @@ class VirtualEnvironment:
             return True
         return False
     
+    # Cambia lo stato dei semafori ogni X frame
     def update_traffic_lights(self):
         self.traffic_light_cycle += 1
         if self.traffic_light_cycle >= self.traffic_light_duration:
@@ -252,6 +280,7 @@ class VirtualEnvironment:
                 else:
                     self.traffic_lights[position] = 'red'
 
+    # Mostra la simulazione aggiornata (grafica + rotazioni + testi)
     def display(self, episode=None, path=None):
         self.screen.blit(self.map_image, (0, 0))
         #self.clock.tick(self.FPS)
@@ -286,6 +315,7 @@ class VirtualEnvironment:
                                     pos[1] * self.cell_size + self.cell_size // 2), 5)
         pygame.display.flip()
 
+    # Ruota e disegna una macchina nella posizione corretta
     def _display_car(self, car_image, car_position, car_rotation):
         rotated_car_image = pygame.transform.rotate(car_image, car_rotation)
         rotated_rect_car = rotated_car_image.get_rect()
@@ -293,6 +323,7 @@ class VirtualEnvironment:
                                 car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
     
+    # Riporta l'ambiente allo stato iniziale per un nuovo episodio
     def reset_game(self):
         self.agent_position = [2, 24]
         self.agent_rotation = 0
