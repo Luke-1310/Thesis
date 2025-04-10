@@ -119,10 +119,10 @@ class VirtualEnvironment:
         pygame.display.set_caption("Find The Parking")
         
         # Carica l'immagine della macchina
-        self.agent_image = pygame.image.load("car.png")
+        self.agent_image = pygame.image.load("Progetto Tesi Amoriello/car.png")
         self.agent_image = pygame.transform.scale(self.agent_image, (cell_size // 2, cell_size))
         # Carica l'immagine originale
-        self.car_image = pygame.image.load("car2.png")
+        self.car_image = pygame.image.load("Progetto Tesi Amoriello/car2.png")
 
         # Ottieni le dimensioni originali dell'immagine
         original_width, original_height = self.car_image.get_size()
@@ -134,14 +134,14 @@ class VirtualEnvironment:
         # Scala l'immagine
         self.car_image = pygame.transform.scale(self.car_image, (new_width, new_height))
 
-        self.car2_image = pygame.image.load("car2.png")
+        self.car2_image = pygame.image.load("Progetto Tesi Amoriello/car2.png")
         self.car2_image = pygame.transform.scale(self.car2_image, (new_width, new_height))
 
-        self.car3_image = pygame.image.load("car2.png")
+        self.car3_image = pygame.image.load("Progetto Tesi Amoriello/car2.png")
         self.car3_image = pygame.transform.scale(self.car3_image, (new_width, new_height))
                 
         # Carica l'immagine della mappa
-        self.map_image = pygame.image.load("imgs/city_map.png")
+        self.map_image = pygame.image.load("Progetto Tesi Amoriello/imgs/city_map.png")
         self.map_image = pygame.transform.scale(self.map_image, (width * cell_size, height * cell_size))
 
         pygame.font.init()
