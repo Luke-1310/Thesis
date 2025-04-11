@@ -1,11 +1,13 @@
-import numpy as np
-import pygame
-from virtual_environment_5 import VirtualEnvironment
-import matplotlib.pyplot as plt
-import pandas as pd
+import numpy as np                     # Libreria per calcoli matematici e matrici (Q-table)
+import pygame                         # Libreria per grafica e interazioni visive
+from virtual_environment_5 import VirtualEnvironment  # Importa la classe dell’ambiente da un altro file
+import matplotlib.pyplot as plt       # Per disegnare i grafici
+import pandas as pd                   # Per gestire e analizzare dati in modo ordinato
 
-
+# Definisce la funzione per disegnare 2 grafici: ricompense e collisioni
 def plot_results(rewards, collisions):
+
+    # Crea due grafici (uno sopra l’altro) con dimensioni 10x12
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
 
     # Converti la lista dei rewards in una Series di pandas
@@ -36,7 +38,10 @@ def plot_results(rewards, collisions):
     plt.savefig('training_results.png')
     plt.show()
 
+# Imposta la stampa più leggibile della Q-table (arrotondamenti, larghezza).
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
+
+# La funzione stampa la tabella Q, utile per debugging.
 def print_q_table(q_table):
     print("Q-Table:")
     print(q_table)
@@ -49,11 +54,13 @@ def train_agent(env):
     cumulative_collisions = []  # Nuova lista per tenere traccia delle collisioni cumulative
     total_collisions = 0
 
+    # Loop per gestire ogni episodio fino a 100000
     for episode in range(10000):
         env.reset_game()
         total_reward = 0
         steps = 0
 
+        #Finché l'agente non "perde" oppure "vince"
         while not (env.check_loss() or env.check_goal()):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -109,6 +116,7 @@ def train_agent(env):
 
     return episode_rewards, cumulative_collisions
 
+# Carica la Q-table salvata se ne esiste una 
 def show_results(env):
     try:
         q_table = np.load('q_table.npy')
@@ -121,6 +129,7 @@ def show_results(env):
     except FileNotFoundError:
         print("File Q-table non trovato. Assicurati di aver salvato una Q-table prima.")
 
+# Questa funzione dovrebbe eseguire un percorso senza esplorazioni (quindi azioni note)
 def evaluate_agent(env):
     print("Inizio valutazione dell'agente")
     env.reset_game()
@@ -143,6 +152,7 @@ def evaluate_agent(env):
     else:
         print("L'agente ha perso.")
 
+#funzione che mostra nel terminale il menù di scelte per l'utente
 def main():
     env = VirtualEnvironment(48, 25, 32)
     running = True
@@ -171,5 +181,6 @@ def main():
 
     pygame.quit()
 
+# Avvia il programma
 if __name__ == "__main__":
     main()
