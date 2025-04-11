@@ -11,6 +11,8 @@ leggenda colori:
     -rosso = ztl
     -giallo = cantieri (velocità ridotta)
     -verde = zona pedonale
+    -blu = dove andranno messi i semafori
+    -rosa = parcheggio
 
 Differenze chiave tra _5 e _6:
 
