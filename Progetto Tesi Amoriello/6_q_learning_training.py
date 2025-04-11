@@ -11,7 +11,7 @@ def train_agent(env):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 2000
+    num_episodes= 50#2000
 
     for episode in range(num_episodes):
         env.reset_game()
