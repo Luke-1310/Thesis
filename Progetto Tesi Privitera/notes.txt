@@ -1,0 +1,13 @@
+la tabella ha le seguenti dimensioni (righe*colonne):
+    
+    righe = 25
+    colonne = 48
+    dimensioni cella = 32 px, infatti 32*25 = 800 px di larghezza e 1536 px di lunghezza
+
+leggenda colori:
+    -nero = strada
+    -bianco = bordo
+    -rosso = ztl
+    -giallo = cantieri (velocità ridotta)
+    -verde = zona pedonale
+
