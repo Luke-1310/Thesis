@@ -5,9 +5,25 @@ la tabella ha le seguenti dimensioni (righe*colonne):
     dimensioni cella = 32 px, infatti 32*25 = 800 px di larghezza e 1536 px di lunghezza
 
 leggenda colori:
+
     -nero = strada
     -bianco = bordo
     -rosso = ztl
     -giallo = cantieri (velocità ridotta)
     -verde = zona pedonale
 
+Differenze chiave tra _5 e _6:
+
+Funzionalità	virtual_environment_5.py	virtual_environment_6.py
+
+    Mappa semplice	✅	✅ (ma modificabile)
+
+    Gestione base del traffico	✅	✅
+
+    Struttura di reward	Standard	Più personalizzabile
+
+    Estensibilità	Più limitata	Pensato per essere ampliato
+
+    Supporto per nuove zone	❌ (non incluso)	🟡 (da implementare, più adatto)
+
+Il file 8-bit madness.ttf è un file di font (formato TrueType Font), e serve per visualizzare del testo con uno stile grafico specifico (stile 8 bit)
