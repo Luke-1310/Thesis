@@ -7,8 +7,10 @@ class VirtualEnvironment:
         self.width = width
         self.height = height
         self.cell_size = cell_size
+        #da cambiare
         self.start_position=[2, 24]
         self.agent_position = self.start_position
+        #da cambiare
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
         self.agent_rotation = 0  # Rotazione iniziale della macchina (0 gradi)
         self.FPS=5
@@ -16,6 +18,7 @@ class VirtualEnvironment:
         self.prev_agent_position = []
         self.prev_car_position = []
         self.car_in_vision = False 
+        #da cambiare
         self.percorso1=[[14, 24],[14, 23],[14, 22],[14, 21],[14, 20],[15, 20],[16, 20],[17, 20],[18, 20],[19, 20],[20, 20],
                         [21, 20],[22, 20],[23, 20],[24, 20],[25, 20],[26, 20],[27, 20],[28, 20],[29, 20],[30, 20],
                         [31, 20],[32, 20],[33, 20],[34, 20],[35, 20],[36, 20],[37, 20],[38, 20],[39, 20],[40, 20],
@@ -43,6 +46,7 @@ class VirtualEnvironment:
         }
         self.q_values = np.zeros((self.height, self.width, 2, 4))
         self.actions = ['up', 'down', 'right', 'left']
+        #da cambiare
         self.traffic_lights = {
             (14, 11): 'green',
             (13, 11): 'green',
@@ -59,12 +63,14 @@ class VirtualEnvironment:
         }
         self.traffic_light_cycle = 0  # Contatore per il ciclo dei semafori
         self.traffic_light_duration = 120  # Durata del ciclo del semaforo in frame
+        #da cambiare
         self.safe_zones = [(14, 10), (13, 10),(14, 9), (13, 9),
                       (34, 19), (33, 19),(34, 20), (33, 20)]
         self.incroci = {
             (34, 10): [self.percorso2, self.percorso1],
             (2, 9): [self.percorso3, self.percorso1]
         }
+        #da cambiare
         # Percorsi di transizione
         self.transizioni = {
             (2, 1): [(34, 10),(35, 10),(36, 10),(37, 10),(38, 10),(39, 10),(40, 10),(41, 10),(42, 10),(43, 10),(44, 10),(45, 10),(46, 10)],
@@ -144,6 +150,7 @@ class VirtualEnvironment:
         new_width = int(original_width * 0.08)
         new_height = int(original_height * 0.08)
 
+        #da cambiare
         # Scala l'immagine
         self.car_image = pygame.transform.scale(self.car_image, (new_width, new_height))
 
@@ -339,7 +346,7 @@ class VirtualEnvironment:
         rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
 
-    
+    #da cambiare
     def reset_game(self):
         self.agent_position = self.start_position[:]
         self.agent_rotation = 0
