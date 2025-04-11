@@ -158,7 +158,7 @@ class VirtualEnvironment:
         self.map_image = pygame.transform.scale(self.map_image, (width * cell_size, height * cell_size))
 
         pygame.font.init()
-        self.font = pygame.font.Font('8-Bit-Madness.ttf', 24)
+        self.font = pygame.font.Font('Progetto Tesi Amoriello/8-Bit-Madness.ttf', 24)
     
     # Verifica se una delle auto si trova nel campo visivo dell'agente
     def is_car_in_vision(self):
