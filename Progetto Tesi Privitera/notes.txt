@@ -1,8 +1,15 @@
-la tabella ha le seguenti dimensioni (righe*colonne):
+la tabella iniziale ha le seguenti dimensioni (righe*colonne):
     
     righe = 25
     colonne = 48
     dimensioni cella = 32 px, infatti 32*25 = 800 px di larghezza e 1536 px di lunghezza
+
+la nuova tabella ha le seguenti dimensioni (righe*colonne):
+
+    righe = 38
+    colonne = 60
+    dimensioni cella = 32 px, infatti 32*38 = 1216 px di larghezza e 1920 px di lunghezza
+
 
 leggenda colori:
 
@@ -29,3 +36,7 @@ Funzionalità	virtual_environment_5.py	virtual_environment_6.py
     Supporto per nuove zone	❌ (non incluso)	🟡 (da implementare, più adatto)
 
 Il file 8-bit madness.ttf è un file di font (formato TrueType Font), e serve per visualizzare del testo con uno stile grafico specifico (stile 8 bit)
+
+Funzionalità virtual_environment_7
+
+Mappa ampliata
