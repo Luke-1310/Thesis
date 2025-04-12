@@ -13,6 +13,7 @@ class VirtualEnvironment:
         #da cambiare
         self.start_position=[1, 1]
         self.agent_position = self.start_position
+
         #da cambiare
         self.goal_positions = [(35, 1)]  # Posizione di arrivo
         self.agent_rotation = 0  # Rotazione iniziale della macchina (0 gradi)
@@ -21,6 +22,8 @@ class VirtualEnvironment:
         self.prev_agent_position = []
         self.prev_car_position = []
         self.car_in_vision = False 
+
+        #da cambiare
         self.percorso1 = [[46, 2],[45, 2],[44, 2],[43, 2]]
         
         self.percorso2 = [[40, 36],[40, 35],[40, 34],[40, 33]]
@@ -37,8 +40,8 @@ class VirtualEnvironment:
         self.actions = ['up', 'down', 'right', 'left']
         #da cambiare
         self.traffic_lights = {
-            (14, 11): 'green',
-            (13, 11): 'green',
+            (20, 1): 'green',
+            (20, 2): 'green',
             (12, 10): 'red',
             (12, 9): 'red',
             (15, 9): 'red',
@@ -156,8 +159,8 @@ class VirtualEnvironment:
         pygame.font.init()
         self.font = pygame.font.Font('Progetto Tesi Privitera/8-Bit-Madness.ttf', 24)
 
-        print("Width x Cell Size:", width * cell_size)
-        print("Height x Cell Size:", height * cell_size)
+        # print("Width x Cell Size:", width * cell_size)
+        # print("Height x Cell Size:", height * cell_size)
         
     def is_car_in_vision(self):
         agent_x, agent_y = self.agent_position
