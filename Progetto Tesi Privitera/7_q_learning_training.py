@@ -1,6 +1,6 @@
 import numpy as np
 import pygame
-from virtual_environment_6 import VirtualEnvironment
+from virtual_environment_7 import VirtualEnvironment
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
 def print_q_table(q_table):
@@ -11,7 +11,7 @@ def train_agent(env):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 2000
+    num_episodes= 20
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -103,7 +103,7 @@ def evaluate_agent(env):
         print("L'agente ha perso.")
 
 def main():
-    env = VirtualEnvironment(48, 25, 32)
+    env = VirtualEnvironment(60, 38, 32)
     running = True
     while running:
         try:

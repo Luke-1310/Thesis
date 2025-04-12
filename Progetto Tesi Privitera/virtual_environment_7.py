@@ -7,37 +7,26 @@ class VirtualEnvironment:
         self.width = width
         self.height = height
         self.cell_size = cell_size
+
+        display_scale = 0.6
+        
         #da cambiare
-        self.start_position=[2, 24]
+        self.start_position=[1, 1]
         self.agent_position = self.start_position
         #da cambiare
-        self.goal_positions = [(41, 5)]  # Posizione di arrivo
+        self.goal_positions = [(35, 1)]  # Posizione di arrivo
         self.agent_rotation = 0  # Rotazione iniziale della macchina (0 gradi)
         self.FPS=5
         self.clock= pygame.time.Clock()
         self.prev_agent_position = []
         self.prev_car_position = []
         self.car_in_vision = False 
-        #da cambiare
-        self.percorso1=[[2,46],[2,45],[2,44],[2,43],[2,42],[2,41],[2,40],[2,39],[2,38],[2,37],[2,36],[2,35],[2,34],[2,33],[2,32],
-                        [2,31],[2,30],[2,29],[2,28],[2,27],[2,26],[2,25],[2,24],[2,23],[2,22],[2,21],[2,20],[2,19],[2,18],[2,17],
-                        [2,16],[2,15],[2,14],[2,13],[2,12],[2,11],[2,10],[2,9],[2,8],[2,7],[2,6],[2,5],[2,4],[2,3],[2,2],[2,1],[3,1],
-                        [4,1],[5,1],[6,1],[7,1],[8,1],[9,1],[10,1],[10,2],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],
-                        [10,11],[10,12],[10,13],[10,14],[10,15],[10,16],[10,17],[10,18],[10,19],[10,20],[9,20],[9,19],[9,18],[9,17], 
-                        [9,16],[9,15],[9,14],[9,13],[9,12],[9,11],[9,10],[9,9],[9,8],[9,7],[9,6],[9,5],[9,4],[9,3],[9,2],[10,2],
-                        [20,2],[20,3],[20,4],[20,5],[20,6],[20,7],[20,8],[20,9],[20,10],[20,11],[20,12],[20,13],[20,14],[20,15],
-                        [20,16],[20,17],[20,18],[20,19],[20,20],[20,21],[20,22],[20,23],[20,24],[20,25],[20,26],[20,27],[20,28],
-                        [20,29],[20,30],[20,31],[20,32],[20,33],[20,34],[20,35],[20,36],[20,37],[20,38],[20,39],[20,40],[20,41],
-                        [20,42],[20,43],[20,44],[20,45],[20,46][19,46],[18,46],[17,46],[16,46],[15,46],[14,46],[13,46],[12,46],[11,46],
-                        [10,46],[9,46],[8,46],[7,46],[6,46],[5,46],[4,46],[3,46]]
+        self.percorso1 = [[46, 2],[45, 2],[44, 2],[43, 2]]
+        
+        self.percorso2 = [[40, 36],[40, 35],[40, 34],[40, 33]]
 
-        self.percorso2 = [[15, 15],[16, 15],[17, 15],[18, 15],[19, 15],[20, 15],[21, 15],[22, 15],[23, 15],[24, 15],[25, 15],[26, 15],
-                           [27, 15],[28, 15],[29, 15],[30, 15],[31, 15],[32, 15],[33, 15],[34, 15],[34, 14],[34, 13],[34, 12],[34, 11],
-                           [34, 10],[34, 9],[33, 9],[32, 9],[31, 9],[30, 9],[29, 9],[28, 9],[27, 9],[26, 9],[25, 9],[24, 9],[23, 9],
-                           [22, 9],[21, 9],[20, 9],[19, 9],[18, 9],[17, 9],[16, 9],[15, 9],[14, 9],[13, 9],[13, 10],[13, 11],[13, 12],
-                           [13, 13],[13, 14],[13, 15],[14, 15]]
-        self.percorso3 = [[2, 8],[2, 7],[2, 6],[2, 5],[2, 4],[2, 3],[2, 2],[3, 2],[4, 2],[5, 2],[6, 2],[7, 2],[8, 2],[9, 2],[9, 3],
-                           [9, 4],[9, 5],[9, 6],[9, 7],[9, 8],[9, 9],[8, 9],[7, 9],[6, 9],[5, 9],[4, 9],[3, 9],[2, 9]]
+        self.percorso3 = [[2, 36],[2, 35],[2, 34],[2, 33],[2, 32],[3, 32]]
+
         # Mappa dei percorsi
         self.percorsi = {
             1: self.percorso1,
@@ -77,9 +66,9 @@ class VirtualEnvironment:
             (3, 1): [(2, 9),(1, 9)]
         }
         self.cars = [
-            {'position': [2, ], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
-            {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
-            {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
+            {'position': [46, 2], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
+            {'position': [40, 36], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
+            {'position': [2, 36], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
         ]
         self.map = [ #righe 38
             #0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59
@@ -135,38 +124,40 @@ class VirtualEnvironment:
 
         # Inizializza Pygame
         pygame.init()
-        self.screen = pygame.display.set_mode((width * cell_size, height * cell_size))
-        pygame.display.set_caption("Find The Parking")
-        
-        # Carica l'immagine della macchina
-        self.agent_image = pygame.image.load("Progetto Tesi Amoriello/car.png")
-        self.agent_image = pygame.transform.scale(self.agent_image, (cell_size // 2, cell_size))
-        # Carica l'immagine originale
-        self.car_image = pygame.image.load("Progetto Tesi Amoriello/car2.png")
 
-        # Ottieni le dimensioni originali dell'immagine
+        scaled_width = int(width * cell_size * display_scale)
+        scaled_height = int(height * cell_size * display_scale)
+        display_cell_size = int(cell_size * display_scale)
+
+        self.screen = pygame.display.set_mode((scaled_width, scaled_height))
+        pygame.display.set_caption("Find The Parking v.2")
+
+        # Carica l'immagine della macchina (agente)
+        self.agent_image = pygame.image.load("Progetto Tesi Privitera/imgs/car.png")
+        self.agent_image = pygame.transform.scale(self.agent_image, (display_cell_size // 2, display_cell_size))
+
+        # Carica l'immagine originale e scala
+        self.car_image = pygame.image.load("Progetto Tesi Privitera/imgs/car2.png")
         original_width, original_height = self.car_image.get_size()
-
-        # Calcola le nuove dimensioni
         new_width = int(original_width * 0.08)
         new_height = int(original_height * 0.08)
-
-        #da cambiare
-        # Scala l'immagine
         self.car_image = pygame.transform.scale(self.car_image, (new_width, new_height))
 
-        self.car2_image = pygame.image.load("Progetto Tesi Amoriello/car2.png")
+        self.car2_image = pygame.image.load("Progetto Tesi Privitera/imgs/car2.png")
         self.car2_image = pygame.transform.scale(self.car2_image, (new_width, new_height))
 
-        self.car3_image = pygame.image.load("Progetto Tesi Amoriello/car2.png")
+        self.car3_image = pygame.image.load("Progetto Tesi Privitera/imgs/car2.png")
         self.car3_image = pygame.transform.scale(self.car3_image, (new_width, new_height))
-                
-        # Carica l'immagine della mappa
-        self.map_image = pygame.image.load("Progetto Tesi Amoriello/imgs/city_map.png")
-        self.map_image = pygame.transform.scale(self.map_image, (width * cell_size, height * cell_size))
+
+        # Carica e scala immagine della mappa
+        self.map_image = pygame.image.load("Progetto Tesi Privitera/imgs/city_map.png").convert()
+        self.map_image = pygame.transform.scale(self.map_image, (scaled_width, scaled_height))
 
         pygame.font.init()
-        self.font = pygame.font.Font('8-Bit-Madness.ttf', 24)
+        self.font = pygame.font.Font('Progetto Tesi Privitera/8-Bit-Madness.ttf', 24)
+
+        print("Width x Cell Size:", width * cell_size)
+        print("Height x Cell Size:", height * cell_size)
         
     def is_car_in_vision(self):
         agent_x, agent_y = self.agent_position
