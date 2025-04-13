@@ -11,7 +11,7 @@ def train_agent(env):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 20
+    num_episodes= 2
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -103,7 +103,7 @@ def evaluate_agent(env):
         print("L'agente ha perso.")
 
 def main():
-    env = VirtualEnvironment(60, 38, 32)
+    env = VirtualEnvironment(50, 30, 16)
     running = True
     while running:
         try:

@@ -52,4 +52,4 @@ Il file 8-bit madness.ttf è un file di font (formato TrueType Font), e serve pe
 
 Funzionalità virtual_environment_7
 
-Mappa ampliata
+Mappa ampliata -> difficoltà nella img, troppo grande, passo a 50x30 dove 50 sono le colonne e 30 le righe
