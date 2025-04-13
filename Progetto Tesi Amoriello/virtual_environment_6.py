@@ -4,18 +4,23 @@ import random
 
 class VirtualEnvironment:
     def __init__(self, width, height, cell_size):
+
+        # Inizializzazione dei parametri di base dell'ambiente
         self.width = width
         self.height = height
         self.cell_size = cell_size
+
+        # Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
         self.agent_position = self.start_position
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
-        self.agent_rotation = 0  # Rotazione iniziale della macchina (0 gradi)
-        self.FPS=5
+
+        self.agent_rotation = 0  # orientamento iniziale dell'agente (0 = su)
+        self.FPS=5 # frame per secondo per la simulazione
         self.clock= pygame.time.Clock()
         self.prev_agent_position = []
         self.prev_car_position = []
-        self.car_in_vision = False 
+        self.car_in_vision = False # flag che indica se un'auto è nella zona visiva dell'agente
         self.percorso1=[[14, 24],[14, 23],[14, 22],[14, 21],[14, 20],[15, 20],[16, 20],[17, 20],[18, 20],[19, 20],[20, 20],
                         [21, 20],[22, 20],[23, 20],[24, 20],[25, 20],[26, 20],[27, 20],[28, 20],[29, 20],[30, 20],
                         [31, 20],[32, 20],[33, 20],[34, 20],[35, 20],[36, 20],[37, 20],[38, 20],[39, 20],[40, 20],
@@ -59,6 +64,8 @@ class VirtualEnvironment:
         }
         self.traffic_light_cycle = 0  # Contatore per il ciclo dei semafori
         self.traffic_light_duration = 120  # Durata del ciclo del semaforo in frame
+        
+        # Zone "sicure" dove fermarsi anche se il semaforo è rosso
         self.safe_zones = [(14, 10), (13, 10),(14, 9), (13, 9),
                       (34, 19), (33, 19),(34, 20), (33, 20)]
         self.incroci = {
@@ -75,6 +82,7 @@ class VirtualEnvironment:
             {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
             {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
         ]
+        # Mappa stradale: 0 = muro, 1 = strada
         self.map = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -102,6 +110,8 @@ class VirtualEnvironment:
             [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
+
+        # Matrice dei reward (premi e penalità)
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
         # Assegna +100000 alle celle del parcheggio
         for pos in self.goal_positions:
@@ -146,7 +156,8 @@ class VirtualEnvironment:
 
         pygame.font.init()
         self.font = pygame.font.Font('Progetto Tesi Amoriello/8-Bit-Madness.ttf', 24)
-        
+
+    # Verifica se una delle auto si trova nel campo visivo dell'agente 
     def is_car_in_vision(self):
         agent_x, agent_y = self.agent_position
         vision_min_x = max(0, agent_x - 2)
@@ -160,6 +171,7 @@ class VirtualEnvironment:
                 return True
         return False
 
+    # Aggiorna la posizione di una singola auto secondo il suo percorso
     def update_car_position(self):
         self.prev_car_position = [car['position'][:] for car in self.cars]
         self.prev_agent_position = self.agent_position[:]
