@@ -52,4 +52,4 @@ Il file 8-bit madness.ttf è un file di font (formato TrueType Font), e serve pe
 
 Funzionalità virtual_environment_7
 
-Mappa ampliata -> DIMENSIONI MONITOR PARI A 1536x864
+Mappa ampliata -> DIMENSIONI MONITOR PARI A 1536x864 righe e colonne = 45/25
