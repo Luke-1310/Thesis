@@ -3,6 +3,7 @@ import pygame
 import random
 
 class VirtualEnvironment:
+    #48 25 32
     def __init__(self, width, height, cell_size):
 
         # Inizializzazione dei parametri di base dell'ambiente
