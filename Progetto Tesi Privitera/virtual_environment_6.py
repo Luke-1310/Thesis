@@ -4,12 +4,14 @@ import random
 
 class VirtualEnvironment:
     #48 25 32
-    def __init__(self, width, height, cell_size):
+    def __init__(self, width, height, cell_size, screen = None):
 
         # Inizializzazione dei parametri di base dell'ambiente
         self.width = width
         self.height = height
         self.cell_size = cell_size
+        self.external_screen = screen is not None
+        self.screen = screen or pygame.display.set_mode((width * cell_size, height * cell_size))
 
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
