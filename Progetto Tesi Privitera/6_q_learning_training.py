@@ -81,13 +81,16 @@ def show_results(env):
         print("File Q-table non trovato. Assicurati di aver salvato una Q-table prima.")
 
 def evaluate_agent(env):
+    
     print("Inizio valutazione dell'agente")
     env.reset_game()
     path = []
     running = True
     while running and not (env.check_loss() or env.check_goal()):
         print(f"Posizione attuale: {env.agent_position}")
+        
         for event in pygame.event.get():
+            
             if event.type == pygame.QUIT:
                 running = False
         
@@ -99,6 +102,7 @@ def evaluate_agent(env):
     
     if env.check_goal():
         print("Obiettivo raggiunto!")
+    
     else:
         print("L'agente ha perso.")
 
@@ -136,6 +140,7 @@ def show_menu(screen, font):
 
 
 def main():
+    
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
     pygame.display.update()
@@ -152,18 +157,23 @@ def main():
         screen = pygame.display.set_mode((1536, 800))
         button_rects = show_menu(screen, font)
         
-
         waiting_for_input = True
+
         while waiting_for_input:
+            
             for event in pygame.event.get():
+                
                 if event.type == pygame.QUIT:
                     running = False
                     waiting_for_input = False
                     pygame.quit()
                     return
+                
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
+                    
                     for rect, act in button_rects:
+                        
                         if rect.collidepoint(mouse_pos):
                             action = act
                             waiting_for_input = False
@@ -171,8 +181,10 @@ def main():
 
         if action == "train":
             train_agent(env)
+        
         elif action == "show":
             show_results(env)
+        
         elif action == "exit":
             running = False
 
@@ -180,8 +192,10 @@ def main():
 
 
 if __name__ == "__main__":
+    
     try:
         main()
+    
     except Exception as e:
         print(f"Errore imprevisto: {e}")
 
