@@ -104,32 +104,36 @@ def evaluate_agent(env):
 
 #1 Implementazione di una interfaccia grafica per il menù
 def show_menu(screen, font):
-
+    
     #Bottoni
     buttons = [
         {"text": "1. Allenare l'agente", "action": "train"},
         {"text": "2. Mostrare risultati", "action": "show"},
         {"text": "3. Uscire", "action": "exit"}
     ]
-    
+
     button_rects = []
-    screen.fill((255, 255, 255))  # Sfondo bianco
+
+    # Riempie l'intera finestra di bianco
+    screen.fill((255, 255, 255))
+
+    # Titolo centrato
     title = font.render("Menu Principale", True, (0, 0, 0))
     screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 50))
-    
+
     y = 150
 
     for button in buttons:
-        text_surface = font.render(button["text"], True, (255, 255, 255))
         rect = pygame.Rect(screen.get_width() // 2 - 150, y, 300, 50)
-        button_rects.append((rect, button["action"]))
         pygame.draw.rect(screen, (0, 128, 255), rect)  # Rettangolo blu
+        text_surface = font.render(button["text"], True, (255, 255, 255))  # Solo testo bianco
         screen.blit(text_surface, (rect.x + 20, rect.y + 10))
+        button_rects.append((rect, button["action"]))
         y += 80
 
     pygame.display.flip()
-    pygame.display.update()
     return button_rects
+
 
 def main():
     pygame.init()
@@ -137,7 +141,7 @@ def main():
     pygame.display.update()
     pygame.display.set_caption("Simulatore Agente")
 
-    pygame.event.pump()                # Forza aggiornamento della finestra
+    pygame.event.pump()# Forza aggiornamento della finestra
     font = pygame.font.SysFont(None, 36)
 
     env = VirtualEnvironment(48, 25, 32, screen)
@@ -145,7 +149,9 @@ def main():
     action = None
 
     while running:
+        screen = pygame.display.set_mode((1536, 800))
         button_rects = show_menu(screen, font)
+        
 
         waiting_for_input = True
         while waiting_for_input:
