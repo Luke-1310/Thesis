@@ -102,39 +102,76 @@ def evaluate_agent(env):
     else:
         print("L'agente ha perso.")
 
+#1 Implementazione di una interfaccia grafica per il menù
+def show_menu(screen, font):
+
+    #Bottoni
+    buttons = [
+        {"text": "1. Allenare l'agente", "action": "train"},
+        {"text": "2. Mostrare risultati", "action": "show"},
+        {"text": "3. Uscire", "action": "exit"}
+    ]
+    
+    button_rects = []
+    screen.fill((255, 255, 255))  # Sfondo bianco
+    title = font.render("Menu Principale", True, (0, 0, 0))
+    screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 50))
+    
+    y = 150
+
+    for button in buttons:
+        text_surface = font.render(button["text"], True, (255, 255, 255))
+        rect = pygame.Rect(screen.get_width() // 2 - 150, y, 300, 50)
+        button_rects.append((rect, button["action"]))
+        pygame.draw.rect(screen, (0, 128, 255), rect)  # Rettangolo blu
+        screen.blit(text_surface, (rect.x + 20, rect.y + 10))
+        y += 80
+
+    pygame.display.flip()
+    pygame.display.update()
+    return button_rects
+
 def main():
-    env = VirtualEnvironment(48, 25, 32)
+    pygame.init()
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.update()
+    pygame.display.set_caption("Simulatore Agente")
+
+    pygame.event.pump()                # Forza aggiornamento della finestra
+    font = pygame.font.SysFont(None, 36)
+
+    env = VirtualEnvironment(48, 25, 32, screen)
     running = True
+    action = None
+
     while running:
-        try:
+        button_rects = show_menu(screen, font)
+
+        waiting_for_input = True
+        while waiting_for_input:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    waiting_for_input = False
                     pygame.quit()
                     return
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    for rect, act in button_rects:
+                        if rect.collidepoint(mouse_pos):
+                            action = act
+                            waiting_for_input = False
+                            break
 
-            env.display()  # Visualizza l'ambiente
-            print("\nScegli un'opzione:")
-            print("1. Allenare l'agente")
-            print("2. Mostrare risultati con Q-table esistente")
-            print("3. Uscire")
-            scelta = input("Inserisci il numero dell'opzione: ")
-            if scelta == "1":
-                train_agent(env)
-            elif scelta == "2":
-                show_results(env)
-            elif scelta == "3":
-                running = False
-            else:
-                print("Opzione non valida. Riprova.")
-        except pygame.error:
-            print("Finestra chiusa. Uscita dal programma.")
-            break
-        except Exception as e:
-            print(f"Si è verificato un errore: {e}")
-            break
+        if action == "train":
+            train_agent(env)
+        elif action == "show":
+            show_results(env)
+        elif action == "exit":
+            running = False
 
     pygame.quit()
+
 
 if __name__ == "__main__":
     try:
