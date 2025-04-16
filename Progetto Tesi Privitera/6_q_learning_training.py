@@ -1,17 +1,21 @@
 import numpy as np
 import pygame
+import os
 from virtual_environment_6 import VirtualEnvironment
 
-np.set_printoptions(precision=3, suppress=True, linewidth=200)
-def print_q_table(q_table):
-    print("Q-Table:")
-    print(q_table)
+os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
-def train_agent(env):
+np.set_printoptions(precision=3, suppress=True, linewidth=200)
+
+def print_q_table(q_table):
+     print("Q-Table:")
+     print(q_table)
+
+def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 10#2000
+    num_episodes= 1#2000
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -54,21 +58,42 @@ def train_agent(env):
 #            if steps > 1000:  # Previeni episodi troppo lunghi
 #                break
 
-        print(f"Episode: {episode}, Steps: {steps}, Total Reward: {total_reward}")
+#        print(f"Episode: {episode}, Steps: {steps}, Total Reward: {total_reward}")
+        screen = env.screen
+        screen.fill((255, 255, 255))  # Pulisce lo schermo
+
+        draw_text(screen, f"Episodio: {episode}", 20, 20, font)
+        draw_text(screen, f"Steps: {steps}", 20, 60, font)
+        draw_text(screen, f"Total Reward: {total_reward}", 20, 100, font)
+
+        pygame.display.flip()
+
         epsilon = max(0.01, epsilon * 0.9995)  # Delay più lento
 
     # Chiedi all'utente se vuole visualizzare i risultati
-    show_choice = input("Vuoi visualizzare i risultati? (s/n): ")
-    if show_choice.lower() == 's':
-        evaluate_agent(env)
+    # show_choice = input("Vuoi visualizzare i risultati? (s/n): ")
+    # if show_choice.lower() == 's':
+    #     evaluate_agent(env)
     
-    # Dopo l'allenamento, chiedi all'utente se vuole salvare la Q-table
-    save_choice = input("Vuoi salvare la Q-table? (s/n): ")
-    if save_choice.lower() == 's':
+    # # Dopo l'allenamento, chiedi all'utente se vuole salvare la Q-table
+    # save_choice = input("Vuoi salvare la Q-table? (s/n): ")
+    # if save_choice.lower() == 's':
+    #     np.save('q_table.npy', env.q_values)
+    #     print("Q-table salvata con successo.")
+
+    if show_yes_no_dialog(env.screen, font, "Vuoi visualizzare i risultati?"):
+        evaluate_agent(env, font)
+
+    if show_yes_no_dialog(env.screen, font, "Vuoi salvare la Q-table?"):
         np.save('q_table.npy', env.q_values)
         print("Q-table salvata con successo.")
+        screen = env.screen
+        screen.fill((255, 255, 255))
+        draw_text(screen, "Q-table salvata con successo.", 20, 20, font, (0, 150, 0))
+        pygame.display.flip()
+        pygame.time.wait(1500)
 
-def show_results(env):
+def show_results(env, font):
     try:
         q_table = np.load('q_table.npy')
         if q_table.shape != env.q_values.shape:
@@ -76,11 +101,11 @@ def show_results(env):
             return
         env.q_values = q_table
         print("Q-table caricata con successo.")
-        evaluate_agent(env)
+        evaluate_agent(env, font)
     except FileNotFoundError:
         print("File Q-table non trovato. Assicurati di aver salvato una Q-table prima.")
 
-def evaluate_agent(env):
+def evaluate_agent(env, font):
     
     print("Inizio valutazione dell'agente")
     env.reset_game()
@@ -101,10 +126,21 @@ def evaluate_agent(env):
         pygame.time.wait(500)  # Attende 500 ms tra ogni movimento
     
     if env.check_goal():
-        print("Obiettivo raggiunto!")
-    
+        #print("Obiettivo raggiunto!")
+        screen = env.screen
+        screen.fill((255, 255, 255))
+        draw_text(screen, "Obiettivo raggiunto!", 20, 20, font, (0, 150, 0))
+        pygame.display.flip()
+        pygame.time.wait(2000)
+
     else:
-        print("L'agente ha perso.")
+        #print("L'agente ha perso.")
+        screen = env.screen
+        screen.fill((255, 255, 255))
+        draw_text(screen, "L'agente ha perso.", 20, 20, font, (200, 0, 0))
+        pygame.display.flip()
+        pygame.time.wait(2000)
+
 
 #1 Implementazione di una interfaccia grafica per il menù
 def show_menu(screen, font):
@@ -113,7 +149,8 @@ def show_menu(screen, font):
     buttons = [
         {"text": "1. Allenare l'agente", "action": "train"},
         {"text": "2. Mostrare risultati", "action": "show"},
-        {"text": "3. Uscire", "action": "exit"}
+        {"text": "3. Cambia mappa", "action": "null"},
+        {"text": "4. Uscire", "action": "exit"}
     ]
 
     button_rects = []
@@ -138,9 +175,15 @@ def show_menu(screen, font):
     pygame.display.flip()
     return button_rects
 
+#2 Funzione per poter stampare del testo sul schermo
+def draw_text(screen, text, x, y, font, color=(0, 0, 0)):
+
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, (x, y))
 
 def main():
     
+    os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centra la finestra
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
     pygame.display.update()
@@ -180,16 +223,65 @@ def main():
                             break
 
         if action == "train":
-            train_agent(env)
+            train_agent(env, font)
         
         elif action == "show":
-            show_results(env)
+            show_results(env,font)
         
         elif action == "exit":
             running = False
 
     pygame.quit()
 
+#3 Funzione per poter chiedere all'utente, dal punto di vista grafico, se vuole o no vedere i risultati
+def show_yes_no_dialog(screen, font, question):
+    screen.fill((255, 255, 255))
+
+    #(screen, text, x, y, font, color=(0, 0, 0)) devo calcolarmi la lunghezza del testo per poi centrarlo a dovere, non basta fare (screen.get_width()) // 2)-50
+    #chiamo la funzione draw_text_centered
+    draw_text_centered(screen, question, 100, font)
+
+    button_width = 150
+    button_height = 50
+    spacing = 40  # spazio tra i due bottoni
+
+    # Calcola la posizione centrale dei due bottoni insieme
+    total_width = button_width * 2 + spacing
+    start_x = (screen.get_width() - total_width) // 2
+    y = 200
+
+    yes_rect = pygame.Rect(start_x, y, button_width, button_height)
+    no_rect = pygame.Rect(start_x + button_width + spacing, y, button_width, button_height)
+
+    pygame.draw.rect(screen, (0, 200, 0), yes_rect)
+    pygame.draw.rect(screen, (200, 0, 0), no_rect)
+
+    yes_text = font.render("Sì", True, (255, 255, 255))
+    no_text = font.render("No", True, (255, 255, 255))
+
+    # Centra il testo all'interno dei bottoni
+    screen.blit(yes_text, (yes_rect.centerx - yes_text.get_width() // 2, yes_rect.centery - yes_text.get_height() // 2))
+    screen.blit(no_text, (no_rect.centerx - no_text.get_width() // 2, no_rect.centery - no_text.get_height() // 2))
+
+    pygame.display.flip()
+
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if yes_rect.collidepoint(pygame.mouse.get_pos()):
+                    return True
+                elif no_rect.collidepoint(pygame.mouse.get_pos()):
+                    return False
+
+#4 funzione che mi centra il testo, utile per stampare dei messaggi come "Vuoi salvare la Q-table"
+def draw_text_centered(screen, text, y, font, color=(0, 0, 0)):
+    text_surface = font.render(text, True, color)
+    x = (screen.get_width() - text_surface.get_width()) // 2
+    screen.blit(text_surface, (x, y))
 
 if __name__ == "__main__":
     
