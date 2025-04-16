@@ -167,6 +167,56 @@ def draw_text(screen, text, x, y, font, color=(0, 0, 0)):
     text_surface = font.render(text, True, color)
     screen.blit(text_surface, (x, y))
 
+#3 Funzione per poter chiedere all'utente, dal punto di vista grafico, se vuole o no vedere i risultati
+def show_yes_no_dialog(screen, font, question):
+    screen.fill((255, 255, 255))
+
+    #(screen, text, x, y, font, color=(0, 0, 0)) devo calcolarmi la lunghezza del testo per poi centrarlo a dovere, non basta fare (screen.get_width()) // 2)-50
+    #chiamo la funzione draw_text_centered
+    draw_text_centered(screen, question, 100, font)
+
+    button_width = 150
+    button_height = 50
+    spacing = 40  # spazio tra i due bottoni
+
+    # Calcola la posizione centrale dei due bottoni insieme
+    total_width = button_width * 2 + spacing
+    start_x = (screen.get_width() - total_width) // 2
+    y = 200
+
+    yes_rect = pygame.Rect(start_x, y, button_width, button_height)
+    no_rect = pygame.Rect(start_x + button_width + spacing, y, button_width, button_height)
+
+    pygame.draw.rect(screen, (0, 200, 0), yes_rect)
+    pygame.draw.rect(screen, (200, 0, 0), no_rect)
+
+    yes_text = font.render("Sì", True, (255, 255, 255))
+    no_text = font.render("No", True, (255, 255, 255))
+
+    # Centra il testo all'interno dei bottoni
+    screen.blit(yes_text, (yes_rect.centerx - yes_text.get_width() // 2, yes_rect.centery - yes_text.get_height() // 2))
+    screen.blit(no_text, (no_rect.centerx - no_text.get_width() // 2, no_rect.centery - no_text.get_height() // 2))
+
+    pygame.display.flip()
+
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if yes_rect.collidepoint(pygame.mouse.get_pos()):
+                    return True
+                elif no_rect.collidepoint(pygame.mouse.get_pos()):
+                    return False
+
+#4 funzione che mi centra il testo, utile per stampare dei messaggi come "Vuoi salvare la Q-table"
+def draw_text_centered(screen, text, y, font, color=(0, 0, 0)):
+    text_surface = font.render(text, True, color)
+    x = (screen.get_width() - text_surface.get_width()) // 2
+    screen.blit(text_surface, (x, y))
+    
 def main():
     
     os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centra la finestra
@@ -218,56 +268,6 @@ def main():
             running = False
 
     pygame.quit()
-
-#3 Funzione per poter chiedere all'utente, dal punto di vista grafico, se vuole o no vedere i risultati
-def show_yes_no_dialog(screen, font, question):
-    screen.fill((255, 255, 255))
-
-    #(screen, text, x, y, font, color=(0, 0, 0)) devo calcolarmi la lunghezza del testo per poi centrarlo a dovere, non basta fare (screen.get_width()) // 2)-50
-    #chiamo la funzione draw_text_centered
-    draw_text_centered(screen, question, 100, font)
-
-    button_width = 150
-    button_height = 50
-    spacing = 40  # spazio tra i due bottoni
-
-    # Calcola la posizione centrale dei due bottoni insieme
-    total_width = button_width * 2 + spacing
-    start_x = (screen.get_width() - total_width) // 2
-    y = 200
-
-    yes_rect = pygame.Rect(start_x, y, button_width, button_height)
-    no_rect = pygame.Rect(start_x + button_width + spacing, y, button_width, button_height)
-
-    pygame.draw.rect(screen, (0, 200, 0), yes_rect)
-    pygame.draw.rect(screen, (200, 0, 0), no_rect)
-
-    yes_text = font.render("Sì", True, (255, 255, 255))
-    no_text = font.render("No", True, (255, 255, 255))
-
-    # Centra il testo all'interno dei bottoni
-    screen.blit(yes_text, (yes_rect.centerx - yes_text.get_width() // 2, yes_rect.centery - yes_text.get_height() // 2))
-    screen.blit(no_text, (no_rect.centerx - no_text.get_width() // 2, no_rect.centery - no_text.get_height() // 2))
-
-    pygame.display.flip()
-
-    waiting = True
-    while waiting:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if yes_rect.collidepoint(pygame.mouse.get_pos()):
-                    return True
-                elif no_rect.collidepoint(pygame.mouse.get_pos()):
-                    return False
-
-#4 funzione che mi centra il testo, utile per stampare dei messaggi come "Vuoi salvare la Q-table"
-def draw_text_centered(screen, text, y, font, color=(0, 0, 0)):
-    text_surface = font.render(text, True, color)
-    x = (screen.get_width() - text_surface.get_width()) // 2
-    screen.blit(text_surface, (x, y))
 
 if __name__ == "__main__":
     
