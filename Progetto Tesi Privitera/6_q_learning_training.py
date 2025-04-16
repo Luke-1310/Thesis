@@ -58,7 +58,6 @@ def train_agent(env, font):
 #            if steps > 1000:  # Previeni episodi troppo lunghi
 #                break
 
-#        print(f"Episode: {episode}, Steps: {steps}, Total Reward: {total_reward}")
         screen = env.screen
         screen.fill((255, 255, 255))  # Pulisce lo schermo
 
@@ -69,17 +68,6 @@ def train_agent(env, font):
         pygame.display.flip()
 
         epsilon = max(0.01, epsilon * 0.9995)  # Delay più lento
-
-    # Chiedi all'utente se vuole visualizzare i risultati
-    # show_choice = input("Vuoi visualizzare i risultati? (s/n): ")
-    # if show_choice.lower() == 's':
-    #     evaluate_agent(env)
-    
-    # # Dopo l'allenamento, chiedi all'utente se vuole salvare la Q-table
-    # save_choice = input("Vuoi salvare la Q-table? (s/n): ")
-    # if save_choice.lower() == 's':
-    #     np.save('q_table.npy', env.q_values)
-    #     print("Q-table salvata con successo.")
 
     if show_yes_no_dialog(env.screen, font, "Vuoi visualizzare i risultati?"):
         evaluate_agent(env, font)
@@ -126,7 +114,6 @@ def evaluate_agent(env, font):
         pygame.time.wait(500)  # Attende 500 ms tra ogni movimento
     
     if env.check_goal():
-        #print("Obiettivo raggiunto!")
         screen = env.screen
         screen.fill((255, 255, 255))
         draw_text(screen, "Obiettivo raggiunto!", 20, 20, font, (0, 150, 0))
@@ -134,7 +121,6 @@ def evaluate_agent(env, font):
         pygame.time.wait(2000)
 
     else:
-        #print("L'agente ha perso.")
         screen = env.screen
         screen.fill((255, 255, 255))
         draw_text(screen, "L'agente ha perso.", 20, 20, font, (200, 0, 0))
