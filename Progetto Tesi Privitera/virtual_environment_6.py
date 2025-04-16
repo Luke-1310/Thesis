@@ -1,7 +1,7 @@
 import numpy as np
 import pygame
 import random
-
+#(map_name=select_map)
 class VirtualEnvironment:
     #48 25 32
     def __init__(self, width, height, cell_size, screen = None):

@@ -135,7 +135,6 @@ def show_menu(screen, font):
     buttons = [
         {"text": "1. Allenare l'agente", "action": "train"},
         {"text": "2. Mostrare risultati", "action": "show"},
-        {"text": "3. Cambia mappa", "action": "null"},
         {"text": "4. Uscire", "action": "exit"}
     ]
 
@@ -216,7 +215,8 @@ def draw_text_centered(screen, text, y, font, color=(0, 0, 0)):
     text_surface = font.render(text, True, color)
     x = (screen.get_width() - text_surface.get_width()) // 2
     screen.blit(text_surface, (x, y))
-    
+
+
 def main():
     
     os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centra la finestra
@@ -263,7 +263,10 @@ def main():
         
         elif action == "show":
             show_results(env,font)
-        
+
+        # elif action == "select_map":
+        #     print("S")
+
         elif action == "exit":
             running = False
 
