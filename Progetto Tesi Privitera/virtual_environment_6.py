@@ -43,6 +43,7 @@ class VirtualEnvironment:
                            [13, 13],[13, 14],[13, 15],[14, 15]]
         self.percorso3 = [[2, 8],[2, 7],[2, 6],[2, 5],[2, 4],[2, 3],[2, 2],[3, 2],[4, 2],[5, 2],[6, 2],[7, 2],[8, 2],[9, 2],[9, 3],
                            [9, 4],[9, 5],[9, 6],[9, 7],[9, 8],[9, 9],[8, 9],[7, 9],[6, 9],[5, 9],[4, 9],[3, 9],[2, 9]]
+
         # Mappa dei percorsi
         self.percorsi = {
             1: self.percorso1,
@@ -293,7 +294,6 @@ class VirtualEnvironment:
                 return True
         return False
 
-    
     def update_traffic_lights(self):
         self.traffic_light_cycle += 1
         if self.traffic_light_cycle >= self.traffic_light_duration:
@@ -340,7 +340,6 @@ class VirtualEnvironment:
         rotated_rect_car = rotated_car_image.get_rect()
         rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
-
     
     def reset_game(self):
         self.agent_position = self.start_position[:]
