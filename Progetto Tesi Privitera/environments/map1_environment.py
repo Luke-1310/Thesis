@@ -1,8 +1,18 @@
-from environments.base_environment import BaseEnvironment
+import numpy as np
 import pygame
 import os
+from environments.base_environment import BaseEnvironment
 
 class Map1Environment(BaseEnvironment):
+    
+    def __init__(self, width, height, cell_size, screen=None):
+        
+        # Inizializza tutto ciò che serve nella superclasse
+        super().__init__(width, height, cell_size, screen)
+
+        # Carica le risorse specifiche della mappa
+        self.load_assets()
+        self.create_grid()
 
     def load_assets(self):
         # Carica tutte le immagini che ti servono

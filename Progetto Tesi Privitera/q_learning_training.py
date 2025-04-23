@@ -255,18 +255,25 @@ def select_map(screen, font):
         pygame.display.flip()
 
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
+                
                 for rect, action in button_rects:
+                    
                     if rect.collidepoint(pos):
+                        
                         if action == "back":
                             return None  # Nessuna mappa selezionata, torna al menu
+                        
                         elif action in available_maps:
                             map_name = available_maps[action][0]
                             selected_map_class = available_maps[action][1]
+                            
                             # Feedback all'utente
                             screen.fill((255, 255, 255))
                             draw_text_centered(screen, f"Hai selezionato: {map_name}", screen.get_height() // 2 - 25, font)
@@ -274,7 +281,7 @@ def select_map(screen, font):
                             pygame.time.delay(1000)  # Pausa di un secondo
                             selecting = False
 
-    return selected_map_class(screen)
+    return selected_map_class#(screen) così facendo sto restituendo la classe, con (screen) la istanzio
 
 
 def main():
@@ -325,11 +332,12 @@ def main():
             show_results(env,font)
 
         elif action == "select_map":
-            selected_environment = select_map(screen, font)
-            
-            if selected_env:
-                env = selected_env
 
+            selected_environment_class = select_map(screen, font)
+            
+            if selected_environment_class:
+                env = selected_environment_class(48, 25, 32, screen)
+                #print("Ambiente selezionato correttamente!")  # questo ora verrà eseguito
 
         elif action == "exit":
             running = False
