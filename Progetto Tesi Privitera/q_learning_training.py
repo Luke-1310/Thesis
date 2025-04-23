@@ -225,22 +225,32 @@ available_maps = {
 }
 
 #5 funzione che mi permette di scegliere la mappa
-def select_map(screen):
-    font = pygame.font.Font(None, 36)
+def select_map(screen, font):
     selecting = True
     selected_map_class = None
 
+    # Lista dei bottoni da visualizzare
+    buttons = []
+    for key, (map_name, _) in available_maps.items():
+        buttons.append({"text": f"{map_name}", "action": key})
+    buttons.append({"text": "Torna al menu", "action": "back"})
+
     while selecting:
-        screen.fill((0, 0, 0))
+        screen.fill((255, 255, 255))
 
-        title_text = font.render("Seleziona una mappa:", True, (255, 255, 255))
-        screen.blit(title_text, (50, 50))
+        # Titolo centrato
+        draw_text_centered(screen, "Seleziona una mappa:", 50, font)
 
-        y_offset = 120
-        for key, (map_name, _) in available_maps.items():
-            text = font.render(f"Premi {key} per {map_name}", True, (255, 255, 255))
-            screen.blit(text, (50, y_offset))
-            y_offset += 40
+        y = 150
+        button_rects = []
+
+        for button in buttons:
+            rect = pygame.Rect(screen.get_width() // 2 - 150, y, 300, 50)
+            pygame.draw.rect(screen, (0, 128, 255), rect)
+            text_surface = font.render(button["text"], True, (255, 255, 255))
+            screen.blit(text_surface, (rect.x + 20, rect.y + 10))
+            button_rects.append((rect, button["action"]))
+            y += 80
 
         pygame.display.flip()
 
@@ -248,11 +258,21 @@ def select_map(screen):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                key_pressed = pygame.key.name(event.key)
-                if key_pressed in available_maps:
-                    selected_map_class = available_maps[key_pressed][1]
-                    selecting = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                for rect, action in button_rects:
+                    if rect.collidepoint(pos):
+                        if action == "back":
+                            return None  # Nessuna mappa selezionata, torna al menu
+                        elif action in available_maps:
+                            map_name = available_maps[action][0]
+                            selected_map_class = available_maps[action][1]
+                            # Feedback all'utente
+                            screen.fill((255, 255, 255))
+                            draw_text_centered(screen, f"Hai selezionato: {map_name}", screen.get_height() // 2 - 25, font)
+                            pygame.display.flip()
+                            pygame.time.delay(1000)  # Pausa di un secondo
+                            selecting = False
 
     return selected_map_class(screen)
 
@@ -305,7 +325,7 @@ def main():
             show_results(env,font)
 
         elif action == "select_map":
-            selected_env = select_map(screen)
+            selected_environment = select_map(screen, font)
             
             if selected_env:
                 env = selected_env
