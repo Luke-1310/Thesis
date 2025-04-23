@@ -9,12 +9,13 @@ class Map1Environment(BaseEnvironment):
 
         # Inizializza Pygame
         pygame.init()
-        self.screen = pygame.display.set_mode((width * cell_size, height * cell_size))
+        self.screen = pygame.display.set_mode((self.width * self.cell_size, self.height * self.cell_size))
         pygame.display.set_caption("Find The Parking v.2")
 
         # Carica l'immagine della macchina
         self.agent_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car.png")
-        self.agent_image = pygame.transform.scale(self.agent_image, (cell_size // 2, cell_size))
+        self.agent_image = pygame.transform.scale(self.agent_image, (self.cell_size // 2, self.cell_size))
+
         # Carica l'immagine originale
         self.car_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
 
@@ -33,11 +34,12 @@ class Map1Environment(BaseEnvironment):
 
         self.car3_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
         self.car3_image = pygame.transform.scale(self.car3_image, (new_width, new_height))
-                
+
         # Carica l'immagine della mappa
         self.map_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/city_map.png")
-        self.map_image = pygame.transform.scale(self.map_image, (width * cell_size, height * cell_size))
+        self.map_image = pygame.transform.scale(self.map_image, (self.width * self.cell_size, self.height * self.cell_size))
 
+        # Font
         pygame.font.init()
         self.font = pygame.font.Font('Progetto Tesi Privitera/assets/8-Bit-Madness.ttf', 24)
 
