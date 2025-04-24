@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
 import os
+import random
 
 class BaseEnvironment:
     
