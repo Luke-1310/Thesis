@@ -3,7 +3,7 @@ import pygame
 import os
 from environments.map1_environment import Map1Environment
 from environments.map2_environment import Map2Environment
-from environments.map1_environment import Map1Environment
+
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
