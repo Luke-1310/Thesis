@@ -125,7 +125,7 @@ class Map2Environment(BaseEnvironment):
             {'position': [46, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
             {'position': [32, 2], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
             {'position': [13, 10], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
-         ]
+        ]
         
         #griglia per la mappa
         self.map = [
@@ -168,3 +168,11 @@ class Map2Environment(BaseEnvironment):
             for x in range(self.width):
                 if self.map[y][x] == 0:
                     self.reward_matrix[y][x] = -10
+
+        def reset_game(self):
+            super().reset_game()
+            self.cars = [
+                {'position': [46, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
+                {'position': [32, 2], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
+                {'position': [13, 10], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
+            ]

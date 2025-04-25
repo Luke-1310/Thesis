@@ -169,3 +169,13 @@ class Map1Environment(BaseEnvironment):
             for x in range(self.width):
                 if self.map[y][x] == 0:
                     self.reward_matrix[y][x] = -10
+        #print(Map1Environment.__module__)  LO STAMPA   
+
+        def reset_game(self):
+            super().reset_game()
+            self.cars = [
+                {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
+                {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
+                {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0}
+            ]
+

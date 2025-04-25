@@ -210,17 +210,13 @@ class BaseEnvironment:
         rotated_rect_car = rotated_car_image.get_rect()
         rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
-    
+
     def reset_game(self):
-        self.agent_position = self.start_position[:]
-        self.agent_rotation = 0
-        self.cars = [
-            {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
-            {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
-            {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0}
-        ]
-        self.traffic_light_cycle = 0
-        self.car_in_vision = False
-        self.prev_car_position = [car['position'] for car in self.cars]
-        self.prev_agent_position = self.agent_position[:]
+            self.agent_position = self.start_position[:]
+            self.agent_rotation = 0
+            
+            self.traffic_light_cycle = 0
+            self.car_in_vision = False
+            self.prev_car_position = [car['position'] for car in self.cars]
+            self.prev_agent_position = self.agent_position[:]
 
