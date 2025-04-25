@@ -97,10 +97,13 @@ class BaseEnvironment:
             
             self.check_and_change_route(car)
 
+    #verifica se un'auto si trova su un incrocio e, se sì, con una certa probabilità, farle cambiare percorso seguendo una transizione definita
     def check_and_change_route(self, car):
         current_position = tuple(car['position'])
+        #Controlla se la posizione attuale è un incrocio (presente in self.incroci) e se un numero casuale tra 0 e 1 è inferiore a 0.5 → questo crea una probabilità del 50% che il cambio percorso avvenga.
         if current_position in self.incroci and random.random() < 0.5:
-            possible_routes = [route for route in self.incroci[current_position] if route != self.percorsi[car['route']]]
+            possible_routes = [route for route in self.incroci[current_position] if route != self.percorsi[car['route']]]#Recupera tutte le rotte alternative disponibili all’incrocio, escludendo quella attuale dell’auto
+            #se c'è un percorso disponibile, lo cambia
             if possible_routes:
                 new_route = random.choice(possible_routes)
                 new_route_index = list(self.percorsi.values()).index(new_route)
