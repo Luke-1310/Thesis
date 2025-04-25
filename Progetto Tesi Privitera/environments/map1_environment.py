@@ -10,6 +10,11 @@ class Map1Environment(BaseEnvironment):
         # Inizializza tutto ciò che serve nella superclasse
         super().__init__(width, height, cell_size, screen)
 
+        # Posizione iniziale e obiettivo dell'agente
+        self.start_position=[2, 24]
+        self.agent_position = self.start_position
+        self.goal_positions = [(41, 5)]  # Posizione di arrivo
+
         # Carica le risorse specifiche della mappa
         self.load_assets()
         self.create_grid()

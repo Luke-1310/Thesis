@@ -14,11 +14,6 @@ class BaseEnvironment:
         self.external_screen = screen is not None
         self.screen = screen or pygame.display.set_mode((width * cell_size, height * cell_size))
 
-        # Posizione iniziale e obiettivo dell'agente
-        self.start_position=[2, 24]
-        self.agent_position = self.start_position
-        self.goal_positions = [(41, 5)]  # Posizione di arrivo
-
         self.agent_rotation = 0  # orientamento iniziale dell'agente (0 = su)
         self.FPS=5 # frame per secondo per la simulazione
         self.clock= pygame.time.Clock()
