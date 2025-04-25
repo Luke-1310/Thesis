@@ -2,8 +2,8 @@ import numpy as np
 import pygame
 import os
 from environments.map1_environment import Map1Environment
-#from environments.map2_environment import Map2Environment
-#virtual_environment_6
+from environments.map2_environment import Map2Environment
+from environments.map1_environment import Map1Environment
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
@@ -218,10 +218,9 @@ def draw_text_centered(screen, text, y, font, color=(0, 0, 0)):
     x = (screen.get_width() - text_surface.get_width()) // 2
     screen.blit(text_surface, (x, y))
 
-from environments.map1_environment import Map1Environment
-
 available_maps = {
-     "1": ("Mappa 1", Map1Environment),
+    "1": ("Mappa 1", Map1Environment),
+    "2": ("Mappa 2", Map2Environment),
 }
 
 #5 funzione che mi permette di scegliere la mappa
