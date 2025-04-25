@@ -3,6 +3,8 @@ import pygame
 import os
 from environments.base_environment import BaseEnvironment
 
+#ATTENZIONE IL FORMATO è COLONNA,RIGA
+
 class Map1Environment(BaseEnvironment):
     
     def __init__(self, width, height, cell_size, screen=None):
