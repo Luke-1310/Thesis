@@ -112,11 +112,13 @@ class Map1Environment(BaseEnvironment):
         # Zone "sicure" dove fermarsi anche se il semaforo è rosso
         self.safe_zones = [(14, 10), (13, 10),(14, 9), (13, 9),
                       (34, 19), (33, 19),(34, 20), (33, 20)]
+        #praticamnete qui si passa alla transizione e poi al percorso successivo4
         self.incroci = {
             (34, 10): [self.percorso2, self.percorso1],
             (2, 9): [self.percorso3, self.percorso1]
         }
         # Percorsi di transizione
+        # stai passando dal percorso x al y (x,y) mediante questi passaggi 
         self.transizioni = {
             (2, 1): [(34, 10),(35, 10),(36, 10),(37, 10),(38, 10),(39, 10),(40, 10),(41, 10),(42, 10),(43, 10),(44, 10),(45, 10),(46, 10)],
             (3, 1): [(2, 9),(1, 9)]
