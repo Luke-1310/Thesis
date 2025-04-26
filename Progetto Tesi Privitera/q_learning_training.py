@@ -16,7 +16,7 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 5#2000
+    num_episodes= 2#2000
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -74,25 +74,45 @@ def train_agent(env, font):
         evaluate_agent(env, font)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi salvare la Q-table?"):
-        np.save('q_table.npy', env.q_values)
-        print("Q-table salvata con successo.")
+        #devo crearmi un file col nome personalizzato in base alla mappa
+        filename = f'q_table_{env.map_name}.npy'
+        np.save(filename, env.q_values)
+
         screen = env.screen
         screen.fill((255, 255, 255))
-        draw_text(screen, "Q-table salvata con successo.", 20, 20, font, (0, 150, 0))
+        draw_text(screen, f"Q-table {env.map_name} salvata con successo.", 20, 20, font, (0, 150, 0))
         pygame.display.flip()
         pygame.time.wait(1500)
 
 def show_results(env, font):
     try:
-        q_table = np.load('q_table.npy')
+        filename = f'q_table_{env.map_name}.npy'  # Nome file dipende dalla mappa
+        q_table = np.load(filename)
+
         if q_table.shape != env.q_values.shape:
             print(f"Errore: La forma della Q-table caricata ({q_table.shape}) non corrisponde a quella attesa ({env.q_values.shape})")
             return
+        
         env.q_values = q_table
-        print("Q-table caricata con successo.")
+        print(f"Q-table per {env.map_name} caricata con successo.")
+
+        screen = env.screen
+        screen.fill((255, 255, 255))
+        draw_text(screen, f"Q-table {env.map_name} caricata con successo.", 20, 20, font, (0, 150, 0))
+        pygame.display.flip()
+        pygame.time.wait(1500)
+
         evaluate_agent(env, font)
+
     except FileNotFoundError:
-        print("File Q-table non trovato. Assicurati di aver salvato una Q-table prima.")
+        print(f"File Q-table per {env.map_name} non trovato. Assicurati di aver salvato una Q-table prima.")
+        
+        screen = env.screen
+        screen.fill((255, 255, 255))
+        draw_text(screen, f"Q-table {env.map_name} non trovata.", 20, 20, font, (255, 0, 0))
+        pygame.display.flip()
+        pygame.time.wait(1500)
+
 
 def evaluate_agent(env, font):
     
