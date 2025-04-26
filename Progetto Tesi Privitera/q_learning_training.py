@@ -219,8 +219,8 @@ def draw_text_centered(screen, text, y, font, color=(0, 0, 0)):
     screen.blit(text_surface, (x, y))
 
 available_maps = {
-    "1": ("Mappa 1", Map1Environment),
-    "2": ("Mappa 2", Map2Environment),
+    "1": ("Città", Map1Environment),
+    "2": ("Foresta", Map2Environment),
 }
 
 #5 funzione che mi permette di scegliere la mappa
