@@ -21,6 +21,9 @@ class Map1Environment(BaseEnvironment):
         self.load_assets()
         self.create_grid()
 
+        #Mi voglio creare un attributo per capire che mappa sto trattando
+        self.map_name = "Città"
+
     def load_assets(self):
         # Carica tutte le immagini che ti servono
 

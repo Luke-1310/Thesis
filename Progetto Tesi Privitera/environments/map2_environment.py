@@ -19,6 +19,9 @@ class Map2Environment(BaseEnvironment):
         self.load_assets()
         self.create_grid()
 
+        self.map_name = "Foresta"
+
+
     def load_assets(self):
         # Carica tutte le immagini che ti servono
 
