@@ -8,6 +8,11 @@ os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori prec
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
 
+# La Q-table è una tabella che usa un agente di Q-learning (un tipo di reinforcement learning) per imparare quale azione fare in ogni stato.
+#     Ogni riga rappresenta uno stato (ad esempio: "sono all'incrocio, il semaforo è rosso").
+#     Ogni colonna rappresenta una azione possibile (tipo "vai dritto", "gira a destra", "aspetta").
+#     Ogni valore dentro la tabella (Q-value) dice quanto è buona quell'azione in quello stato.
+
 def print_q_table(q_table):
      print("Q-Table:")
      print(q_table)
@@ -89,30 +94,34 @@ def show_results(env, font):
         filename = f'q_table_{env.map_name}.npy'  # Nome file dipende dalla mappa
         q_table = np.load(filename)
 
-        if q_table.shape != env.q_values.shape:
-            print(f"Errore: La forma della Q-table caricata ({q_table.shape}) non corrisponde a quella attesa ({env.q_values.shape})")
-            return
-        
-        env.q_values = q_table
-        print(f"Q-table per {env.map_name} caricata con successo.")
-
         screen = env.screen
         screen.fill((255, 255, 255))
-        draw_text(screen, f"Q-table {env.map_name} caricata con successo.", 20, 20, font, (0, 150, 0))
-        pygame.display.flip()
-        pygame.time.wait(1500)
 
-        evaluate_agent(env, font)
+        if q_table.shape != env.q_values.shape:
+            message = "Non è stato possibile caricare la Q-table"
+            color = (255, 0, 0)  # Rosso
+            wait_time = 2000
+        else:
+            env.q_values = q_table
+            message = f"Q-table {env.map_name} caricata con successo."
+            color = (0, 150, 0)  # Verde
+            wait_time = 1500
+
+        draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, color, center=True)
+        pygame.display.flip()
+        pygame.time.wait(wait_time)
+
+        if q_table.shape == env.q_values.shape:
+            evaluate_agent(env, font)
 
     except FileNotFoundError:
-        print(f"File Q-table per {env.map_name} non trovato. Assicurati di aver salvato una Q-table prima.")
-        
         screen = env.screen
         screen.fill((255, 255, 255))
-        draw_text(screen, f"Q-table {env.map_name} non trovata.", 20, 20, font, (255, 0, 0))
+
+        message = f"Q-table {env.map_name} non trovata."
+        draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, (255, 0, 0), center=True)
         pygame.display.flip()
         pygame.time.wait(1500)
-
 
 def evaluate_agent(env, font):
     
@@ -183,9 +192,13 @@ def show_menu(screen, font):
     return button_rects
 
 #2 Funzione per poter stampare del testo sul schermo
-def draw_text(screen, text, x, y, font, color=(0, 0, 0)):
+def draw_text(screen, text, x, y, font, color=(0, 0, 0), center=False):
 
     text_surface = font.render(text, True, color)
+    #se voglio qualcosa al centro devo gestirlo con un if
+    if center:
+        x = (screen.get_width() - text_surface.get_width()) // 2
+
     screen.blit(text_surface, (x, y))
 
 #3 Funzione per poter chiedere all'utente, dal punto di vista grafico, se vuole o no vedere i risultati
@@ -193,8 +206,7 @@ def show_yes_no_dialog(screen, font, question):
     screen.fill((255, 255, 255))
 
     #(screen, text, x, y, font, color=(0, 0, 0)) devo calcolarmi la lunghezza del testo per poi centrarlo a dovere, non basta fare (screen.get_width()) // 2)-50
-    #chiamo la funzione draw_text_centered
-    draw_text_centered(screen, question, 100, font)
+    draw_text(screen, question,0, 100, font, center=True)
 
     button_width = 150
     button_height = 50
@@ -232,18 +244,12 @@ def show_yes_no_dialog(screen, font, question):
                 elif no_rect.collidepoint(pygame.mouse.get_pos()):
                     return False
 
-#4 funzione che mi centra il testo, utile per stampare dei messaggi come "Vuoi salvare la Q-table"
-def draw_text_centered(screen, text, y, font, color=(0, 0, 0)):
-    text_surface = font.render(text, True, color)
-    x = (screen.get_width() - text_surface.get_width()) // 2
-    screen.blit(text_surface, (x, y))
-
 available_maps = {
     "1": ("Città", Map1Environment),
     "2": ("Foresta", Map2Environment),
 }
 
-#5 funzione che mi permette di scegliere la mappa
+#4 funzione che mi permette di scegliere la mappa
 def select_map(screen, font):
     selecting = True
     selected_map_class = None
@@ -258,7 +264,7 @@ def select_map(screen, font):
         screen.fill((255, 255, 255))
 
         # Titolo centrato
-        draw_text_centered(screen, "Seleziona una mappa:", 50, font)
+        draw_text(screen, "Seleziona una mappa:", 0, 50, font, center=True)
 
         y = 150
         button_rects = []
@@ -295,9 +301,23 @@ def select_map(screen, font):
                             
                             # Feedback all'utente
                             screen.fill((255, 255, 255))
-                            draw_text_centered(screen, f"Hai selezionato: {map_name}", screen.get_height() // 2 - 25, font)
+                            draw_text(screen, f"Hai selezionato: {map_name}", 0, 50, font, color=(0, 0, 0), center=True)
+
+                            # Costruisco il nome del file immagine
+                            file_name = map_name.lower().replace(" ", "_") + "_map.png"
+                            preview_path = f"Progetto Tesi Privitera/assets/imgs/{file_name}"
+
+                            try:
+                                preview_img = pygame.image.load(preview_path)
+                                preview_img = pygame.transform.smoothscale(preview_img, (1000, 520)) #smoothscale più lento di scale ma più qualitativo
+                                img_x = (screen.get_width() - preview_img.get_width()) // 2
+                                img_y = 150
+                                screen.blit(preview_img, (img_x, img_y))
+                            except Exception as e:
+                                print(f"Errore caricamento immagine: {e}")
+
                             pygame.display.flip()
-                            pygame.time.delay(1000)  # Pausa di un secondo
+                            pygame.time.delay(2000)
                             selecting = False
 
     return selected_map_class#(screen) così facendo sto restituendo la classe, con (screen) la istanzio
@@ -307,9 +327,11 @@ def main():
     
     os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centra la finestra
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    
+    screen = pygame.display.set_mode((1536, 800))
     pygame.display.update()
-    pygame.display.set_caption("Simulatore Agente")
+
+    pygame.display.set_caption("Find The Parking v.2")
 
     pygame.event.pump()# Forza aggiornamento della finestra
     font =  pygame.font.Font("Progetto Tesi Privitera/assets/PixeloidSansBold.ttf", 20)
@@ -319,9 +341,9 @@ def main():
     action = None
 
     while running:
-        screen = pygame.display.set_mode((1536, 800))
-        button_rects = show_menu(screen, font)
         
+        button_rects = show_menu(screen, font)
+
         waiting_for_input = True
 
         while waiting_for_input:
