@@ -30,7 +30,6 @@ class Map1Environment(BaseEnvironment):
         # Inizializza Pygame
         pygame.init()
         self.screen = pygame.display.set_mode((self.width * self.cell_size, self.height * self.cell_size))
-        pygame.display.set_caption("Find The Parking v.2")
 
         # Carica l'immagine della macchina
         self.agent_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car.png")
