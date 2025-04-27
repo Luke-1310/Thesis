@@ -312,7 +312,7 @@ def main():
     pygame.display.set_caption("Simulatore Agente")
 
     pygame.event.pump()# Forza aggiornamento della finestra
-    font = pygame.font.SysFont(None, 36)
+    font =  pygame.font.Font("Progetto Tesi Privitera/assets/PixeloidSansBold.ttf", 20)
 
     env = Map1Environment(48, 25, 32, screen)
     running = True

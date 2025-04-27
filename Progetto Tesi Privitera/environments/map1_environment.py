@@ -61,7 +61,7 @@ class Map1Environment(BaseEnvironment):
 
         # Font
         pygame.font.init()
-        self.font = pygame.font.Font('Progetto Tesi Privitera/assets/8-Bit-Madness.ttf', 24)
+        self.font = pygame.font.Font('Progetto Tesi Privitera/assets/PixeloidSansBold.ttf', 20)
 
 
     def create_grid(self):
