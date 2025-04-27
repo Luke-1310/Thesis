@@ -53,7 +53,7 @@ class Map2Environment(BaseEnvironment):
         self.car3_image = pygame.transform.scale(self.car3_image, (new_width, new_height))
 
         # Carica l'immagine della mappa
-        self.map_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/city_map2.png")
+        self.map_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/foresta_map.png")
         self.map_image = pygame.transform.scale(self.map_image, (self.width * self.cell_size, self.height * self.cell_size))
 
         # Font
