@@ -21,7 +21,9 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 2#2000
+    num_episodes= 1#2000
+
+    episode_data = [] 
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -61,12 +63,12 @@ def train_agent(env, font):
             total_reward += reward
             steps += 1
 
-#            if steps > 1000:  # Previeni episodi troppo lunghi
-#                break
+            #if steps > 1000:  # Previeni episodi troppo lunghi
+                #break
 
         screen = env.screen
         screen.fill((255, 255, 255))  # Pulisce lo schermo
-
+        
         print(f"Episodio: {episode}")
         print(f"Steps: {steps}")
         print(f"Total Reward: {total_reward}")
@@ -74,6 +76,14 @@ def train_agent(env, font):
         pygame.display.flip()
 
         epsilon = max(0.01, epsilon * 0.9995)  # Delay più lento
+
+        #ok ora mi salvo in un array tutti i dati relativi a ciascun episodio (episodio, step, reward) per poi mostrarli in futuro
+
+        for episode in range(num_episodes):
+
+            episode_data.append((episode, steps, total_reward))  # <-- Dopo ogni episodio
+
+        episode_data = np.array(episode_data)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi visualizzare i risultati?"):
         evaluate_agent(env, font)
@@ -88,6 +98,9 @@ def train_agent(env, font):
         draw_text(screen, f"Q-table {env.map_name} salvata con successo.", 20, 20, font, (0, 150, 0))
         pygame.display.flip()
         pygame.time.wait(1500)
+
+    return episode_data
+
 
 def show_results(env, font):
     try:
@@ -141,7 +154,7 @@ def evaluate_agent(env, font):
         env.get_next_location(action_index)
         path.append(env.agent_position[:])
         env.display(path=path)
-        pygame.time.wait(500)  # Attende 500 ms tra ogni movimento
+        pygame.time.wait(500)# Attende 500 ms tra ogni movimento
     
     if env.check_goal():
         screen = env.screen
@@ -324,6 +337,8 @@ def select_map(screen, font):
 
 
 def main():
+
+    episode_data = []
     
     os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centra la finestra
     pygame.init()
@@ -367,8 +382,8 @@ def main():
                             break
 
         if action == "train":
-            train_agent(env, font)
-        
+            episode_data = train_agent(env, font)
+            
         elif action == "show":
             show_results(env,font)
 
