@@ -194,7 +194,7 @@ class BaseEnvironment:
             self._display_car(self.car_image, car['position'], rotation)
         
         if episode is not None:
-            episode_text = self.font.render(f'Episodio: {episode}', True, (255, 255, 255))
+            episode_text = self.font.render(f'Episodio: {episode}', True, (50, 50, 50))  # grigio antracite
             text_rect = episode_text.get_rect()
             text_rect.topright = (self.width * self.cell_size - 10, 10)
             self.screen.blit(episode_text, text_rect)

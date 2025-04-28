@@ -67,9 +67,9 @@ def train_agent(env, font):
         screen = env.screen
         screen.fill((255, 255, 255))  # Pulisce lo schermo
 
-        draw_text(screen, f"Episodio: {episode}", 20, 20, font)
-        draw_text(screen, f"Steps: {steps}", 20, 60, font)
-        draw_text(screen, f"Total Reward: {total_reward}", 20, 100, font)
+        # draw_text(screen, f"Episodio: {episode}", 20, 20, font)
+        # draw_text(screen, f"Steps: {steps}", 20, 60, font)
+        # draw_text(screen, f"Total Reward: {total_reward}", 20, 100, font)
 
         pygame.display.flip()
 
