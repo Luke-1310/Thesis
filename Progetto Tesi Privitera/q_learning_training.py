@@ -67,9 +67,9 @@ def train_agent(env, font):
         screen = env.screen
         screen.fill((255, 255, 255))  # Pulisce lo schermo
 
-        # draw_text(screen, f"Episodio: {episode}", 20, 20, font)
-        # draw_text(screen, f"Steps: {steps}", 20, 60, font)
-        # draw_text(screen, f"Total Reward: {total_reward}", 20, 100, font)
+        print(f"Episodio: {episode}")
+        print(f"Steps: {steps}")
+        print(f"Total Reward: {total_reward}")
 
         pygame.display.flip()
 
@@ -146,14 +146,14 @@ def evaluate_agent(env, font):
     if env.check_goal():
         screen = env.screen
         screen.fill((255, 255, 255))
-        draw_text(screen, "Obiettivo raggiunto!", 20, 20, font, (0, 150, 0))
+        draw_text(screen, "Obiettivo raggiunto!", 0, screen.get_height() // 2 - 20, font, (0, 150, 0), center=True)
         pygame.display.flip()
         pygame.time.wait(2000)
 
     else:
         screen = env.screen
         screen.fill((255, 255, 255))
-        draw_text(screen, "L'agente ha perso.", 20, 20, font, (200, 0, 0))
+        draw_text(screen, "L'agente ha perso.", 0, screen.get_height() // 2 - 20, font, (200, 0, 0), center=True)
         pygame.display.flip()
         pygame.time.wait(2000)
 
