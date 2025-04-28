@@ -21,9 +21,9 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 1#2000
+    num_episodes= 3#2000
 
-    episode_data = [] 
+    episode_data = []
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -78,12 +78,9 @@ def train_agent(env, font):
         epsilon = max(0.01, epsilon * 0.9995)  # Delay più lento
 
         #ok ora mi salvo in un array tutti i dati relativi a ciascun episodio (episodio, step, reward) per poi mostrarli in futuro
+        episode_data.append((episode, steps, total_reward))  # <-- Dopo ogni episodio
 
-        for episode in range(num_episodes):
-
-            episode_data.append((episode, steps, total_reward))  # <-- Dopo ogni episodio
-
-        episode_data = np.array(episode_data)
+        #episode_data = np.array(episode_data)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi visualizzare i risultati?"):
         evaluate_agent(env, font)
@@ -335,6 +332,39 @@ def select_map(screen, font):
 
     return selected_map_class#(screen) così facendo sto restituendo la classe, con (screen) la istanzio
 
+def show_training_results(screen, font, episode_data):
+    scroll_y = 0
+    scroll_speed = 20
+    running = True
+    clock = pygame.time.Clock()
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 4:  # Scroll up
+                    scroll_y = min(scroll_y + scroll_speed, 0)
+                if event.button == 5:  # Scroll down
+                    scroll_y -= scroll_speed
+
+        screen.fill((255, 255, 255))
+
+        # Disegna intestazioni
+        header = font.render(f"{'Episodio':<10}{'Steps':<10}{'Reward'}", True, (0, 0, 0))
+        screen.blit(header, (20, 20 + scroll_y))
+
+        # Linea di separazione
+        pygame.draw.line(screen, (0, 0, 0), (20, 50 + scroll_y), (screen.get_width() - 20, 50 + scroll_y), 2)
+
+        # Disegna tutti i dati
+        for idx, (episode, steps, reward) in enumerate(episode_data):
+            text = font.render(f"{episode:<10}{steps:<10}{reward}", True, (0, 0, 0))
+            screen.blit(text, (20, 60 + idx * 30 + scroll_y))
+
+        pygame.display.flip()
+        clock.tick(60)
+
 
 def main():
 
@@ -383,7 +413,8 @@ def main():
 
         if action == "train":
             episode_data = train_agent(env, font)
-            
+            show_training_results(env.screen, font, episode_data)
+
         elif action == "show":
             show_results(env,font)
 
