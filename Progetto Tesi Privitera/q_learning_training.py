@@ -332,38 +332,66 @@ def select_map(screen, font):
 
     return selected_map_class#(screen) così facendo sto restituendo la classe, con (screen) la istanzio
 
+#5 Funzione per stampare il resoconto del training del agente
 def show_training_results(screen, font, episode_data):
+    import sys  # Assicurati che sys sia importato nel file
+
     scroll_y = 0
     scroll_speed = 20
     running = True
     clock = pygame.time.Clock()
 
+    # Bottone stile menu
+    buttons = [{"text": "Torna al menu", "action": "menu"}]
+    button_rects = []
+    y = screen.get_height() - 100  # Posizione verticale del bottone
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
+                sys.exit()
+
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 4:  # Scroll up
+
+                if event.button == 1:  # Click sinistro
+                    
+                    for rect, action in button_rects:
+                        
+                        if rect.collidepoint(event.pos) and action == "menu":
+                            running = False  # Torna al menu
+                
+                elif event.button == 4:  # Scroll up
                     scroll_y = min(scroll_y + scroll_speed, 0)
-                if event.button == 5:  # Scroll down
+                
+                elif event.button == 5:  # Scroll down
                     scroll_y -= scroll_speed
 
         screen.fill((255, 255, 255))
 
-        # Disegna intestazioni
+        # Intestazioni
         header = font.render(f"{'Episodio':<10}{'Steps':<10}{'Reward'}", True, (0, 0, 0))
         screen.blit(header, (20, 20 + scroll_y))
 
-        # Linea di separazione
         pygame.draw.line(screen, (0, 0, 0), (20, 50 + scroll_y), (screen.get_width() - 20, 50 + scroll_y), 2)
 
-        # Disegna tutti i dati
+        # Dati
         for idx, (episode, steps, reward) in enumerate(episode_data):
             text = font.render(f"{episode:<10}{steps:<10}{reward}", True, (0, 0, 0))
             screen.blit(text, (20, 60 + idx * 30 + scroll_y))
 
+        # Bottone "Torna al menu"
+        button_rects.clear()
+        for button in buttons:
+            rect = pygame.Rect(screen.get_width() // 2 - 150, y, 250, 50)
+            pygame.draw.rect(screen, (0, 128, 255), rect)
+            text_surface = font.render(button["text"], True, (255, 255, 255))
+            screen.blit(text_surface, (rect.x + 20, rect.y + 10))
+            button_rects.append((rect, button["action"]))
+
         pygame.display.flip()
         clock.tick(60)
+
 
 
 def main():
