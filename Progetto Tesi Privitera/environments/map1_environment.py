@@ -24,6 +24,17 @@ class Map1Environment(BaseEnvironment):
         #Mi voglio creare un attributo per capire che mappa sto trattando
         self.map_name = "Città"
 
+        #costruttore per la classe pedone DA FIXARE
+        self.pedone = {
+        'position': [5, 10],      # Scegli una posizione iniziale (x, y)
+        'goal': [15, 3],          # Scegli una posizione di arrivo
+        'path': [],               # Verrà calcolato poi
+        'path_index': 0           # Serve per farlo avanzare lungo il percorso
+        }
+
+        self.path = []  #per salvare il percorso calcolato del pedone.
+        self.pedone_index = 0   #per sapere dove si trova il pedone lungo il percorso.
+
     def load_assets(self):
         # Carica tutte le immagini che ti servono
 
@@ -210,3 +221,6 @@ class Map1Environment(BaseEnvironment):
                 {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0}
             ]
 
+        def calculate_pedone_path(self):
+            self.path = a_star_search(self.grid_map, self.pawn_start, self.pawn_goal)
+            self.pawn_index = 0  # Inizia dal primo step

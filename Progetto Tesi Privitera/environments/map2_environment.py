@@ -21,6 +21,17 @@ class Map2Environment(BaseEnvironment):
 
         self.map_name = "Foresta"
 
+        #costruttore per la classe pedone DA FIXARE
+        self.pedone = {
+        'position': [5, 10],      # Scegli una posizione iniziale (x, y)
+        'goal': [15, 3],          # Scegli una posizione di arrivo
+        'path': [],               # Verrà calcolato poi
+        'path_index': 0           # Serve per farlo avanzare lungo il percorso
+        }
+
+        self.path = []
+        self.pedone_index = 0
+
 
     def load_assets(self):
         # Carica tutte le immagini che ti servono
