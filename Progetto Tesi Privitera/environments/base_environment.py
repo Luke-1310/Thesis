@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 import os
 import random
+import heapq    #Libreria per usare la coda di priorità (min-heap)
 
 class BaseEnvironment:
     
@@ -219,4 +220,61 @@ class BaseEnvironment:
             self.car_in_vision = False
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
+
+    def a_star_search(grid, start, goal):
+
+        def heuristic(a, b): #Questa funzione calcola quanto siamo "lontani" dal traguardo in modo semplice ed efficiente.
+            # Distanza di Manhattan
+            return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+        open_set = []   #Coda di priorità dei nodi da esplorare
+        heapq.heappush(open_set, (0, start))    #Inserisce lo start con priorità 0
+        came_from = {}  #Tiene traccia del percorso (da dove si è arrivati a ogni nodo)
+        g_score = {start: 0} #Costo reale per arrivare a un nodo (inizia con 0 per lo start)
+        f_score = {start: heuristic(start, goal)} #g + h, cioè costo reale + stimato
+
+        #Loop principale dell'algoritmo
+        while open_set:
+
+            current = heapq.heappop(open_set)[1]    #Prende il nodo con il punteggio f più basso
+
+            if current == goal:
+                
+                # bbiamo raggiunto il traguardo: ricostruiamo il percorso
+                path = []
+
+                while current in came_from:
+                    
+                    path.append(current)
+                    
+                    current = came_from[current]
+                
+                path.append(start)
+                path.reverse()
+                
+                return path
+
+            x, y = current
+            
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                
+                neighbor = (x + dx, y + dy) #Ogni nodo ha 4 vicini (sopra, sotto, destra, sinistra). 
+                
+                if (0 <= neighbor[0] < len(grid[0]) and 0 <= neighbor[1] < len(grid)):
+                    
+                    if grid[neighbor[1]][neighbor[0]] != 0: #Verifica che il vicino sia dentro i limiti della griglia e non sia un ostacolo (0 = cella libera, qualsiasi altro valore = ostacolo).
+                        
+                        continue  #È un ostacolo, salta
+                        
+                    tentative_g_score = g_score[current] + 1    #Costo per raggiungere il vicino
+                    
+                    #Se il nuovo percorso è migliore di uno già trovato oppure è un nodo nuovo, aggiorna i punteggi e aggiungilo alla coda.
+                    if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                        
+                        came_from[neighbor] = current
+                        g_score[neighbor] = tentative_g_score
+                        f_score[neighbor] = tentative_g_score + heuristic(neighbor, goal)
+                        heapq.heappush(open_set, (f_score[neighbor], neighbor))
+
+        return None  #Nessun percorso trovato
 
