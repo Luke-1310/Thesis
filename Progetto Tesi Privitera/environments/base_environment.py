@@ -191,35 +191,38 @@ class BaseEnvironment:
             color = (255, 0, 0) if state == 'red' else (0, 255, 0)
             pygame.draw.circle(self.screen, color, (position[0] * self.cell_size + self.cell_size // 2, position[1] * self.cell_size + self.cell_size // 2), 10)
         
+        # Visualizza l'agente (pedone)
         rotated_agent_image = pygame.transform.rotate(self.agent_image, self.agent_rotation)
         rotated_rect = rotated_agent_image.get_rect()
         rotated_rect.center = (self.agent_position[0] * self.cell_size + self.cell_size // 2, self.agent_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_agent_image, rotated_rect)
         
+        # Aggiorna posizione pedone
         self.update_car_position()
         self.update_pedone_position()
-        
+
+        # Visualizza il pedone
+        self._display_pedone(self.pedone_image, self.pedone_position)  # Chiamata alla funzione per disegnare il pedone
+
+        # Visualizza le auto
         for car in self.cars:
             rotation = self._calculate_rotation(car)
             self._display_car(self.car_image, car['position'], rotation)
         
+        # Se è stato passato un episodio, visualizza il numero dell'episodio
         if episode is not None:
             episode_text = self.font.render(f'Episodio: {episode}', True, (50, 50, 50))  # grigio antracite
             text_rect = episode_text.get_rect()
             text_rect.topright = (self.width * self.cell_size - 10, 10)
             self.screen.blit(episode_text, text_rect)
         
+        # Se è stato passato un percorso, disegna il percorso
         if path:
             for pos in path:
                 pygame.draw.circle(self.screen, (255, 0, 0), (pos[0] * self.cell_size + self.cell_size // 2, pos[1] * self.cell_size + self.cell_size // 2), 5)
         
         pygame.display.flip()
 
-    def _display_car(self, car_image, car_position, car_rotation):
-        rotated_car_image = pygame.transform.rotate(car_image, car_rotation)
-        rotated_rect_car = rotated_car_image.get_rect()
-        rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
-        self.screen.blit(rotated_car_image, rotated_rect_car)
 
     def reset_game(self):
             self.agent_position = self.start_position[:]
