@@ -175,6 +175,14 @@ class BaseEnvironment:
                 else:
                     self.traffic_lights[position] = 'red'
 
+    def update_pedone_position(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_pedone_move > self.move_delay:
+            if self.pedone['path'] and self.pedone['path_index'] < len(self.pedone['path']) - 1:
+                self.pedone['path_index'] += 1
+                self.pedone['position'] = list(self.pedone['path'][self.pedone['path_index']])
+                self.last_pedone_move = now
+
     def display(self, episode=None, path=None):
         self.screen.blit(self.map_image, (0, 0))
         #self.clock.tick(self.FPS)
@@ -189,6 +197,7 @@ class BaseEnvironment:
         self.screen.blit(rotated_agent_image, rotated_rect)
         
         self.update_car_position()
+        self.update_pedone_position()
         
         for car in self.cars:
             rotation = self._calculate_rotation(car)
@@ -221,6 +230,7 @@ class BaseEnvironment:
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
 
+    #funzione utile nel utilizzare il percorso che dovrà compiere il pedone
     def a_star_search(grid, start, goal):
 
         def heuristic(a, b): #Questa funzione calcola quanto siamo "lontani" dal traguardo in modo semplice ed efficiente.
@@ -278,3 +288,9 @@ class BaseEnvironment:
 
         return None  #Nessun percorso trovato
 
+    #funzione che deve calcolare il percorso del pedone, infatti la chiamo quando carico la mappa
+    def calculate_pedone_path(self):
+        start = tuple(self.pedone['position'])
+        goal = tuple(self.pedone['goal'])
+        self.pedone['path'] = a_star_search(self.grid_map, start, goal)
+        self.pedone['path_index'] = 0
