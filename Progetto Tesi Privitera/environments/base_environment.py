@@ -2,7 +2,6 @@ import numpy as np
 import pygame
 import os
 import random
-import heapq    #Libreria per usare la coda di priorità (min-heap)
 
 class BaseEnvironment:
     
@@ -175,14 +174,6 @@ class BaseEnvironment:
                 else:
                     self.traffic_lights[position] = 'red'
 
-    def update_pedone_position(self):
-        now = pygame.time.get_ticks()
-        if now - self.last_pedone_move > self.move_delay:
-            if self.pedone['path'] and self.pedone['path_index'] < len(self.pedone['path']) - 1:
-                self.pedone['path_index'] += 1
-                self.pedone['position'] = list(self.pedone['path'][self.pedone['path_index']])
-                self.last_pedone_move = now
-
     def display(self, episode=None, path=None):
         self.screen.blit(self.map_image, (0, 0))
         #self.clock.tick(self.FPS)
@@ -191,38 +182,34 @@ class BaseEnvironment:
             color = (255, 0, 0) if state == 'red' else (0, 255, 0)
             pygame.draw.circle(self.screen, color, (position[0] * self.cell_size + self.cell_size // 2, position[1] * self.cell_size + self.cell_size // 2), 10)
         
-        # Visualizza l'agente (pedone)
         rotated_agent_image = pygame.transform.rotate(self.agent_image, self.agent_rotation)
         rotated_rect = rotated_agent_image.get_rect()
         rotated_rect.center = (self.agent_position[0] * self.cell_size + self.cell_size // 2, self.agent_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_agent_image, rotated_rect)
         
-        # Aggiorna posizione pedone
         self.update_car_position()
-        self.update_pedone_position()
-
-        # Visualizza il pedone
-        self._display_pedone(self.pedone_image, self.pedone_position)  # Chiamata alla funzione per disegnare il pedone
-
-        # Visualizza le auto
+        
         for car in self.cars:
             rotation = self._calculate_rotation(car)
             self._display_car(self.car_image, car['position'], rotation)
         
-        # Se è stato passato un episodio, visualizza il numero dell'episodio
         if episode is not None:
-            episode_text = self.font.render(f'Episodio: {episode}', True, (50, 50, 50))  # grigio antracite
+            episode_text = self.font.render(f'Episodio: {episode}', True, (255, 255, 255))
             text_rect = episode_text.get_rect()
             text_rect.topright = (self.width * self.cell_size - 10, 10)
             self.screen.blit(episode_text, text_rect)
         
-        # Se è stato passato un percorso, disegna il percorso
         if path:
             for pos in path:
                 pygame.draw.circle(self.screen, (255, 0, 0), (pos[0] * self.cell_size + self.cell_size // 2, pos[1] * self.cell_size + self.cell_size // 2), 5)
         
         pygame.display.flip()
 
+    def _display_car(self, car_image, car_position, car_rotation):
+        rotated_car_image = pygame.transform.rotate(car_image, car_rotation)
+        rotated_rect_car = rotated_car_image.get_rect()
+        rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
+        self.screen.blit(rotated_car_image, rotated_rect_car)
 
     def reset_game(self):
             self.agent_position = self.start_position[:]
@@ -232,68 +219,3 @@ class BaseEnvironment:
             self.car_in_vision = False
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
-
-    #funzione utile nel utilizzare il percorso che dovrà compiere il pedone
-    def a_star_search(grid, start, goal):
-
-        def heuristic(a, b): #Questa funzione calcola quanto siamo "lontani" dal traguardo in modo semplice ed efficiente.
-            # Distanza di Manhattan
-            return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-        open_set = []   #Coda di priorità dei nodi da esplorare
-        heapq.heappush(open_set, (0, start))    #Inserisce lo start con priorità 0
-        came_from = {}  #Tiene traccia del percorso (da dove si è arrivati a ogni nodo)
-        g_score = {start: 0} #Costo reale per arrivare a un nodo (inizia con 0 per lo start)
-        f_score = {start: heuristic(start, goal)} #g + h, cioè costo reale + stimato
-
-        #Loop principale dell'algoritmo
-        while open_set:
-
-            current = heapq.heappop(open_set)[1]    #Prende il nodo con il punteggio f più basso
-
-            if current == goal:
-                
-                # bbiamo raggiunto il traguardo: ricostruiamo il percorso
-                path = []
-
-                while current in came_from:
-                    
-                    path.append(current)
-                    
-                    current = came_from[current]
-                
-                path.append(start)
-                path.reverse()
-                
-                return path
-
-            x, y = current
-            
-            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                
-                neighbor = (x + dx, y + dy) #Ogni nodo ha 4 vicini (sopra, sotto, destra, sinistra). 
-                
-                if (0 <= neighbor[0] < len(grid[0]) and 0 <= neighbor[1] < len(grid)):
-                    
-                    if grid[neighbor[1]][neighbor[0]] != 0: #Verifica che il vicino sia dentro i limiti della griglia e non sia un ostacolo (0 = cella libera, qualsiasi altro valore = ostacolo).
-                        
-                        continue  #È un ostacolo, salta
-                        
-                    tentative_g_score = g_score[current] + 1    #Costo per raggiungere il vicino
-                    
-                    #Se il nuovo percorso è migliore di uno già trovato oppure è un nodo nuovo, aggiorna i punteggi e aggiungilo alla coda.
-                    if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
-                        
-                        came_from[neighbor] = current
-                        g_score[neighbor] = tentative_g_score
-                        f_score[neighbor] = tentative_g_score + heuristic(neighbor, goal)
-                        heapq.heappush(open_set, (f_score[neighbor], neighbor))
-
-        return None  #Nessun percorso trovato
-
-    #funzione che deve calcolare il percorso del pedone, infatti la chiamo quando carico la mappa
-    def calculate_pedone_path(self):
-        start = tuple(self.pedone['position'])
-        goal = tuple(self.pedone['goal'])
-        self.pedone['path'] = a_star_search(self.grid_map, start, goal)
-        self.pedone['path_index'] = 0

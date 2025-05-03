@@ -24,16 +24,6 @@ class Map1Environment(BaseEnvironment):
         #Mi voglio creare un attributo per capire che mappa sto trattando
         self.map_name = "Città"
 
-        #costruttore per la classe pedone DA FIXARE
-        self.pedone = {
-        'position': [5, 10],      # Scegli una posizione iniziale (x, y)
-        'goal': [15, 3],          # Scegli una posizione di arrivo
-        'path': [],               #per salvare il percorso calcolato del pedone.
-        'path_index': 0           #per sapere dove si trova il pedone lungo il percorso.
-        }
-
-        self.calculate_pedone_path()
-
     def load_assets(self):
         # Carica tutte le immagini che ti servono
 
@@ -46,8 +36,8 @@ class Map1Environment(BaseEnvironment):
         self.agent_image = pygame.transform.scale(self.agent_image, (self.cell_size // 2, self.cell_size))
 
         # Carica l'immagine del pedone
-        self.agent_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/pedone.png")
-        self.agent_image = pygame.transform.scale(self.agent_image, (self.cell_size // 2, self.cell_size))
+        # self.agent_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/pedone.png")
+        # self.agent_image = pygame.transform.scale(self.agent_image, (self.cell_size // 2, self.cell_size))
 
         # Carica l'immagine originale
         self.car_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
