@@ -28,12 +28,11 @@ class Map1Environment(BaseEnvironment):
         self.pedone = {
         'position': [5, 10],      # Scegli una posizione iniziale (x, y)
         'goal': [15, 3],          # Scegli una posizione di arrivo
-        'path': [],               # Verrà calcolato poi
-        'path_index': 0           # Serve per farlo avanzare lungo il percorso
+        'path': [],               #per salvare il percorso calcolato del pedone.
+        'path_index': 0           #per sapere dove si trova il pedone lungo il percorso.
         }
 
-        self.path = []  #per salvare il percorso calcolato del pedone.
-        self.pedone_index = 0   #per sapere dove si trova il pedone lungo il percorso.
+        self.calculate_pedone_path()
 
     def load_assets(self):
         # Carica tutte le immagini che ti servono

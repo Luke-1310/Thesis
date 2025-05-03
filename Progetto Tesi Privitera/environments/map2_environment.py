@@ -29,8 +29,7 @@ class Map2Environment(BaseEnvironment):
         'path_index': 0           # Serve per farlo avanzare lungo il percorso
         }
 
-        self.path = []
-        self.pedone_index = 0
+        self.calculate_pedone_path()
 
 
     def load_assets(self):
