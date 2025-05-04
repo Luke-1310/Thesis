@@ -232,6 +232,12 @@ class BaseEnvironment:
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
 
+            #Reset dei pedoni
+            for pedone in self.pedoni:
+                if pedone.path:
+                    pedone.position = list(pedone.path[0])
+                pedone.arrived = False
+
 #ROBA NUOVA DA QUI IN GIU
 
     def heuristic(self, a, b):
