@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 import os
 import random
+import heapq
 
 class BaseEnvironment:
     
@@ -189,6 +190,17 @@ class BaseEnvironment:
         
         self.update_car_position()
         
+        #NUOVO CODICE PER I PEDONI
+        
+        # Aggiorna la posizione dei pedoni
+        self.update_pedoni(self.pedoni)
+
+        # Visualizza i pedoni
+        for pedone in self.pedoni:
+            x, y = pedone.position
+            self.screen.blit(self.pedone_image, (x * self.cell_size, y * self.cell_size))
+
+        #FINE
         for car in self.cars:
             rotation = self._calculate_rotation(car)
             self._display_car(self.car_image, car['position'], rotation)
@@ -219,3 +231,67 @@ class BaseEnvironment:
             self.car_in_vision = False
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
+
+#ROBA NUOVA DA QUI IN GIU
+
+    def heuristic(self, a, b):
+
+        # Distanza di Manhattan
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    def find_path(self, grid, start, goal, walkable_value=1):
+        """
+        Trova il percorso più breve da start a goal su una griglia.
+        grid: matrice 2D (lista di liste) dove walkable_value indica le celle percorribili.
+        start, goal: tuple (x, y)
+        walkable_value: valore che indica una cella percorribile (0 per pedoni, 1 per agenti)
+        """
+        width, height = self.width, self.height
+        neighbors = [(-1,0),(1,0),(0,-1),(0,1)]  # Su, giù, sinistra, destra
+
+        open_set = []
+        heapq.heappush(open_set, (0 + self.heuristic(start, goal), 0, start, [start]))
+        closed_set = set()
+
+        while open_set:
+            
+            _, cost, current, path = heapq.heappop(open_set)
+            
+            if current == goal:
+                return path
+            
+            if current in closed_set:
+                continue
+            
+            closed_set.add(current)
+
+            for dx, dy in neighbors:
+                nx, ny = current[0] + dx, current[1] + dy
+                
+                if 0 <= nx < width and 0 <= ny < height and grid[ny][nx] == walkable_value:
+                    next_pos = (nx, ny)
+                    
+                    if next_pos not in closed_set:
+                        heapq.heappush(open_set, (cost + 1 + self.heuristic(next_pos, goal), cost + 1, next_pos, path + [next_pos]))
+        
+        return None  # Nessun percorso trovato
+
+    def move_pedone_along_path(self, pedone, path):
+        """
+        Muove il pedone di un passo lungo il percorso.
+        pedone: dict con almeno la chiave 'position'
+        path: lista di tuple (x, y) che rappresenta il percorso da seguire
+        """
+        if not path or pedone['position'] == path[-1]:
+            return  # Già arrivato o nessun percorso
+        current_index = path.index(tuple(pedone['position']))
+        if current_index + 1 < len(path):
+            pedone['position'] = list(path[current_index + 1])
+
+    def update_pedoni(self, pedoni):
+        """
+        Aggiorna la posizione di tutti i pedoni lungo i loro percorsi.
+        pedoni: lista di oggetti Pedone
+        """
+        for pedone in pedoni:
+            pedone.step()

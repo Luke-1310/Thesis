@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 import os
 from environments.base_environment import BaseEnvironment
+from environments.pedone import Pedone
 
 class Map2Environment(BaseEnvironment):
     
@@ -20,6 +21,14 @@ class Map2Environment(BaseEnvironment):
         self.create_grid()
 
         self.map_name = "Foresta"
+
+        #NUOVA ROBA (DA VEDERE)     
+        self.pedoni = []
+        start = (0, 0)
+        goal = (47, 24)
+        path = self.find_path(self.map_pedone, start, goal, walkable_value=1)
+        print("Percorso pedone:", path)
+        self.pedoni.append(Pedone(start, goal, path))
 
     def load_assets(self):
         # Carica tutte le immagini che ti servono

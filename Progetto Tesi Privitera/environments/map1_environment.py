@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 import os
 from environments.base_environment import BaseEnvironment
+from environments.pedone import Pedone
 
 #ATTENZIONE IL FORMATO è COLONNA,RIGA
 
@@ -24,6 +25,15 @@ class Map1Environment(BaseEnvironment):
         #Mi voglio creare un attributo per capire che mappa sto trattando
         self.map_name = "Città"
 
+        #NUOVA ROBA (DA VEDERE)     
+        self.pedoni = []
+        start = (0, 0)
+        goal = (47, 21)
+        path = self.find_path(self.map_pedone, start, goal, walkable_value=1)
+        print("Percorso pedone:", path)
+        self.pedoni.append(Pedone(start, goal, path))
+
+
     def load_assets(self):
         # Carica tutte le immagini che ti servono
 
@@ -37,7 +47,7 @@ class Map1Environment(BaseEnvironment):
 
         # Carica l'immagine del pedone
         self.pedone_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/pedone.png")
-        self.pedone_image = pygame.transform.scale(self.pedone_image, (self.cell_size // 2, self.cell_size))
+        self.pedone_image = pygame.transform.scale(self.pedone_image, (self.cell_size // 1.5, self.cell_size))
 
         # Carica l'immagine originale
         self.car_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
