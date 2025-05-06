@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
 import os
+import random
 from environments.base_environment import BaseEnvironment
 from environments.pedone import Pedone
 
@@ -22,13 +23,32 @@ class Map2Environment(BaseEnvironment):
 
         self.map_name = "Foresta"
 
-        #NUOVA ROBA (DA VEDERE)     
+            
         self.pedoni = []
-        start = (0, 0)
-        goal = (47, 24)
-        path = self.find_path(self.map_pedone, start, goal, walkable_value=1)
-        print("Percorso pedone:", path)
-        self.pedoni.append(Pedone(start, goal, path))
+        num_pedoni = 3  # Numero di pedoni generati
+
+        for _ in range(num_pedoni):
+            
+            # Trova una posizione di partenza valida
+            while True:
+                
+                start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                
+                if self.map_pedone[start[1]][start[0]] in (1, 2):
+                    break
+            
+            # Trova una posizione di arrivo valida e diversa dalla partenza
+            while True:
+                
+                goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                
+                if self.map_pedone[goal[1]][goal[0]] in (1, 2) and goal != start:
+                    break
+            
+            path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
+            
+            if path:  # Solo se esiste un percorso
+                self.pedoni.append(Pedone(start, goal, path))
 
     def load_assets(self):
         # Carica tutte le immagini che ti servono
@@ -199,7 +219,7 @@ class Map2Environment(BaseEnvironment):
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
         ]
-        
+
         # Inizializza la matrice dei costi
         self.cost_matrix = []
         for y, row in enumerate(self.map_pedone):
