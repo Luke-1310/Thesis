@@ -203,6 +203,7 @@ class Map1Environment(BaseEnvironment):
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
+        # Inizializza la matrice dei costi
         self.cost_matrix = []
         for y, row in enumerate(self.map_pedone):
             cost_row = []
