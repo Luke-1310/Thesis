@@ -245,12 +245,13 @@ class BaseEnvironment:
         # Distanza di Manhattan
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-    def find_path(self, grid, start, goal, walkable_value=1):
+    def find_path(self, grid, start, goal, walkable_value=(1,2), cost_matrix=None):
         """
         Trova il percorso più breve da start a goal su una griglia.
         grid: matrice 2D (lista di liste) dove walkable_value indica le celle percorribili.
         start, goal: tuple (x, y)
         walkable_value: valore che indica una cella percorribile (0 per pedoni, 1 per agenti)
+        cost_matrix: matrice 2D con il costo di ogni cella (opzionale)
         """
         width, height = self.width, self.height
         neighbors = [(-1,0),(1,0),(0,-1),(0,1)]  # Su, giù, sinistra, destra
@@ -260,26 +261,27 @@ class BaseEnvironment:
         closed_set = set()
 
         while open_set:
-            
             _, cost, current, path = heapq.heappop(open_set)
-            
+
             if current == goal:
                 return path
-            
+
             if current in closed_set:
                 continue
-            
+
             closed_set.add(current)
 
             for dx, dy in neighbors:
                 nx, ny = current[0] + dx, current[1] + dy
-                
-                if 0 <= nx < width and 0 <= ny < height and grid[ny][nx] == walkable_value:
+
+                if 0 <= nx < width and 0 <= ny < height and grid[ny][nx] in (1,2):
                     next_pos = (nx, ny)
-                    
+
                     if next_pos not in closed_set:
-                        heapq.heappush(open_set, (cost + 1 + self.heuristic(next_pos, goal), cost + 1, next_pos, path + [next_pos]))
-        
+                        # Usa il costo personalizzato se fornito, altrimenti costo 1
+                        step_cost = cost_matrix[ny][nx] if cost_matrix else 1
+                        heapq.heappush(open_set, (cost + step_cost + self.heuristic(next_pos, goal), cost + step_cost, next_pos, path + [next_pos]))
+
         return None  # Nessun percorso trovato
 
     def move_pedone_along_path(self, pedone, path):
@@ -300,4 +302,4 @@ class BaseEnvironment:
         pedoni: lista di oggetti Pedone
         """
         for pedone in pedoni:
-            pedone.step()
+            pedone.step(self.map_pedone)

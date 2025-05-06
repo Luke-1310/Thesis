@@ -199,7 +199,20 @@ class Map2Environment(BaseEnvironment):
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
         ]
-            
+        
+        self.cost_matrix = []
+        for y, row in enumerate(self.map_pedone):
+            cost_row = []
+            for x, val in enumerate(row):
+                if val == 0:
+                    cost_row.append(float('inf'))  # Non percorribile
+                elif x == 0 or x == self.width-1 or y == 0 or y == self.height-1:
+                    cost_row.append(5)  # Costo alto per i bordi
+                elif val == 2:
+                    cost_row.append(2)  # Costo intermedio per le strisce
+                else:
+                    cost_row.append(1)  # Costo normale
+            self.cost_matrix.append(cost_row) 
 
         # Matrice dei reward (premi e penalità)
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
