@@ -238,68 +238,61 @@ class BaseEnvironment:
                     pedone.position = list(pedone.path[0])
                 pedone.arrived = False
 
-#ROBA NUOVA DA QUI IN GIU
-
+#-----------------------------------------------------
+    
+    #Funzione per calcolare la distanza tra due punti, utilizza la distanza di Manhattan, che è la somma delle differenze assolute delle coordinate x e y
     def heuristic(self, a, b):
 
-        # Distanza di Manhattan
+        #Distanza di Manhattan
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
+    #Utilizza l'algoritmo A* per trovare il percorso più breve tra due punti in una griglia
     def find_path(self, grid, start, goal, walkable_value=(1,2), cost_matrix=None):
-        """
-        Trova il percorso più breve da start a goal su una griglia.
-        grid: matrice 2D (lista di liste) dove walkable_value indica le celle percorribili.
-        start, goal: tuple (x, y)
-        walkable_value: valore che indica una cella percorribile (0 per pedoni, 1 per agenti)
-        cost_matrix: matrice 2D con il costo di ogni cella (opzionale)
-        """
-        width, height = self.width, self.height
-        neighbors = [(-1,0),(1,0),(0,-1),(0,1)]  # Su, giù, sinistra, destra
+        
+        width, height = self.width, self.height 
+        neighbors = [(-1,0),(1,0),(0,-1),(0,1)]  #Su, giù, sinistra, destra
 
-        open_set = []
-        heapq.heappush(open_set, (0 + self.heuristic(start, goal), 0, start, [start]))
-        closed_set = set()
+        open_set = [] #Lista di priorità per i nodi da esplorare
+        heapq.heappush(open_set, (0 + self.heuristic(start, goal), 0, start, [start])) 
+        closed_set = set() #Insieme dei nodi già esplorati 
 
         while open_set:
-            _, cost, current, path = heapq.heappop(open_set)
+            _, cost, current, path = heapq.heappop(open_set) #Estrae il nodo con il costo più basso dalla lista di priorità 
 
             if current == goal:
                 return path
 
-            if current in closed_set:
+            if current in closed_set: #Se il nodo è già stato esplorato, salta
                 continue
 
-            closed_set.add(current)
+            closed_set.add(current) #Aggiunge il nodo all'insieme dei nodi esplorati
 
             for dx, dy in neighbors:
                 nx, ny = current[0] + dx, current[1] + dy
 
-                if 0 <= nx < width and 0 <= ny < height and grid[ny][nx] in (1,2):
-                    next_pos = (nx, ny)
+                if 0 <= nx < width and 0 <= ny < height and grid[ny][nx] in (1,2): #Controlla se il nodo è all'interno della griglia e se è percorribile
+                    next_pos = (nx, ny) 
 
-                    if next_pos not in closed_set:
-                        # Usa il costo personalizzato se fornito, altrimenti costo 1
+                    if next_pos not in closed_set: #Controlla se il nodo non è già stato esplorato
                         step_cost = cost_matrix[ny][nx] if cost_matrix else 1
-                        heapq.heappush(open_set, (cost + step_cost + self.heuristic(next_pos, goal), cost + step_cost, next_pos, path + [next_pos]))
 
-        return None  # Nessun percorso trovato
+                        #Aggiunge il nodo alla lista di priorità con il costo totale (costo attuale + costo del passo + distanza al goal)
+                        heapq.heappush(open_set, (cost + step_cost + self.heuristic(next_pos, goal), cost + step_cost, next_pos, path + [next_pos])) 
+        return None  #Nessun percorso trovato
 
+    #Muovo il pedone lungo il percorso calcolato
     def move_pedone_along_path(self, pedone, path):
-        """
-        Muove il pedone di un passo lungo il percorso.
-        pedone: dict con almeno la chiave 'position'
-        path: lista di tuple (x, y) che rappresenta il percorso da seguire
-        """
-        if not path or pedone['position'] == path[-1]:
-            return  # Già arrivato o nessun percorso
+        
+        if not path or pedone['position'] == path[-1]: #Controlla se il pedone è già arrivato alla fine del percorso
+            return  
+        
         current_index = path.index(tuple(pedone['position']))
-        if current_index + 1 < len(path):
-            pedone['position'] = list(path[current_index + 1])
+        
+        if current_index + 1 < len(path): 
+            pedone['position'] = list(path[current_index + 1]) #Sposta il pedone alla prossima cella del percorso
 
+    #Aggiorna la posizione di tutti i pedoni lungo i loro percorsi
     def update_pedoni(self, pedoni):
-        """
-        Aggiorna la posizione di tutti i pedoni lungo i loro percorsi.
-        pedoni: lista di oggetti Pedone
-        """
+
         for pedone in pedoni:
             pedone.step(self.map_pedone)
