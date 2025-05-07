@@ -25,24 +25,22 @@ class Map2Environment(BaseEnvironment):
 
             
         self.pedoni = []
-        num_pedoni = 3  # Numero di pedoni generati
+        num_pedoni = 2
 
+        #Randomizzazione della posizione dei pedoni
         for _ in range(num_pedoni):
             
-            # Trova una posizione di partenza valida
             while True:
                 
                 start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
-                
-                if self.map_pedone[start[1]][start[0]] in (1, 2):
+                #controllo se la posizione è valida, non voglio che il pedone parta sulle striscie o sulla strada
+                if self.map_pedone[start[1]][start[0]] == 1:
                     break
             
-            # Trova una posizione di arrivo valida e diversa dalla partenza
             while True:
                 
                 goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
-                
-                if self.map_pedone[goal[1]][goal[0]] in (1, 2) and goal != start:
+                if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
                     break
             
             path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
