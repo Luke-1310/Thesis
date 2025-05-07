@@ -1,5 +1,6 @@
 class Pedone:
     def __init__(self, start, goal, path=None, wait_steps = 5):
+
         self.path = path or []
         self.position = list(self.path[0]) if self.path else list(start)
         self.goal = list(goal)
@@ -9,7 +10,6 @@ class Pedone:
         self.wait_steps = wait_steps
         self.wait_counter = 0
 
-    #IL PEDONE VA LUNGO I BORDI PORCACCIODIDDIO 
     def step(self, map_pedone):
         
         if not self.path or self.arrived:

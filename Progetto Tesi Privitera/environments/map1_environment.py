@@ -64,7 +64,10 @@ class Map1Environment(BaseEnvironment):
 
         # Carica l'immagine del pedone
         self.pedone_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/pedone.png")
-        self.pedone_image = pygame.transform.scale(self.pedone_image, (self.cell_size // 1.5, self.cell_size))
+
+        scale_factor = 0.9  # Fattore di scala per il pedone
+        size = int(self.cell_size * scale_factor)  # Calcola la dimensione in base alla cella
+        self.pedone_image = pygame.transform.scale(self.pedone_image, (size, size))
 
         # Carica l'immagine originale
         self.car_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
