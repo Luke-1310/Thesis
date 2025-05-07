@@ -3,6 +3,7 @@ import pygame
 import os
 import random
 import heapq
+from environments.pedone import Pedone
 
 class BaseEnvironment:
     
@@ -232,11 +233,21 @@ class BaseEnvironment:
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
 
-            #Reset dei pedoni
-            for pedone in self.pedoni:
-                if pedone.path:
-                    pedone.position = list(pedone.path[0])
-                pedone.arrived = False
+            # Rigenera i pedoni con nuove posizioni e percorsi
+            self.pedoni = []
+            num_pedoni = 2  # o quanti ne vuoi
+            for i in range(num_pedoni):
+                while True:
+                    start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                    if self.map_pedone[start[1]][start[0]] == 1:
+                        break
+                while True:
+                    goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                    if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
+                        break
+                path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
+                if path:
+                    self.pedoni.append(Pedone(start, goal, path))
 
 #-----------------------------------------------------
     

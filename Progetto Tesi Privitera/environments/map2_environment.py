@@ -60,7 +60,7 @@ class Map2Environment(BaseEnvironment):
         self.agent_image = pygame.transform.scale(self.agent_image, (self.cell_size // 2, self.cell_size))
 
         #Carica le immagini dei pedoni
-        self.pedone_uomo_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/pedone.png")
+        self.pedone_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/pedone.png")
 
         scale_factor = 0.9  # Fattore di scala per il pedone
         size = int(self.cell_size * scale_factor)  # Calcola la dimensione in base alla cella

@@ -9,6 +9,9 @@ class Pedone:
         self.wait_steps = wait_steps #numero di frame da aspettare prima di muoversi
         self.wait_counter = 0 
 
+        self.pre_cross_wait = 0 #Contatore per far attendere il pedone prima dell'incrocio
+        self.pre_cross_max = 3 #Aspetta 3 frame prima di attraversare l'incrocio
+
     def step(self, map_pedone):
         
         if not self.path or self.arrived:
@@ -16,37 +19,39 @@ class Pedone:
 
         x, y = self.position
         
-        #Se la cella è una striscia pedonale (2), aspetta più a lungo 
+        #Se il pedone è arrivato alla destinazione non si muove più
+        if self.position == self.goal:
+            self.arrived = True
+            return
+        
+        # Attesa prima di attraversare la striscia pedonale
+        if len(self.path) > 1:
+            next_x, next_y = self.path[1]
+            if map_pedone[next_y][next_x] == 2 and map_pedone[y][x] != 2:
+                if self.pre_cross_wait < self.pre_cross_max:
+                    self.pre_cross_wait += 1
+                    return
+                else:
+                    self.pre_cross_wait = 0  # resetta il contatore dopo l'attesa
+
+        # Attesa sulle strisce pedonali (più lunga)
         if map_pedone[y][x] == 2:
-            
             self.wait_counter += 1
-            
             if self.wait_counter < self.wait_steps + 5:
                 return
-            
             self.wait_counter = 0
 
-        #Se la cella è un marciapiede (1), aspetta un frame e poi si muove
+        # Attesa su marciapiede (normale)
         else:
-            
             self.wait_counter += 1
-            
             if self.wait_counter < self.wait_steps:
                 return
-            
-            self.wait_counter = 0 # resetta il contatore
+            self.wait_counter = 0
 
-        #Controlla se il pedone è arrivato alla sua destinazione     
-        try:
-            current_index = self.path.index(tuple(self.position))
-
-            #Controlla se il pedone è arrivato alla sua destinazione
-            if current_index + 1 < len(self.path):
-                self.position = list(self.path[current_index + 1]) #sposta il pedone alla prossima cella del percorso
-
-            #Se il pedone è arrivato alla fine del percorso, imposta arrived su True
-            if self.position == list(self.path[-1]):
+        # Avanza di una cella lungo il percorso
+        if len(self.path) > 1:
+            self.position = list(self.path[1])
+            self.path.pop(0)
+            if self.position == self.goal:
                 self.arrived = True
-        
-        except ValueError:
-            self.position = list(self.path[0])
+
