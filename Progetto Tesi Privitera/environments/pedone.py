@@ -1,5 +1,5 @@
 class Pedone:
-    def __init__(self, start, goal, path=None, wait_steps = 5):
+    def __init__(self, start, goal, path=None, wait_steps = 5, path_callback=None):
         
         self.path = path or [] #Se non viene fornito un percorso, inizia da una lista vuota
         self.position = list(self.path[0]) if self.path else list(start) 
@@ -12,6 +12,8 @@ class Pedone:
         self.pre_cross_wait = 0 #Contatore per far attendere il pedone prima dell'incrocio
         self.pre_cross_max = 3 #Aspetta 3 frame prima di attraversare l'incrocio
 
+        self.path_callback = path_callback  # funzione per generare un nuovo path dopo che il pedone è arrivato
+
     def step(self, map_pedone):
         
         if not self.path or self.arrived:
@@ -21,7 +23,19 @@ class Pedone:
         
         #Se il pedone è arrivato alla destinazione non si muove più
         if self.position == self.goal:
-            self.arrived = True
+            # Quando arriva, scegli una nuova destinazione e path
+            if self.path_callback:
+                new_goal, new_path = self.path_callback(tuple(self.position))
+                if new_path:
+                    self.goal = list(new_goal)
+                    self.path = new_path
+                    self.arrived = False
+                    self.wait_counter = 0
+                    self.pre_cross_wait = 0
+                else:
+                    self.arrived = True
+            else:
+                self.arrived = True
             return
         
         # Attesa prima di attraversare la striscia pedonale

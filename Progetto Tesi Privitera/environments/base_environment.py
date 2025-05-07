@@ -224,6 +224,19 @@ class BaseEnvironment:
         rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
 
+    def pedone_path_callback(start):
+        
+        while True:
+            
+            goal = (random.randint(0, width-1), random.randint(0, height-1))
+            
+            if map_pedone[goal[1]][goal[0]] == 1 and goal != start:
+                break
+        
+        path = find_path(map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=cost_matrix)
+        
+        return goal, path
+
     def reset_game(self):
             self.agent_position = self.start_position[:]
             self.agent_rotation = 0
@@ -235,7 +248,7 @@ class BaseEnvironment:
 
             # Rigenera i pedoni con nuove posizioni e percorsi
             self.pedoni = []
-            num_pedoni = 2  # o quanti ne vuoi
+            num_pedoni = 2
             for i in range(num_pedoni):
                 while True:
                     start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
@@ -247,15 +260,15 @@ class BaseEnvironment:
                         break
                 path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
                 if path:
-                    self.pedoni.append(Pedone(start, goal, path))
+                    self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback))
 
 #-----------------------------------------------------
     
     #Funzione per calcolare la distanza tra due punti, utilizza la distanza di Manhattan, che è la somma delle differenze assolute delle coordinate x e y
+    #Quindi quelle che andiamo a valutare solo le celle adiacenti (su, giù, sinistra, destra) e non quelle diagonali
     def heuristic(self, a, b):
 
-        #Distanza di Manhattan
-        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])#restituisce la somma delle differenze assolute delle coordinate x e y
 
     #Utilizza l'algoritmo A* per trovare il percorso più breve tra due punti in una griglia
     def find_path(self, grid, start, goal, walkable_value=(1,2), cost_matrix=None):
@@ -267,6 +280,7 @@ class BaseEnvironment:
         heapq.heappush(open_set, (0 + self.heuristic(start, goal), 0, start, [start])) 
         closed_set = set() #Insieme dei nodi già esplorati 
 
+        #Finché ci sono nodi da esplorare
         while open_set:
             _, cost, current, path = heapq.heappop(open_set) #Estrae il nodo con il costo più basso dalla lista di priorità 
 
@@ -289,6 +303,7 @@ class BaseEnvironment:
 
                         #Aggiunge il nodo alla lista di priorità con il costo totale (costo attuale + costo del passo + distanza al goal)
                         heapq.heappush(open_set, (cost + step_cost + self.heuristic(next_pos, goal), cost + step_cost, next_pos, path + [next_pos])) 
+
         return None  #Nessun percorso trovato
 
     #Muovo il pedone lungo il percorso calcolato
