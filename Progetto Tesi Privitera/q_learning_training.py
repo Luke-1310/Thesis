@@ -47,11 +47,23 @@ def train_agent(env, font):
             is_valid = env.get_next_location(action_index)
 
             if is_valid:
+            
                 reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+            
             elif not env.check_loss():
                 reward = -10
+            
             else:
-                reward = -1000
+                collision = env.check_collision_type()
+            
+                if collision == "car":
+                    reward = -1000
+            
+                elif collision == "pedone":
+                    reward = -1000
+            
+                else:
+                    reward = -1000  #penalità generica per evitare che il programma resti senza un valore di reward
 
             old_q_value = env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index]
             temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])) - old_q_value

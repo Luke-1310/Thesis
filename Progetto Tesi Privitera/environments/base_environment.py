@@ -156,14 +156,27 @@ class BaseEnvironment:
         return False
     
     def check_loss(self):
+
+        # Controlla se l'agente è in collisione con un'auto
         for car in self.cars:
+            
             # Controlla se l'agente e la macchina sono nella stessa posizione
             if self.agent_position == car['position']:
                 return True
+            
             # Controlla se la posizione precedente della macchina è uguale alla posizione precedente dell'agente
             car_index = self.cars.index(car)
+            
+            #Tale controllo è necessario perché se due auto si incrociano, la collisione non viene rilevata visto che sono in due celle diverse
+            #Ma in realtà sono passate una sopra l'altra
             if (self.agent_position == self.prev_car_position[car_index] and car['position'] == self.prev_agent_position):
                 return True
+        
+        # Collisione con pedoni
+        for pedone in self.pedoni:
+            if self.agent_position == pedone.position:
+                return True
+
         return False
 
     def update_traffic_lights(self):
@@ -322,3 +335,18 @@ class BaseEnvironment:
 
         for pedone in pedoni:
             pedone.step(self.map_pedone)
+
+    def check_collision_type(self):
+        
+        for car in self.cars:
+            if self.agent_position == car['position']:
+                return "car"
+            car_index = self.cars.index(car)
+            if (self.agent_position == self.prev_car_position[car_index] and car['position'] == self.prev_agent_position):
+                return "car"
+        
+        for pedone in self.pedoni:
+            if self.agent_position == pedone.position:
+                return "pedone"
+        
+        return None
