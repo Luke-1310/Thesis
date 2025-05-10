@@ -224,16 +224,16 @@ class BaseEnvironment:
         rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
 
-    def pedone_path_callback(start):
+    def pedone_path_callback(self, start):
         
         while True:
             
-            goal = (random.randint(0, width-1), random.randint(0, height-1))
+            goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
             
-            if map_pedone[goal[1]][goal[0]] == 1 and goal != start:
+            if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
                 break
         
-        path = find_path(map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=cost_matrix)
+        path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
         
         return goal, path
 

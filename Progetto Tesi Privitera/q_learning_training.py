@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
 import os
+import sys
 from environments.map1_environment import Map1Environment
 from environments.map2_environment import Map2Environment
 
