@@ -25,30 +25,6 @@ class Map1Environment(BaseEnvironment):
 
         #Mi voglio creare un attributo per capire che mappa sto trattando
         self.map_name = "Città"
-    
-        self.pedoni = []
-        num_pedoni = 2
-
-        #Randomizzazione della posizione dei pedoni
-        for _ in range(num_pedoni):
-            
-            while True:
-                
-                start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
-                #controllo se la posizione è valida, non voglio che il pedone parta sulle striscie o sulla strada
-                if self.map_pedone[start[1]][start[0]] == 1:
-                    break
-            
-            while True:
-                
-                goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
-                if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
-                    break
-            
-            path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
-            
-            if path:  # Solo se esiste un percorso
-                self.pedoni.append(Pedone(start, goal, path))
 
 
     def load_assets(self):
