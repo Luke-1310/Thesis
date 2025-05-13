@@ -1,5 +1,5 @@
 class Pedone:
-    def __init__(self, start, goal, path=None, wait_steps = 5, path_callback=None):
+    def __init__(self, start, goal, path=None, wait_steps = 5, path_callback=None, error_prob=0.0):
         
         self.path = path or [] #Se non viene fornito un percorso, inizia da una lista vuota
         self.position = list(self.path[0]) if self.path else list(start) 
@@ -13,6 +13,8 @@ class Pedone:
         self.pre_cross_max = 3 #Aspetta 3 frame prima di attraversare l'incrocio
 
         self.path_callback = path_callback  # funzione per generare un nuovo path dopo che il pedone è arrivato
+
+        self.error_prob = error_prob  # Probabilità di sbagliare (0.0 = mai, 1.0 = sempre)
 
     def step(self, map_pedone):
 
@@ -39,28 +41,30 @@ class Pedone:
         x, y = self.position
         
         if self.position == self.goal:
-            
             # Quando arriva, scegli una nuova destinazione e path
-            
             if self.path_callback:
-                new_goal, new_path = self.path_callback(tuple(self.position)) 
                 
-                if new_path:
-                    self.goal = list(new_goal)
-                    self.path = new_path  # Nuovo percorso
-                    self.arrived = False
-                    self.wait_counter = 0
-                    self.pre_cross_wait = 0
-                    return  # Importante: ritorna dopo aver impostato un nuovo path
-                
-                else:
-                    # Nessuna nuova destinazione disponibile
+                try:
+                    result = self.path_callback(tuple(self.position))
+                    
+                    # Verifica che il risultato sia una tupla valida
+                    if result and isinstance(result, tuple) and len(result) == 2:
+                        new_goal, new_path = result
+                        if new_path:
+                            self.goal = list(new_goal)
+                            self.path = new_path
+                            self.arrived = False
+                            self.wait_counter = 0
+                            self.pre_cross_wait = 0
+                            return
+                    # Se arriviamo qui, qualcosa è andato storto
+                    self.arrived = True
+                except:
+                    # Gestisci eventuali eccezioni
                     self.arrived = True
             else:
-                # Se non c'è una callback, il pedone è arrivato e non può più muoversi
                 self.arrived = True
-            
-            return  # Ritorna dopo aver gestito l'arrivo
+            return  #Ritorna dopo aver gestito l'arrivo
             
         
         if len(self.path) > 1:
