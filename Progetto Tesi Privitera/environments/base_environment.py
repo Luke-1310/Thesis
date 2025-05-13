@@ -261,17 +261,24 @@ class BaseEnvironment:
 
             # Rigenera i pedoni con nuove posizioni e percorsi
             self.pedoni = []
-            num_pedoni = 2
+            num_pedoni = 3
+            
             for i in range(num_pedoni):
+                
                 while True:
+                    
                     start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
-                    if self.map_pedone[start[1]][start[0]] == 1:
+                    if self.map_pedone[start[1]][start[0]] == 1: #controllo se la cella è percorribile
                         break
+               
                 while True:
+                    
                     goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
                     if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
                         break
+                
                 path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
+                
                 if path:
                     self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback))
 
