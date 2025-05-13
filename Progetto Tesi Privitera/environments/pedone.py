@@ -21,11 +21,13 @@ class Pedone:
 
         x, y = self.position
         
-        #Se il pedone è arrivato alla destinazione non si muove più
+        #Se il pedone è arrivato alla sua destinazione
         if self.position == self.goal:
+            
             # Quando arriva, scegli una nuova destinazione e path
             if self.path_callback:
-                new_goal, new_path = self.path_callback(tuple(self.position))
+                new_goal, new_path = self.path_callback(tuple(self.position)) 
+                
                 if new_path:
                     self.goal = list(new_goal)
                     self.path = new_path
@@ -33,10 +35,11 @@ class Pedone:
                     self.wait_counter = 0
                     self.pre_cross_wait = 0
                 else:
+                    #Nessuna nuova destinazione disponibile
                     self.arrived = True
             else:
+                # Se non c'è una callback, il pedone è arrivato e non può più muoversi
                 self.arrived = True
-            return
         
         # Attesa prima di attraversare la striscia pedonale
         if len(self.path) > 1:
