@@ -7,7 +7,7 @@ from environments.pedone import Pedone
 
 class BaseEnvironment:
     
-    def __init__(self, width, height, cell_size, screen = None):
+    def __init__(self, width, height, cell_size, screen = None, pedone_error_prob=0.0):
 
         # Inizializzazione dei parametri di base dell'ambiente
         self.width = width
@@ -22,6 +22,8 @@ class BaseEnvironment:
         self.prev_agent_position = []
         self.prev_car_position = []
         self.car_in_vision = False # flag che indica se un'auto è nella zona visiva dell'agente
+
+        self.pedone_error_prob = pedone_error_prob  # Valore tra 0.0 e 1.0
 
     def load_assets(self):
         #Carica immagini e risorse
@@ -191,7 +193,6 @@ class BaseEnvironment:
 
     def display(self, episode=None, path=None):
         self.screen.blit(self.map_image, (0, 0))
-        #self.clock.tick(self.FPS)
         
         for position, state in self.traffic_lights.items():
             color = (255, 0, 0) if state == 'red' else (0, 255, 0)
@@ -203,10 +204,6 @@ class BaseEnvironment:
         self.screen.blit(rotated_agent_image, rotated_rect)
         
         self.update_car_position()
-        
-        #NUOVO CODICE PER I PEDONI
-        
-        # Aggiorna la posizione dei pedoni
         self.update_pedoni(self.pedoni)
 
         # Visualizza i pedoni
@@ -214,7 +211,6 @@ class BaseEnvironment:
             x, y = pedone.position
             self.screen.blit(self.pedone_image, (x * self.cell_size, y * self.cell_size))
 
-        #FINE
         for car in self.cars:
             rotation = self._calculate_rotation(car)
             self._display_car(self.car_image, car['position'], rotation)
@@ -237,18 +233,52 @@ class BaseEnvironment:
         rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
 
-    def pedone_path_callback(self, start):
-        
-        while True:
+    def pedone_path_callback(self, start, can_make_errors=True):
+
+        #Ogni pedone ha una probabilità di errore da 0 a 1 scelto dal menu
+        try:
+            make_error = can_make_errors and random.random() < self.pedone_error_prob #Probabilità di errore
+
+            while True:
+                goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                
+                #Se deve sbagliare allora la cella deve essere non percorribile
+                if make_error:
+                    if self.map_pedone[goal[1]][goal[0]] == 0 and goal != start:
+                        break
+               #Se non deve sbagliare allora la cella deve essere percorribile
+                else:
+                    if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
+                        break
             
-            goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+            #Modifica temporaneamente la mappa per trovare un percorso anche se include celle non percorribili
+            if make_error:
+                
+                #Trova la cella percorribile più vicina alla destinazione
+                nearest_valid = self._find_nearest_valid_cell(goal)
+                
+                #Partendo dalla posizione attuale del pedone, trova un percorso verso la cella percorribile più vicina (SEGUE LE REGOLE NORMALI) 
+                valid_path = self.find_path(self.map_pedone, start, nearest_valid, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
+                
+                if valid_path:
+                    #Si parte dall'ultima cella del percorso valido e si crea un segmento di errore verso la destinazione errata
+                    error_segment = self._create_error_segment(valid_path[-1], goal)
+                    if error_segment:
+                        full_path = valid_path + error_segment[1:]  # Unisci i percorsi
+                        return goal, full_path
             
-            if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
-                break
-        
-        path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
-        
-        return goal, path
+            #Percorso normale (senza errori)
+            path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
+            
+            if path:
+                return goal, path
+            else:
+                #Se non trova un percorso, ritorna al punto di partenza
+                return start, [start]
+                
+        except Exception as e:
+            print(f"Errore in pedone_path_callback: {e}")
+            return start, [start]  # Fallback sicuro
 
     def reset_game(self):
             self.agent_position = self.start_position[:]
@@ -280,7 +310,9 @@ class BaseEnvironment:
                 path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
                 
                 if path:
-                    self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback))
+                    # Assegna un valore di errore casuale tra 0 e self.pedone_error_prob
+                    error_prob = random.random() * self.pedone_error_prob
+                    self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
 
 #-----------------------------------------------------
     
@@ -357,3 +389,48 @@ class BaseEnvironment:
                 return "pedone"
         
         return None
+    
+    #------------------------------------------------------ 
+
+    #Funzione per trovare la cella percorribile più vicina a una cella non percorribile
+    def _find_nearest_valid_cell(self, target):
+        
+        min_dist = float('inf') #Inizializza la distanza minima a infinito
+        nearest = None
+        
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.map_pedone[y][x] == 1:  # Se è percorribile
+                    dist = abs(x - target[0]) + abs(y - target[1])  # Manhattan distance
+                    if dist < min_dist:
+                        min_dist = dist
+                        nearest = (x, y)
+        
+        return nearest
+
+    #Crea una sequenza di coordinate per rappresentare il movimento verso la destinazione errata
+    def _create_error_segment(self, valid_end, error_target):
+        
+        if valid_end == error_target:
+            return [valid_end]
+        
+        path = [valid_end]
+        current = list(valid_end)
+        
+        # Calcola direzione verso l'errore
+        steps_needed = max(abs(current[0] - error_target[0]), abs(current[1] - error_target[1]))
+        if steps_needed == 0:
+            return path
+        
+        dx = (error_target[0] - current[0]) / steps_needed
+        dy = (error_target[1] - current[1]) / steps_needed
+        
+        # Crea percorso diretto verso l'errore
+        for i in range(1, steps_needed + 1):
+            next_x = int(current[0] + dx * i)
+            next_y = int(current[1] + dy * i)
+            path.append((next_x, next_y))
+        
+        return path
+    
+    
