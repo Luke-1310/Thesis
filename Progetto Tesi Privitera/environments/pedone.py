@@ -15,36 +15,59 @@ class Pedone:
         self.path_callback = path_callback  # funzione per generare un nuovo path dopo che il pedone è arrivato
 
     def step(self, map_pedone):
-        
-        if not self.path or self.arrived:
-            return
 
-        x, y = self.position
+        #Questa porzione di codice permette di eseguire un passo ogni 5 frame
+        self.frame_counter = getattr(self, 'frame_counter', 0) + 1 
         
-        #Se il pedone è arrivato alla sua destinazione
-        if self.position == self.goal:
-            
-            # Quando arriva, scegli una nuova destinazione e path
+        if self.frame_counter < 5: 
+            return
+        
+        self.frame_counter = 0
+
+        if not self.path:
+            # Se non c'è un percorso ma c'è una callback, chiedi un nuovo percorso
             if self.path_callback:
-                new_goal, new_path = self.path_callback(tuple(self.position)) 
-                
+                new_goal, new_path = self.path_callback(tuple(self.position))
                 if new_path:
                     self.goal = list(new_goal)
                     self.path = new_path
                     self.arrived = False
                     self.wait_counter = 0
                     self.pre_cross_wait = 0
+            return
+
+        x, y = self.position
+        
+        if self.position == self.goal:
+            
+            # Quando arriva, scegli una nuova destinazione e path
+            
+            if self.path_callback:
+                new_goal, new_path = self.path_callback(tuple(self.position)) 
+                
+                if new_path:
+                    self.goal = list(new_goal)
+                    self.path = new_path  # Nuovo percorso
+                    self.arrived = False
+                    self.wait_counter = 0
+                    self.pre_cross_wait = 0
+                    return  # Importante: ritorna dopo aver impostato un nuovo path
+                
                 else:
-                    #Nessuna nuova destinazione disponibile
+                    # Nessuna nuova destinazione disponibile
                     self.arrived = True
             else:
                 # Se non c'è una callback, il pedone è arrivato e non può più muoversi
                 self.arrived = True
+            
+            return  # Ritorna dopo aver gestito l'arrivo
+            
         
-        # Attesa prima di attraversare la striscia pedonale
         if len(self.path) > 1:
             next_x, next_y = self.path[1]
+            
             if map_pedone[next_y][next_x] == 2 and map_pedone[y][x] != 2:
+                
                 if self.pre_cross_wait < self.pre_cross_max:
                     self.pre_cross_wait += 1
                     return
@@ -54,13 +77,16 @@ class Pedone:
         # Attesa sulle strisce pedonali (più lunga)
         if map_pedone[y][x] == 2:
             self.wait_counter += 1
+            
             if self.wait_counter < self.wait_steps + 5:
                 return
+            
             self.wait_counter = 0
 
         # Attesa su marciapiede (normale)
         else:
             self.wait_counter += 1
+            
             if self.wait_counter < self.wait_steps:
                 return
             self.wait_counter = 0

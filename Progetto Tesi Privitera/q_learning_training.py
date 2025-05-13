@@ -39,6 +39,7 @@ def train_agent(env, font):
             pygame.event.pump()
 
             env.update_traffic_lights()  # Aggiorna lo stato dei semafori
+            env.update_pedoni(env.pedoni) # Aggiorna lo stato dei pedoni, chiamando il metodo update_pedoni dell'ambiente passando la lista dei pedoni
 
             action_index = env.get_next_action(epsilon)
             old_position = env.agent_position[:]
