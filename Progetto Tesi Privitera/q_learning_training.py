@@ -182,7 +182,7 @@ def evaluate_agent(env, font):
         pygame.time.wait(2000)
 
 
-#1 Implementazione di una interfaccia grafica per il menù
+#Implementazione di una interfaccia grafica per il menù
 def show_menu(screen, font):
     
     #Bottoni
@@ -190,7 +190,8 @@ def show_menu(screen, font):
         {"text": "1. Allenare l'agente", "action": "train"},
         {"text": "2. Mostrare risultati", "action": "show"},
         {"text": "3. Scegli la mappa", "action": "select_map"},
-        {"text": "4. Uscire", "action": "exit"}
+        {"text": "4. Impostazioni pedoni", "action": "settings"},
+        {"text": "5. Uscire", "action": "exit"}
     ]
 
     button_rects = []
@@ -215,7 +216,7 @@ def show_menu(screen, font):
     pygame.display.flip()
     return button_rects
 
-#2 Funzione per poter stampare del testo sul schermo
+#Funzione per poter stampare del testo sul schermo
 def draw_text(screen, text, x, y, font, color=(0, 0, 0), center=False):
 
     text_surface = font.render(text, True, color)
@@ -225,7 +226,7 @@ def draw_text(screen, text, x, y, font, color=(0, 0, 0), center=False):
 
     screen.blit(text_surface, (x, y))
 
-#3 Funzione per poter chiedere all'utente, dal punto di vista grafico, se vuole o no vedere i risultati
+#Funzione per poter chiedere all'utente, dal punto di vista grafico, se vuole o no vedere i risultati
 def show_yes_no_dialog(screen, font, question):
     screen.fill((255, 255, 255))
 
@@ -273,7 +274,7 @@ available_maps = {
     "2": ("Foresta", Map2Environment),
 }
 
-#4 funzione che mi permette di scegliere la mappa
+#Funzione che mi permette di scegliere la mappa
 def select_map(screen, font):
     selecting = True
     selected_map_class = None
@@ -344,9 +345,9 @@ def select_map(screen, font):
                             pygame.time.delay(2000)
                             selecting = False
 
-    return selected_map_class#(screen) così facendo sto restituendo la classe, con (screen) la istanzio
+    return selected_map_class #ritorna la classe della mappa selezionata
 
-#5 Funzione per stampare il resoconto del training del agente
+#Funzione per stampare il resoconto del training del agente
 def show_training_results(screen, font, episode_data):
     import sys  # Assicurati che sys sia importato nel file
 
@@ -406,7 +407,49 @@ def show_training_results(screen, font, episode_data):
         pygame.display.flip()
         clock.tick(60)
 
-
+def show_settings(screen, font, current_error_prob):
+    setting = True
+    error_prob = current_error_prob
+    
+    while setting:
+        screen.fill((255, 255, 255))
+        draw_text(screen, "Impostazioni Pedoni", 0, 50, font, center=True)
+        
+        # Mostra il valore attuale
+        draw_text(screen, f"Probabilità di errore: {error_prob:.2f}", 0, 150, font, center=True)
+        
+        # Pulsanti per aumentare/diminuire
+        less_rect = pygame.Rect(screen.get_width() // 2 - 200, 200, 100, 50)
+        more_rect = pygame.Rect(screen.get_width() // 2 + 100, 200, 100, 50)
+        ok_rect = pygame.Rect(screen.get_width() // 2 - 100, 300, 200, 50)
+        
+        pygame.draw.rect(screen, (200, 0, 0), less_rect)  # Rosso
+        pygame.draw.rect(screen, (0, 200, 0), more_rect)  # Verde
+        pygame.draw.rect(screen, (0, 128, 255), ok_rect)  # Blu
+        
+        draw_text(screen, "-", less_rect.centerx - 10, less_rect.centery - 10, font, center=False)
+        draw_text(screen, "+", more_rect.centerx - 10, more_rect.centery - 10, font, center=False)
+        draw_text(screen, "Conferma", ok_rect.centerx - 50, ok_rect.centery - 10, font, center=False)
+        
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return error_prob
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                
+                if less_rect.collidepoint(pos):
+                    error_prob = max(0.0, error_prob - 0.05)
+                
+                if more_rect.collidepoint(pos):
+                    error_prob = min(1.0, error_prob + 0.05)
+                
+                if ok_rect.collidepoint(pos):
+                    return error_prob
+    
+    return error_prob
 
 def main():
 
@@ -466,10 +509,12 @@ def main():
             
             if selected_environment_class:
                 env = selected_environment_class(48, 25, 32, screen)
-                #print("Ambiente selezionato correttamente!")  # questo ora verrà eseguito
 
         elif action == "exit":
             running = False
+
+        elif action == "settings":
+            env.pedone_error_prob = show_settings(screen, font, env.pedone_error_prob)
 
     pygame.quit()
 
