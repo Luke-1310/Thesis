@@ -441,10 +441,10 @@ def show_settings(screen, font, current_error_prob):
                 pos = pygame.mouse.get_pos()
                 
                 if less_rect.collidepoint(pos):
-                    error_prob = max(0.0, error_prob - 0.05)
+                    error_prob = max(0.0, error_prob - 0.10)
                 
                 if more_rect.collidepoint(pos):
-                    error_prob = min(1.0, error_prob + 0.05)
+                    error_prob = min(1.0, error_prob + 0.10)
                 
                 if ok_rect.collidepoint(pos):
                     return error_prob
