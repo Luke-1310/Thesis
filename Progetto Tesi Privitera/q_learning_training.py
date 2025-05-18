@@ -514,6 +514,7 @@ def main():
             running = False
 
         elif action == "settings":
+            #error_prob = 0.3 ci dice che i pedoni hanno il 30% di probabilità di sbagliare
             env.pedone_error_prob = show_settings(screen, font, env.pedone_error_prob)
 
     pygame.quit()
