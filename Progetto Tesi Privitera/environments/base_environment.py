@@ -313,8 +313,6 @@ class BaseEnvironment:
                     # Assegna un valore di errore casuale tra 0 e self.pedone_error_prob
                     error_prob = random.random() * self.pedone_error_prob
                     self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
-
-#-----------------------------------------------------
     
     #Funzione per calcolare la distanza tra due punti, utilizza la distanza di Manhattan, che è la somma delle differenze assolute delle coordinate x e y
     #Quindi quelle che andiamo a valutare solo le celle adiacenti (su, giù, sinistra, destra) e non quelle diagonali
@@ -369,11 +367,11 @@ class BaseEnvironment:
         if current_index + 1 < len(path): 
             pedone['position'] = list(path[current_index + 1]) #Sposta il pedone alla prossima cella del percorso
 
-    #Aggiorna la posizione di tutti i pedoni lungo i loro percorsi
+    #Aggiorna la posizione di tutti i pedoni lungo i loro percorsi e passo i semafori
     def update_pedoni(self, pedoni):
 
         for pedone in pedoni:
-            pedone.step(self.map_pedone)
+            pedone.step(self.map_pedone, self.traffic_lights)
 
     def check_collision_type(self):
         
@@ -389,8 +387,6 @@ class BaseEnvironment:
                 return "pedone"
         
         return None
-    
-    #------------------------------------------------------ 
 
     #Funzione per trovare la cella percorribile più vicina a una cella non percorribile
     def _find_nearest_valid_cell(self, target):
