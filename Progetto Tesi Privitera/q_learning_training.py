@@ -190,7 +190,7 @@ def show_menu(screen, font):
         {"text": "1. Allenare l'agente", "action": "train"},
         {"text": "2. Mostrare risultati", "action": "show"},
         {"text": "3. Scegli la mappa", "action": "select_map"},
-        {"text": "4. Impostazioni pedoni", "action": "settings"},
+        {"text": "4. Impostazioni", "action": "settings"},
         {"text": "5. Uscire", "action": "exit"}
     ]
 
