@@ -291,7 +291,7 @@ class BaseEnvironment:
 
             # Rigenera i pedoni con nuove posizioni e percorsi
             self.pedoni = []
-            num_pedoni = 3
+            num_pedoni = 2
             
             for i in range(num_pedoni):
                 
