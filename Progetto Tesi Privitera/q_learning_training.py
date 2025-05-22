@@ -22,7 +22,7 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 3#2000
+    num_episodes= 200#2000
 
     episode_data = []
 
@@ -58,13 +58,13 @@ def train_agent(env, font):
                 collision = env.check_collision_type()
             
                 if collision == "car":
-                    reward = -1000
+                    reward = -100
             
                 elif collision == "pedone":
-                    reward = -1000
+                    reward = -100
             
                 else:
-                    reward = -1000  #penalità generica per evitare che il programma resti senza un valore di reward
+                    reward = -100  #penalità generica per evitare che il programma resti senza un valore di reward
 
             old_q_value = env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index]
             temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])) - old_q_value
@@ -73,12 +73,11 @@ def train_agent(env, font):
             env.display(episode)
             pygame.time.wait(1)  # Breve pausa per gestire gli eventi
 
-
             total_reward += reward
             steps += 1
 
-            #if steps > 1000:  # Previeni episodi troppo lunghi
-                #break
+            if steps > 2000:  # Previeni episodi troppo lunghi
+                break
 
         screen = env.screen
         screen.fill((255, 255, 255))  # Pulisce lo schermo
