@@ -55,7 +55,7 @@ def train_agent(env):
     total_collisions = 0
 
     # Loop per gestire ogni episodio fino a 10000
-    for episode in range(100): #10000
+    for episode in range(50): #10000
         env.reset_game()
         total_reward = 0
         steps = 0
