@@ -5,6 +5,9 @@ import sys
 from environments.map1_environment import Map1Environment
 from environments.map2_environment import Map2Environment
 
+import matplotlib.pyplot as plt       # Per disegnare i grafici
+import pandas as pd                   # Per gestire e analizzare dati in modo ordinato
+
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
@@ -22,9 +25,12 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 200#2000
+    num_episodes= 5#2000
 
-    episode_data = []
+    episode_data = [] #lista che contiene (episodio, step, reward)
+
+    collison_list = []  # Nuova lista per tenere traccia delle collisioni cumulative
+    cumulative_count = 0
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -48,7 +54,6 @@ def train_agent(env, font):
             is_valid = env.get_next_location(action_index)
 
             if is_valid:
-            
                 reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
             
             elif not env.check_loss():
@@ -56,13 +61,16 @@ def train_agent(env, font):
             
             else:
                 collision = env.check_collision_type()
-            
+                print(f"Collisione con: {collision}")
+                
                 if collision == "car":
                     reward = -100
+                    print("Collisione con l'auto")
             
                 elif collision == "pedone":
                     reward = -100
-            
+                    print("Collisione con il pedone")
+
                 else:
                     reward = -100  #penalità generica per evitare che il programma resti senza un valore di reward
 
@@ -76,24 +84,25 @@ def train_agent(env, font):
             total_reward += reward
             steps += 1
 
-            if steps > 2000:  # Previeni episodi troppo lunghi
-                break
+            #if steps > 3000:  # Previeni episodi troppo lunghi
+                #break
 
+        if env.check_loss():  # Aggiungi questa condizione per incrementare il contatore delle collisioni
+            cumulative_count += 1
+        
         screen = env.screen
         screen.fill((255, 255, 255))  # Pulisce lo schermo
         
+        collison_list.append(cumulative_count)  # Aggiungi il numero cumulativo di collisioni
+
         print(f"Episodio: {episode}")
         print(f"Steps: {steps}")
         print(f"Total Reward: {total_reward}")
-
         pygame.display.flip()
-
         epsilon = max(0.01, epsilon * 0.9995)  # Delay più lento
 
         #ok ora mi salvo in un array tutti i dati relativi a ciascun episodio (episodio, step, reward) per poi mostrarli in futuro
         episode_data.append((episode, steps, total_reward))  # <-- Dopo ogni episodio
-
-        #episode_data = np.array(episode_data)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi visualizzare i risultati?"):
         evaluate_agent(env, font)
@@ -108,6 +117,10 @@ def train_agent(env, font):
         draw_text(screen, f"Q-table {env.map_name} salvata con successo.", 20, 20, font, (0, 150, 0))
         pygame.display.flip()
         pygame.time.wait(1500)
+
+    
+    if show_yes_no_dialog(env.screen, font, "Vuoi salvare i grafici del training?"):
+        show_training_charts(env.screen, font, episode_data, collison_list)
 
     return episode_data
 
@@ -449,6 +462,63 @@ def show_settings(screen, font, current_error_prob):
                     return error_prob
     
     return error_prob
+
+def show_training_charts(screen, font, episode_data, cumulative_collisions):
+    # Salva la modalità di visualizzazione corrente
+    current_mode = pygame.display.get_surface().get_size()
+    
+    # Usa il backend Agg di matplotlib che non interferisce con la visualizzazione
+    import matplotlib
+    matplotlib.use('Agg')
+    
+    # Estrai i dati
+    episodes = [data[0] for data in episode_data]
+    steps = [data[1] for data in episode_data]
+    rewards = [data[2] for data in episode_data]
+    
+    # Crea due grafici (uno sopra l'altro) con dimensioni 10x12
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
+
+    # Converti la lista dei rewards in una Series di pandas
+    rewards_series = pd.Series(rewards)
+
+    # Calcola la media mobile con una finestra di 50 per le ricompense
+    rewards_rolling = rewards_series.rolling(window=50, min_periods=1).mean()
+
+    # Grafico delle ricompense con media mobile
+    ax1.plot(range(1, len(rewards) + 1), rewards, alpha=0.3, label='Ricompensa')
+    ax1.plot(range(1, len(rewards) + 1), rewards_rolling, label='Media mobile')
+    ax1.set_title('Ricompensa Totale per Episodio')
+    ax1.set_xlabel('Episodio')
+    ax1.set_ylabel('Ricompensa Totale')
+    ax1.legend()
+    ax1.grid(True)
+
+    # Grafico delle collisioni cumulative
+    ax2.plot(range(1, len(cumulative_collisions) + 1), cumulative_collisions)
+    ax2.set_title('Collisioni Cumulative')
+    ax2.set_xlabel('Episodio')
+    ax2.set_ylabel('Numero di Collisioni')
+    ax2.grid(True)
+
+    # Aggiusta lo spazio tra i sottografici
+    plt.tight_layout(pad=3.0)
+    
+    # Salva l'immagine direttamente come PNG
+    result_path = f"training_results_new.png"
+    plt.savefig(result_path)
+    
+    # Chiudi la figura per liberare memoria
+    plt.close(fig)
+    plt.close('all')  # Chiudi tutte le figure per sicurezza
+    
+    # Mostra il messaggio di conferma
+    screen.fill((255, 255, 255))
+    draw_text(screen, f"Grafico salvato come: {result_path}", 0, 100, font, (0, 150, 0), center=True)
+    pygame.display.flip()
+    pygame.time.wait(2000)  # Mostra il messaggio per 2 secondi
+    
+    return
 
 def main():
 

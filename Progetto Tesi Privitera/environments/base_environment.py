@@ -175,11 +175,13 @@ class BaseEnvironment:
             #Tale controllo è necessario perché se due auto si incrociano, la collisione non viene rilevata visto che sono in due celle diverse
             #Ma in realtà sono passate una sopra l'altra
             if (self.agent_position == self.prev_car_position[car_index] and car['position'] == self.prev_agent_position):
+                print("Collisione con auto!")
                 return True
         
         # Collisione con pedoni
         for pedone in self.pedoni:
             if self.agent_position == pedone.position:
+                print("Collisione con pedone!")
                 return True
 
         return False
