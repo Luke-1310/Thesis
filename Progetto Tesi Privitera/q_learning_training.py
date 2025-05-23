@@ -25,7 +25,7 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes = 250  # Come nel file 5
+    num_episodes = 5  # Come nel file 5
     episode_data = []  # lista che contiene (episodio, step, reward)
     collision_list = []  # Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
@@ -110,7 +110,7 @@ def train_agent(env, font):
         pygame.time.wait(1500)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi salvare i grafici del training?"):
-        show_training_charts(env.screen, font, episode_data, collision_list)
+        show_training_charts(env.screen, font, episode_data, collision_list, env)
 
     return episode_data
 
@@ -452,7 +452,8 @@ def show_settings(screen, font, current_error_prob):
     
     return error_prob
 
-def show_training_charts(screen, font, episode_data, cumulative_collisions):
+def show_training_charts(screen, font, episode_data, cumulative_collisions, env):
+    
     # Salva la modalità di visualizzazione corrente
     current_mode = pygame.display.get_surface().get_size()
     
@@ -464,14 +465,28 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions):
     episodes = [data[0] for data in episode_data]
     steps = [data[1] for data in episode_data]
     rewards = [data[2] for data in episode_data]
+
+    # Raccolta dati da aggiungere al grafico
+    map_name = env.map_name
+    num_pedoni = len(env.pedoni)
+    prob_change_percorso = env.route_change_probability  # ← CORRETTO
+    error_prob_pedoni = env.pedone_error_prob
     
-    # Crea due grafici (uno sopra l'altro) con dimensioni 10x12
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
+    # Calcola statistiche
+    num_episodes = len(episode_data)
+    total_collisions = cumulative_collisions[-1] if cumulative_collisions else 0
+    avg_reward = sum(rewards) / len(rewards) if rewards else 0
+    max_reward = max(rewards) if rewards else 0
+    
+    # Conta goal raggiunti (reward molto alto)
+    goals_reached = sum(1 for _, _, reward in episode_data if reward > 1000)
+    success_rate = (goals_reached / num_episodes * 100) if num_episodes > 0 else 0
+
+    # Crea due grafici (uno sopra l'altro)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
 
     # Converti la lista dei rewards in una Series di pandas
     rewards_series = pd.Series(rewards)
-
-    # Calcola la media mobile con una finestra di 50 per le ricompense
     rewards_rolling = rewards_series.rolling(window=50, min_periods=1).mean()
 
     # Grafico delle ricompense con media mobile
@@ -490,22 +505,34 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions):
     ax2.set_ylabel('Numero di Collisioni')
     ax2.grid(True)
 
-    # Aggiusta lo spazio tra i sottografici
-    plt.tight_layout(pad=3.0)
+    # INFORMAZIONI SOTTO I GRAFICI (senza emoji)
+    # Prima riga di informazioni
+    info_line1 = f"Mappa: {map_name} | Pedoni: {num_pedoni} | Prob. errore pedoni: {error_prob_pedoni:.1%} | Prob. cambio percorso auto: {prob_change_percorso:.1%}"
     
-    # Salva l'immagine direttamente come PNG
-    result_path = f"training_results_new_250.png"
-    plt.savefig(result_path)
+    # Seconda riga di informazioni
+    info_line2 = f"Episodi: {num_episodes} | Goal raggiunti: {goals_reached} ({success_rate:.1f}%) | Collisioni: {total_collisions} | Reward medio: {avg_reward:.1f} | Reward max: {max_reward:.1f}"
+
+    # Aggiungi le informazioni sotto i grafici
+    fig.text(0.5, 0.04, info_line1, fontsize=10, ha='center', fontweight='bold')
+    fig.text(0.5, 0.01, info_line2, fontsize=10, ha='center', fontweight='bold')
+
+    # Aggiusta il layout per lasciare spazio sotto
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.18)  # Lascia spazio sotto per le informazioni
+
+    # Nome file più descrittivo
+    result_path = f"training_{map_name}_{num_episodes}ep_{num_pedoni}ped_{total_collisions}col.png"
+    plt.savefig(result_path, dpi=300, bbox_inches='tight')
     
     # Chiudi la figura per liberare memoria
     plt.close(fig)
-    plt.close('all')  # Chiudi tutte le figure per sicurezza
+    plt.close('all')
     
     # Mostra il messaggio di conferma
     screen.fill((255, 255, 255))
     draw_text(screen, f"Grafico salvato come: {result_path}", 0, 100, font, (0, 150, 0), center=True)
     pygame.display.flip()
-    pygame.time.wait(2000)  # Mostra il messaggio per 2 secondi
+    pygame.time.wait(2000)
     
     return
 
