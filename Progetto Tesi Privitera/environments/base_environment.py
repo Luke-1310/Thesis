@@ -103,7 +103,7 @@ class BaseEnvironment:
         #Controlla se la posizione attuale è un incrocio (presente in self.incroci) e se un numero casuale tra 0 e 1 è inferiore a 0.5 → questo crea una probabilità del 50% che il cambio percorso avvenga.
         #SOGGETTO A MODIFICHE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if current_position in self.incroci and random.random() < 0.2:
+        if current_position in self.incroci and random.random() < 0:
             possible_routes = [route for route in self.incroci[current_position] if route != self.percorsi[car['route']]]#Recupera tutte le rotte alternative disponibili all’incrocio, escludendo quella attuale dell’auto
             #se c'è un percorso disponibile, lo cambia
             if possible_routes:
@@ -121,11 +121,15 @@ class BaseEnvironment:
 
     def get_next_action(self, epsilon):
         if np.random.random() < epsilon:
-            return np.random.randint(4)
-        else:
+            # CORRETTO: Sfruttamento quando random < epsilon
             cars_visible = int(self.is_car_in_vision())
-            return np.argmax(self.q_values[self.agent_position[1], self.agent_position[0], :, cars_visible])
-        
+            return np.argmax(self.q_values[self.agent_position[1], self.agent_position[0], cars_visible])
+        else:
+            # CORRETTO: Esplorazione quando random >= epsilon
+            return np.random.randint(4)
+        # Prima era al contrario, favorendo l'esplorazione quando random < epsilon 
+        # e lo sfruttamento quando random >= epsilon
+
     def is_valid_move(self, new_position):
         if 0 <= new_position[0] < self.width and 0 <= new_position[1] < self.height:
             return self.map[new_position[1]][new_position[0]] == 1
@@ -167,6 +171,7 @@ class BaseEnvironment:
             
             # Controlla se l'agente e la macchina sono nella stessa posizione
             if self.agent_position == car['position']:
+                #print("Collisione con auto!")
                 return True
             
             # Controlla se la posizione precedente della macchina è uguale alla posizione precedente dell'agente
@@ -175,13 +180,13 @@ class BaseEnvironment:
             #Tale controllo è necessario perché se due auto si incrociano, la collisione non viene rilevata visto che sono in due celle diverse
             #Ma in realtà sono passate una sopra l'altra
             if (self.agent_position == self.prev_car_position[car_index] and car['position'] == self.prev_agent_position):
-                print("Collisione con auto!")
+                #print("Collisione con auto!")
                 return True
         
         # Collisione con pedoni
         for pedone in self.pedoni:
             if self.agent_position == pedone.position:
-                print("Collisione con pedone!")
+                #print("Collisione con pedone!")
                 return True
 
         return False
@@ -296,7 +301,7 @@ class BaseEnvironment:
 
             # Rigenera i pedoni con nuove posizioni e percorsi
             self.pedoni = []
-            num_pedoni = 2
+            num_pedoni = 0
             
             for i in range(num_pedoni):
                 

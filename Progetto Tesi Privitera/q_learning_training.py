@@ -25,18 +25,17 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes= 5#2000
-
-    episode_data = [] #lista che contiene (episodio, step, reward)
-
-    collison_list = []  # Nuova lista per tenere traccia delle collisioni cumulative
-    cumulative_count = 0
+    num_episodes = 250  # Come nel file 5
+    episode_data = []  # lista che contiene (episodio, step, reward)
+    collision_list = []  # Lista per tenere traccia delle collisioni cumulative
+    collision_count = 0
 
     for episode in range(num_episodes):
         env.reset_game()
         total_reward = 0
         steps = 0
 
+        # STRUTTURA DEL FILE 5: while not (env.check_loss() or env.check_goal())
         while not (env.check_loss() or env.check_goal()):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -45,7 +44,7 @@ def train_agent(env, font):
             pygame.event.pump()
 
             env.update_traffic_lights()  # Aggiorna lo stato dei semafori
-            env.update_pedoni(env.pedoni) # Aggiorna lo stato dei pedoni, chiamando il metodo update_pedoni dell'ambiente passando la lista dei pedoni
+            env.update_pedoni(env.pedoni)  # Aggiorna lo stato dei pedoni (AGGIUNTO)
 
             action_index = env.get_next_action(epsilon)
             old_position = env.agent_position[:]
@@ -53,62 +52,54 @@ def train_agent(env, font):
             env.is_car_in_vision()  # Aggiorna lo stato di car_in_vision
             is_valid = env.get_next_location(action_index)
 
+            # LOGICA DEL FILE 5: Gestione reward nel ciclo
             if is_valid:
                 reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-            
             elif not env.check_loss():
                 reward = -10
-            
             else:
-                collision = env.check_collision_type()
-                print(f"Collisione con: {collision}")
-                
-                if collision == "car":
-                    reward = -100
-                    print("Collisione con l'auto")
-            
-                elif collision == "pedone":
-                    reward = -100
-                    print("Collisione con il pedone")
+                reward = -100  # Questo reward non verrà mai usato nel ciclo
 
-                else:
-                    reward = -100  #penalità generica per evitare che il programma resti senza un valore di reward
-
+            # Q-learning update
             old_q_value = env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index]
             temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])) - old_q_value
             new_q_value = old_q_value + (learning_rate * temporal_difference)
             env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index] = new_q_value
+            
             env.display(episode)
             pygame.time.wait(1)  # Breve pausa per gestire gli eventi
 
             total_reward += reward
             steps += 1
 
-            #if steps > 3000:  # Previeni episodi troppo lunghi
-                #break
+            if steps > 1000:  # Previeni episodi troppo lunghi (come nel file 5)
+                break
 
-        if env.check_loss():  # Aggiungi questa condizione per incrementare il contatore delle collisioni
-            cumulative_count += 1
+        # LOGICA DEL FILE 5: Gestione collisioni DOPO il ciclo
+        if env.check_loss():
+            collision_count += 1
+
+        # Aggiungi il conteggio cumulativo alla lista
+        collision_list.append(collision_count)
         
         screen = env.screen
         screen.fill((255, 255, 255))  # Pulisce lo schermo
-        
-        collison_list.append(cumulative_count)  # Aggiungi il numero cumulativo di collisioni
 
         print(f"Episodio: {episode}")
         print(f"Steps: {steps}")
         print(f"Total Reward: {total_reward}")
+        print(f"Collisioni totali: {collision_count}")
+        print(f"---------------------")
+        
         pygame.display.flip()
-        epsilon = max(0.01, epsilon * 0.9995)  # Delay più lento
+        epsilon = max(0.01, epsilon * 0.9995)  # Decay dell'epsilon (come nel file 5)
 
-        #ok ora mi salvo in un array tutti i dati relativi a ciascun episodio (episodio, step, reward) per poi mostrarli in futuro
-        episode_data.append((episode, steps, total_reward))  # <-- Dopo ogni episodio
+        episode_data.append((episode, steps, total_reward))
 
     if show_yes_no_dialog(env.screen, font, "Vuoi visualizzare i risultati?"):
         evaluate_agent(env, font)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi salvare la Q-table?"):
-        #devo crearmi un file col nome personalizzato in base alla mappa
         filename = f'q_table_{env.map_name}.npy'
         np.save(filename, env.q_values)
 
@@ -118,12 +109,10 @@ def train_agent(env, font):
         pygame.display.flip()
         pygame.time.wait(1500)
 
-    
     if show_yes_no_dialog(env.screen, font, "Vuoi salvare i grafici del training?"):
-        show_training_charts(env.screen, font, episode_data, collison_list)
+        show_training_charts(env.screen, font, episode_data, collision_list)
 
     return episode_data
-
 
 def show_results(env, font):
     try:
@@ -505,7 +494,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions):
     plt.tight_layout(pad=3.0)
     
     # Salva l'immagine direttamente come PNG
-    result_path = f"training_results_new.png"
+    result_path = f"training_results_new_250.png"
     plt.savefig(result_path)
     
     # Chiudi la figura per liberare memoria
