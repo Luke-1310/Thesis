@@ -25,7 +25,7 @@ class BaseEnvironment:
 
         self.route_change_probability = 0.0 # probabilità di cambiare percorso per le auto nemiche
 
-        self.pedone_error_prob = pedone_error_prob  # Valore tra 0.0 e 1.0
+        self.pedone_error_prob = pedone_error_prob  # Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
 
     def load_assets(self):
         #Carica immagini e risorse
@@ -245,6 +245,11 @@ class BaseEnvironment:
         rotated_rect_car.center = (car_position[0] * self.cell_size + self.cell_size // 2, car_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_car_image, rotated_rect_car)
 
+    #Il pedone decide se sbagliare: 
+        #All'inizio: Quando viene creato
+        #Durante il movimento: Quando arriva a destinazione e calcola un nuovo percorso
+        #Non ogni step: L'errore è nella destinazione, non nel movimento
+    
     def pedone_path_callback(self, start, can_make_errors=True):
 
         #Ogni pedone ha una probabilità di errore da 0 a 1 scelto dal menu
@@ -254,11 +259,12 @@ class BaseEnvironment:
             while True:
                 goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
                 
-                #Se deve sbagliare allora la cella deve essere non percorribile
+                #Se deve sbagliare cerca una cella che deve essere non percorribile
                 if make_error:
                     if self.map_pedone[goal[1]][goal[0]] == 0 and goal != start:
                         break
-               #Se non deve sbagliare allora la cella deve essere percorribile
+                
+                #Se non deve sbagliare allora una cella che deve essere percorribile
                 else:
                     if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
                         break
@@ -273,7 +279,7 @@ class BaseEnvironment:
                 valid_path = self.find_path(self.map_pedone, start, nearest_valid, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
                 
                 if valid_path:
-                    #Si parte dall'ultima cella del percorso valido e si crea un segmento di errore verso la destinazione errata
+                    # Dall'ultima cella valida, va direttamente verso l'errore
                     error_segment = self._create_error_segment(valid_path[-1], goal)
                     if error_segment:
                         full_path = valid_path + error_segment[1:]  # Unisci i percorsi
@@ -322,7 +328,7 @@ class BaseEnvironment:
                 path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
                 
                 if path:
-                    # Assegna un valore di errore casuale tra 0 e self.pedone_error_prob
+                    # Assegna un valore di errore casuale tra 0 e self.pedone_error_prob -> Ogni pedone ha una tendenza all'errore diversa
                     error_prob = random.random() * self.pedone_error_prob
                     self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
     
@@ -425,7 +431,7 @@ class BaseEnvironment:
         path = [valid_end]
         current = list(valid_end)
         
-        # Calcola direzione verso l'errore
+        #Calcola quanti passi servono per raggiungere l'errore
         steps_needed = max(abs(current[0] - error_target[0]), abs(current[1] - error_target[1]))
         if steps_needed == 0:
             return path
