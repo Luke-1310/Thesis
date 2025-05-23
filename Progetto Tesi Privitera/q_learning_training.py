@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
 import os
+from datetime import datetime
 import sys
 from environments.map1_environment import Map1Environment
 from environments.map2_environment import Map2Environment
@@ -25,7 +26,7 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes = 5  # Come nel file 5
+    num_episodes = 7  # Come nel file 5
     episode_data = []  # lista che contiene (episodio, step, reward)
     collision_list = []  # Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
@@ -513,15 +514,23 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     info_line2 = f"Episodi: {num_episodes} | Goal raggiunti: {goals_reached} ({success_rate:.1f}%) | Collisioni: {total_collisions} | Reward medio: {avg_reward:.1f} | Reward max: {max_reward:.1f}"
 
     # Aggiungi le informazioni sotto i grafici
-    fig.text(0.5, 0.04, info_line1, fontsize=10, ha='center', fontweight='bold')
-    fig.text(0.5, 0.01, info_line2, fontsize=10, ha='center', fontweight='bold')
+    fig.text(0.5, 0.06, info_line1, fontsize=10, ha='center', fontweight='bold')
+    fig.text(0.5, 0.02, info_line2, fontsize=10, ha='center', fontweight='bold')
 
     # Aggiusta il layout per lasciare spazio sotto
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.18)  # Lascia spazio sotto per le informazioni
+    plt.subplots_adjust(bottom=0.20)  # Lascia spazio sotto per le informazioni
+
+    results_folder = "Progetto Tesi Privitera/training_charts"  #Nome cartella per i risultati
+    if not os.path.exists(results_folder):
+        os.makedirs(results_folder)
 
     # Nome file più descrittivo
-    result_path = f"training_{map_name}_{num_episodes}ep_{num_pedoni}ped_{total_collisions}col.png"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"training_{map_name}_{num_episodes}ep_{num_pedoni}ped_{total_collisions}col_{timestamp}.png"
+    
+    result_path = f"{results_folder}/{filename}"  # ← Versione semplice
+    
     plt.savefig(result_path, dpi=300, bbox_inches='tight')
     
     # Chiudi la figura per liberare memoria
