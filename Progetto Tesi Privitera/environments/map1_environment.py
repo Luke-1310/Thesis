@@ -232,8 +232,7 @@ class Map1Environment(BaseEnvironment):
         for y in range(self.height):
             for x in range(self.width):
                 if self.map[y][x] == 0:
-                    self.reward_matrix[y][x] = -10
-        #print(Map1Environment.__module__)  LO STAMPA   
+                    self.reward_matrix[y][x] = -10  
 
         def reset_game(self):
             super().reset_game()
