@@ -214,7 +214,7 @@ class Map2Environment(BaseEnvironment):
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
         # Assegna +100000 alle celle del parcheggio
         for pos in self.goal_positions:
-            self.reward_matrix[pos[1]][pos[0]] = 10000000
+            self.reward_matrix[pos[1]][pos[0]] = 10000
         
         # Assegna -10 ai bordi delle strade
         for y in range(self.height):
