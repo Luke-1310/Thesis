@@ -26,7 +26,7 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes = 7  # Come nel file 5
+    num_episodes = 2000  # Come nel file 5
     episode_data = []  # lista che contiene (episodio, step, reward)
     collision_list = []  # Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
@@ -102,7 +102,11 @@ def train_agent(env, font):
 
     if show_yes_no_dialog(env.screen, font, "Vuoi salvare la Q-table?"):
         filename = f'q_table_{env.map_name}.npy'
-        np.save(filename, env.q_values)
+        path_q_table = f"Progetto Tesi Privitera/q_tables/{filename}"  
+
+        full_path_q_table = f"{path_q_table}/{filename}"
+
+        np.save(full_path_q_table, env.q_values)
 
         screen = env.screen
         screen.fill((255, 255, 255))
@@ -118,7 +122,8 @@ def train_agent(env, font):
 def show_results(env, font):
     try:
         filename = f'q_table_{env.map_name}.npy'  # Nome file dipende dalla mappa
-        q_table = np.load(filename)
+        path_q_table = f"Progetto Tesi Privitera/q_tables/{filename}"  # Percorso della Q-table
+        q_table = np.load(path_q_table)
 
         screen = env.screen
         screen.fill((255, 255, 255))
@@ -527,7 +532,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
 
     # Nome file più descrittivo
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"training_{map_name}_{num_episodes}ep_{num_pedoni}ped_{total_collisions}col_{timestamp}.png"
+    filename = f"training_{map_name}_{num_episodes}ep_{timestamp}.png"
     
     result_path = f"{results_folder}/{filename}"  # ← Versione semplice
     

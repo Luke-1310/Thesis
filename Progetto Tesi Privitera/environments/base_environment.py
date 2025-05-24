@@ -23,8 +23,8 @@ class BaseEnvironment:
         self.prev_car_position = []
         self.car_in_vision = False # flag che indica se un'auto è nella zona visiva dell'agente
 
-        self.route_change_probability = 0.0 # probabilità di cambiare percorso per le auto nemiche
-
+        self.route_change_probability = 0.2 # probabilità di cambiare percorso per le auto nemiche
+        self.num_pedoni = 2
         self.pedone_error_prob = pedone_error_prob  # Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
 
     def load_assets(self):
@@ -309,9 +309,8 @@ class BaseEnvironment:
 
             # Rigenera i pedoni con nuove posizioni e percorsi
             self.pedoni = []
-            num_pedoni = 0
             
-            for i in range(num_pedoni):
+            for i in range(self.num_pedoni):
                 
                 while True:
                     
