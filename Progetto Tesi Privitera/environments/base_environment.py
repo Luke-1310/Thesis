@@ -7,7 +7,7 @@ from environments.pedone import Pedone
 
 class BaseEnvironment:
     
-    def __init__(self, width, height, cell_size, screen = None, pedone_error_prob=0.0):
+    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0,pedone_error_prob=0.0, route_change_probability=0):
 
         # Inizializzazione dei parametri di base dell'ambiente
         self.width = width
@@ -23,9 +23,9 @@ class BaseEnvironment:
         self.prev_car_position = []
         self.car_in_vision = False # flag che indica se un'auto è nella zona visiva dell'agente
 
-        self.route_change_probability = 0.2 # probabilità di cambiare percorso per le auto nemiche
-        self.num_pedoni = 2
-        self.pedone_error_prob = pedone_error_prob  # Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
+        self.num_pedoni = num_pedoni # probabilità di cambiare percorso per le auto nemiche
+        self.pedone_error_prob = pedone_error_prob 
+        self.route_change_probability = route_change_probability  # Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
 
     def load_assets(self):
         #Carica immagini e risorse

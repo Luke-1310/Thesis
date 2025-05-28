@@ -101,14 +101,20 @@ def train_agent(env, font):
         evaluate_agent(env, font)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi salvare la Q-table?"):
-        filename = f"{'q_table_{env.map_name}.npy'}"
-        full_path_q_table = f"{"Progetto Tesi Privitera/q_tables"}/{filename}"  
+
+        path_q_table = "Progetto Tesi Privitera/q_tables"
+
+        filename = f'q_table_{env.map_name}.npy'  
+        full_path_q_table = f"{path_q_table}/{filename}" 
 
         np.save(full_path_q_table, env.q_values)
 
         screen = env.screen
         screen.fill((255, 255, 255))
-        draw_text(screen, f"Q-table {env.map_name} salvata con successo.", 20, 20, font, (0, 150, 0))
+
+        draw_text(screen, f"Q-table {env.map_name} salvata con successo.", 0, screen.get_height() // 2 - 40, font, (0, 150, 0), center=True)
+        draw_text(screen, f"Percorso: {full_path_q_table}", 0, screen.get_height() // 2, font, (0, 100, 0), center=True)
+        
         pygame.display.flip()
         pygame.time.wait(1500)
 
@@ -165,6 +171,10 @@ def evaluate_agent(env, font):
             
             if event.type == pygame.QUIT:
                 running = False
+        
+        env.update_traffic_lights()      # ← AGGIUNTO: Aggiorna semafori
+        env.update_pedoni(env.pedoni)    # ← AGGIUNTO: Aggiorna pedoni  
+        env.is_car_in_vision()           # ← AGGIUNTO: Aggiorna car_in_vision
         
         action_index = np.argmax(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])
         env.get_next_location(action_index)
@@ -412,49 +422,131 @@ def show_training_results(screen, font, episode_data):
         pygame.display.flip()
         clock.tick(60)
 
-def show_settings(screen, font, current_error_prob):
+def show_settings(screen, font, env):
+    
     setting = True
-    error_prob = current_error_prob
+
+    # Valori attuali dall'ambiente
+    num_pedoni = env.num_pedoni
+    error_prob_pedoni = env.pedone_error_prob
+    prob_change_auto = env.route_change_probability
     
     while setting:
         screen.fill((255, 255, 255))
-        draw_text(screen, "Impostazioni Pedoni", 0, 50, font, center=True)
         
-        # Mostra il valore attuale
-        draw_text(screen, f"Probabilità di errore: {error_prob:.2f}", 0, 150, font, center=True)
+        # TITOLO CENTRATO
+        draw_text(screen, "Impostazioni Ambiente", 0, 30, font, (0, 0, 0), center=True)
         
-        # Pulsanti per aumentare/diminuire
-        less_rect = pygame.Rect(screen.get_width() // 2 - 200, 200, 100, 50)
-        more_rect = pygame.Rect(screen.get_width() // 2 + 100, 200, 100, 50)
-        ok_rect = pygame.Rect(screen.get_width() // 2 - 100, 300, 200, 50)
+        # SEZIONE 1: NUMERO PEDONI
+        y_start = 100
+        draw_text(screen, f"Numero Pedoni: {num_pedoni}", 0, y_start, font, (0, 0, 0), center=True)
         
-        pygame.draw.rect(screen, (200, 0, 0), less_rect)  # Rosso
-        pygame.draw.rect(screen, (0, 200, 0), more_rect)  # Verde
-        pygame.draw.rect(screen, (0, 128, 255), ok_rect)  # Blu
+        # Bottoni pedoni
+        pedoni_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
+        pedoni_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
         
-        draw_text(screen, "-", less_rect.centerx - 10, less_rect.centery - 10, font, center=False)
-        draw_text(screen, "+", more_rect.centerx - 10, more_rect.centery - 10, font, center=False)
-        draw_text(screen, "Conferma", ok_rect.centerx - 50, ok_rect.centery - 10, font, center=False)
+        pygame.draw.rect(screen, (200, 50, 50), pedoni_less_rect)    # Rosso
+        pygame.draw.rect(screen, (50, 200, 50), pedoni_more_rect)    # Verde
+        
+        draw_text(screen, "-", pedoni_less_rect.centerx - 8, pedoni_less_rect.centery - 10, font, (255, 255, 255))
+        draw_text(screen, "+", pedoni_more_rect.centerx - 8, pedoni_more_rect.centery - 10, font, (255, 255, 255))
+        
+        # SEZIONE 2: PROBABILITÀ ERRORE PEDONI
+        y_start += 120
+        draw_text(screen, f"Prob. Errore Pedoni: {error_prob_pedoni:.0%}", 0, y_start, font, (0, 0, 0), center=True)
+        
+        # Bottoni errore pedoni
+        err_ped_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
+        err_ped_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
+        
+        pygame.draw.rect(screen, (200, 50, 50), err_ped_less_rect)   # Rosso
+        pygame.draw.rect(screen, (50, 200, 50), err_ped_more_rect)   # Verde
+        
+        draw_text(screen, "-", err_ped_less_rect.centerx - 8, err_ped_less_rect.centery - 10, font, (255, 255, 255))
+        draw_text(screen, "+", err_ped_more_rect.centerx - 8, err_ped_more_rect.centery - 10, font, (255, 255, 255))
+        
+        # SEZIONE 3: PROBABILITÀ CAMBIO PERCORSO AUTO
+        y_start += 120
+        draw_text(screen, f"Prob. Cambio Percorso Auto: {prob_change_auto:.0%}", 0, y_start, font, (0, 0, 0), center=True)
+        
+        # Bottoni cambio percorso auto
+        auto_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
+        auto_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
+        
+        pygame.draw.rect(screen, (200, 50, 50), auto_less_rect)      # Rosso
+        pygame.draw.rect(screen, (50, 200, 50), auto_more_rect)      # Verde
+        
+        draw_text(screen, "-", auto_less_rect.centerx - 8, auto_less_rect.centery - 10, font, (255, 255, 255))
+        draw_text(screen, "+", auto_more_rect.centerx - 8, auto_more_rect.centery - 10, font, (255, 255, 255))
+        
+        # BOTTONI FINALI
+        y_final = y_start + 120
+        
+        # Bottone Conferma
+        confirm_rect = pygame.Rect(screen.get_width() // 2 - 220, y_final, 180, 50)
+        pygame.draw.rect(screen, (0, 150, 0), confirm_rect)          # Verde
+        draw_text(screen, "Conferma", confirm_rect.centerx - 45, confirm_rect.centery - 10, font, (255, 255, 255))
+        
+        # Bottone Annulla
+        cancel_rect = pygame.Rect(screen.get_width() // 2 + 40, y_final, 180, 50)
+        pygame.draw.rect(screen, (150, 0, 0), cancel_rect)           # Rosso
+        draw_text(screen, "Annulla", cancel_rect.centerx - 40, cancel_rect.centery - 10, font, (255, 255, 255))
         
         pygame.display.flip()
         
+        # GESTIONE EVENTI
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return error_prob
+                return  # Esce senza salvare
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 
-                if less_rect.collidepoint(pos):
-                    error_prob = max(0.0, error_prob - 0.10)
+                # CONTROLLI NUMERO PEDONI (0-10)
+                if pedoni_less_rect.collidepoint(pos):
+                    num_pedoni = max(0, num_pedoni - 1)
                 
-                if more_rect.collidepoint(pos):
-                    error_prob = min(1.0, error_prob + 0.10)
+                if pedoni_more_rect.collidepoint(pos):
+                    num_pedoni = min(10, num_pedoni + 1)
                 
-                if ok_rect.collidepoint(pos):
-                    return error_prob
-    
-    return error_prob
+                # CONTROLLI ERRORE PEDONI (0%-100%, step 10%)
+                if err_ped_less_rect.collidepoint(pos):
+                    error_prob_pedoni = max(0.0, error_prob_pedoni - 0.10)
+                
+                if err_ped_more_rect.collidepoint(pos):
+                    error_prob_pedoni = min(1.0, error_prob_pedoni + 0.10)
+                
+                # CONTROLLI CAMBIO PERCORSO AUTO (0%-100%, step 10%)
+                if auto_less_rect.collidepoint(pos):
+                    prob_change_auto = max(0.0, prob_change_auto - 0.10)
+                
+                if auto_more_rect.collidepoint(pos):
+                    prob_change_auto = min(1.0, prob_change_auto + 0.10)
+                
+                # BOTTONE CONFERMA
+                if confirm_rect.collidepoint(pos):
+                    # Applica le modifiche all'ambiente
+                    env.num_pedoni = num_pedoni
+                    env.pedone_error_prob = error_prob_pedoni
+                    env.route_change_probability = prob_change_auto
+                    
+                    # Messaggio di conferma
+                    screen.fill((255, 255, 255))
+                    draw_text(screen, "Impostazioni salvate con successo!", 0, screen.get_height() // 2 - 20, font, (0, 150, 0), center=True)
+                    pygame.display.flip()
+                    pygame.time.wait(1500)
+                    
+                    return
+                
+                # BOTTONE ANNULLA
+                if cancel_rect.collidepoint(pos):
+                    # Messaggio di annullamento
+                    screen.fill((255, 255, 255))
+                    draw_text(screen, "Modifiche annullate.", 0, screen.get_height() // 2 - 20, font, (200, 0, 0), center=True)
+                    pygame.display.flip()
+                    pygame.time.wait(1000)
+                    
+                    return
 
 def show_training_charts(screen, font, episode_data, cumulative_collisions, env):
     
@@ -557,17 +649,19 @@ def main():
     
     screen = pygame.display.set_mode((1536, 800))
     pygame.display.update()
-
     pygame.display.set_caption("Find The Parking v.2")
-
     pygame.event.pump()# Forza aggiornamento della finestra
     font =  pygame.font.Font("Progetto Tesi Privitera/assets/PixeloidSansBold.ttf", 20)
 
-    env = Map1Environment(48, 25, 32, screen)
+    env = Map1Environment(48, 25, 32, screen,                    
+        num_pedoni=0,           
+        pedone_error_prob=0.0,              
+        route_change_probability=0.2         
+    )
     running = True
     action = None
 
-    while running:
+    while running: 
         
         button_rects = show_menu(screen, font)
 
@@ -601,18 +695,27 @@ def main():
             show_results(env,font)
 
         elif action == "select_map":
-
-            selected_environment_class = select_map(screen, font)
             
+            selected_environment_class = select_map(screen, font)
+    
             if selected_environment_class:
-                env = selected_environment_class(48, 25, 32, screen)
+                
+                current_num_pedoni = env.num_pedoni if 'env' in locals() else 2
+                current_error_prob = env.pedone_error_prob if 'env' in locals() else 0.0
+                current_route_prob = env.route_change_probability if 'env' in locals() else 0.2
+                
+                env = selected_environment_class(
+                    48, 25, 32, screen,
+                    num_pedoni=current_num_pedoni,           # ← Mantiene impostazione corrente
+                    pedone_error_prob=current_error_prob,    # ← Mantiene impostazione corrente
+                    route_change_probability=current_route_prob  # ← Mantiene impostazione corrente
+                )
 
         elif action == "exit":
             running = False
 
         elif action == "settings":
-            #error_prob = 0.3 ci dice che i pedoni hanno il 30% di probabilità di sbagliare
-            env.pedone_error_prob = show_settings(screen, font, env.pedone_error_prob)
+            show_settings(screen, font, env)
 
     pygame.quit()
 
