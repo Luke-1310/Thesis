@@ -7,7 +7,7 @@ from environments.pedone import Pedone
 
 class BaseEnvironment:
     
-    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0,pedone_error_prob=0.0, route_change_probability=0):
+    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0,pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000):
 
         # Inizializzazione dei parametri di base dell'ambiente
         self.width = width
@@ -26,6 +26,7 @@ class BaseEnvironment:
         self.num_pedoni = num_pedoni # probabilità di cambiare percorso per le auto nemiche
         self.pedone_error_prob = pedone_error_prob 
         self.route_change_probability = route_change_probability  # Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
+        self.num_episodi = num_episodi  # Numero di episodi per l'addestramento
 
     def load_assets(self):
         #Carica immagini e risorse

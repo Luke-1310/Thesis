@@ -26,7 +26,7 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes = 2000  # Come nel file 5
+    num_episodes = getattr(env, 'num_episodes', 2000)  # Numero di episodi da eseguire, predefinito a 2000 se non specificato
     episode_data = []  # lista che contiene (episodio, step, reward)
     collision_list = []  # Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
@@ -430,6 +430,7 @@ def show_settings(screen, font, env):
     num_pedoni = env.num_pedoni
     error_prob_pedoni = env.pedone_error_prob
     prob_change_auto = env.route_change_probability
+    num_episodi = getattr(env, 'num_episodes', 2000) # Valore predefinito se non esiste
     
     while setting:
         screen.fill((255, 255, 255))
@@ -478,6 +479,20 @@ def show_settings(screen, font, env):
         
         draw_text(screen, "-", auto_less_rect.centerx - 8, auto_less_rect.centery - 10, font, (255, 255, 255))
         draw_text(screen, "+", auto_more_rect.centerx - 8, auto_more_rect.centery - 10, font, (255, 255, 255))
+
+        # SEZIONE 4: NUMERO EPISODI ← NUOVO!
+        y_start += 90
+        draw_text(screen, f"Numero Episodi: {num_episodi}", 0, y_start, font, (0, 0, 0), center=True)
+        
+        # Bottoni numero episodi
+        episodi_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 30, 60, 35)
+        episodi_more_rect = pygame.Rect(screen.get_width() // 2 + 190, y_start + 30, 60, 35)
+        
+        pygame.draw.rect(screen, (200, 50, 50), episodi_less_rect)
+        pygame.draw.rect(screen, (50, 200, 50), episodi_more_rect)
+        
+        draw_text(screen, "-", episodi_less_rect.centerx - 6, episodi_less_rect.centery - 8, font, (255, 255, 255))
+        draw_text(screen, "+", episodi_more_rect.centerx - 6, episodi_more_rect.centery - 8, font, (255, 255, 255))
         
         # BOTTONI FINALI
         y_final = y_start + 120
@@ -523,12 +538,20 @@ def show_settings(screen, font, env):
                 if auto_more_rect.collidepoint(pos):
                     prob_change_auto = min(1.0, prob_change_auto + 0.10)
                 
+                # CONTROLLI NUMERO EPISODI (0-3000, step 5) ← NUOVO!
+                if episodi_less_rect.collidepoint(pos):
+                    num_episodi = max(0, num_episodi - 50)
+                
+                if episodi_more_rect.collidepoint(pos):
+                    num_episodi = min(3000, num_episodi + 50)
+                
                 # BOTTONE CONFERMA
                 if confirm_rect.collidepoint(pos):
                     # Applica le modifiche all'ambiente
                     env.num_pedoni = num_pedoni
                     env.pedone_error_prob = error_prob_pedoni
                     env.route_change_probability = prob_change_auto
+                    env.num_episodes = num_episodi
                     
                     # Messaggio di conferma
                     screen.fill((255, 255, 255))
@@ -656,7 +679,8 @@ def main():
     env = Map1Environment(48, 25, 32, screen,                    
         num_pedoni=0,           
         pedone_error_prob=0.0,              
-        route_change_probability=0.2         
+        route_change_probability=0.2,  
+        num_episodi = 2000      
     )
     running = True
     action = None
@@ -703,12 +727,14 @@ def main():
                 current_num_pedoni = env.num_pedoni if 'env' in locals() else 2
                 current_error_prob = env.pedone_error_prob if 'env' in locals() else 0.0
                 current_route_prob = env.route_change_probability if 'env' in locals() else 0.2
+                current_num_episodi = getattr(env, 'num_episodi', 2000) if 'env' in locals() else 2000 
                 
                 env = selected_environment_class(
                     48, 25, 32, screen,
                     num_pedoni=current_num_pedoni,           # ← Mantiene impostazione corrente
                     pedone_error_prob=current_error_prob,    # ← Mantiene impostazione corrente
-                    route_change_probability=current_route_prob  # ← Mantiene impostazione corrente
+                    route_change_probability=current_route_prob,  # ← Mantiene impostazione corrente
+                    num_episodi=current_num_episodi         # ← Mantiene impostazione corrente
                 )
 
         elif action == "exit":

@@ -9,10 +9,10 @@ from environments.pedone import Pedone
 
 class Map1Environment(BaseEnvironment):
     
-    def __init__(self, width, height, cell_size, screen=None, num_pedoni = 0,pedone_error_prob=0.0, route_change_probability=0):
+    def __init__(self, width, height, cell_size, screen=None, num_pedoni = 0,pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000):
         
         # Inizializza tutto ciò che serve nella superclasse
-        super().__init__(width, height, cell_size, screen, num_pedoni, pedone_error_prob, route_change_probability)
+        super().__init__(width, height, cell_size, screen, num_pedoni, pedone_error_prob, route_change_probability, num_episodi)
 
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
