@@ -227,7 +227,8 @@ def show_menu(screen, font):
 def draw_text(screen, text, x, y, font, color=(0, 0, 0), center=False):
 
     text_surface = font.render(text, True, color)
-    #se voglio qualcosa al centro devo gestirlo con un if
+
+    #Se il testo deve essere centrato, calcola la posizione x
     if center:
         x = (screen.get_width() - text_surface.get_width()) // 2
 
@@ -286,7 +287,7 @@ def select_map(screen, font):
     selecting = True
     selected_map_class = None
 
-    # Lista dei bottoni da visualizzare
+    #Lista dei bottoni da visualizzare
     buttons = []
     for key, (map_name, _) in available_maps.items():
         buttons.append({"text": f"{map_name}", "action": key})
@@ -295,7 +296,7 @@ def select_map(screen, font):
     while selecting:
         screen.fill((255, 255, 255))
 
-        # Titolo centrato
+        #Titolo centrato
         draw_text(screen, "Seleziona una mappa:", 0, 50, font, center=True)
 
         y = 150
@@ -325,17 +326,17 @@ def select_map(screen, font):
                     if rect.collidepoint(pos):
                         
                         if action == "back":
-                            return None  # Nessuna mappa selezionata, torna al menu
+                            return None  #Nessuna mappa selezionata, torna al menu
                         
                         elif action in available_maps:
                             map_name = available_maps[action][0]
                             selected_map_class = available_maps[action][1]
                             
-                            # Feedback all'utente
+                            #Feedback all'utente
                             screen.fill((255, 255, 255))
                             draw_text(screen, f"Hai selezionato: {map_name}", 0, 50, font, color=(0, 0, 0), center=True)
 
-                            # Costruisco il nome del file immagine
+                            #Costruisco il nome del file immagine
                             file_name = map_name.lower().replace(" ", "_") + "_map.png"
                             preview_path = f"Progetto Tesi Privitera/assets/imgs/{file_name}"
 
@@ -352,18 +353,17 @@ def select_map(screen, font):
                             pygame.time.delay(2000)
                             selecting = False
 
-    return selected_map_class #ritorna la classe della mappa selezionata
+    return selected_map_class #Ritorna la classe della mappa selezionata
 
 #Funzione per stampare il resoconto del training del agente
 def show_training_results(screen, font, episode_data):
-    import sys  # Assicurati che sys sia importato nel file
 
     scroll_y = 0
     scroll_speed = 20
     running = True
     clock = pygame.time.Clock()
 
-    # Bottone stile menu
+    #Bottone stile menu
     buttons = [{"text": "Torna al menu", "action": "menu"}]
     button_rects = []
     y = screen.get_height() - 100  # Posizione verticale del bottone
@@ -391,18 +391,18 @@ def show_training_results(screen, font, episode_data):
 
         screen.fill((255, 255, 255))
 
-        # Intestazioni
+        #Intestazioni
         header = font.render(f"{'Episodio':<10}{'Steps':<10}{'Reward'}", True, (0, 0, 0))
         screen.blit(header, (20, 20 + scroll_y))
 
         pygame.draw.line(screen, (0, 0, 0), (20, 50 + scroll_y), (screen.get_width() - 20, 50 + scroll_y), 2)
 
-        # Dati
+        #Dati
         for idx, (episode, steps, reward) in enumerate(episode_data):
             text = font.render(f"{episode:<10}{steps:<10}{reward}", True, (0, 0, 0))
             screen.blit(text, (20, 60 + idx * 30 + scroll_y))
 
-        # Bottone "Torna al menu"
+        #Bottone "Torna al menu"
         button_rects.clear()
         for button in buttons:
             rect = pygame.Rect(screen.get_width() // 2 - 150, y, 250, 50)
@@ -422,19 +422,19 @@ def show_settings(screen, font, env):
     num_pedoni = env.num_pedoni
     error_prob_pedoni = env.pedone_error_prob
     prob_change_auto = env.route_change_probability
-    num_episodi = getattr(env, 'num_episodes', 2000) # Valore predefinito se non esiste
+    num_episodi = getattr(env, 'num_episodes', 2000) #Valore predefinito se non esiste
     
     while setting:
+        
         screen.fill((255, 255, 255))
         
-        # TITOLO CENTRATO
         draw_text(screen, "Impostazioni Ambiente", 0, 30, font, (0, 0, 0), center=True)
         
-        # SEZIONE 1: NUMERO PEDONI
+        #Sezione per i pedoni
         y_start = 100
         draw_text(screen, f"Numero Pedoni: {num_pedoni}", 0, y_start, font, (0, 0, 0), center=True)
         
-        # Bottoni pedoni
+        #Bottoni pedoni
         pedoni_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
         pedoni_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
         
@@ -444,11 +444,11 @@ def show_settings(screen, font, env):
         draw_text(screen, "-", pedoni_less_rect.centerx - 8, pedoni_less_rect.centery - 10, font, (255, 255, 255))
         draw_text(screen, "+", pedoni_more_rect.centerx - 8, pedoni_more_rect.centery - 10, font, (255, 255, 255))
         
-        # SEZIONE 2: PROBABILITÀ ERRORE PEDONI
+        #Sezione per l'errore dei pedoni
         y_start += 120
         draw_text(screen, f"Prob. Errore Pedoni: {error_prob_pedoni:.0%}", 0, y_start, font, (0, 0, 0), center=True)
         
-        # Bottoni errore pedoni
+        #Bottoni errore pedoni
         err_ped_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
         err_ped_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
         
@@ -458,11 +458,11 @@ def show_settings(screen, font, env):
         draw_text(screen, "-", err_ped_less_rect.centerx - 8, err_ped_less_rect.centery - 10, font, (255, 255, 255))
         draw_text(screen, "+", err_ped_more_rect.centerx - 8, err_ped_more_rect.centery - 10, font, (255, 255, 255))
         
-        # SEZIONE 3: PROBABILITÀ CAMBIO PERCORSO AUTO
+        #Sezione per il cambio percorso delle auto
         y_start += 120
         draw_text(screen, f"Prob. Cambio Percorso Auto: {prob_change_auto:.0%}", 0, y_start, font, (0, 0, 0), center=True)
         
-        # Bottoni cambio percorso auto
+        #Bottoni cambio percorso auto
         auto_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
         auto_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
         
@@ -472,11 +472,11 @@ def show_settings(screen, font, env):
         draw_text(screen, "-", auto_less_rect.centerx - 8, auto_less_rect.centery - 10, font, (255, 255, 255))
         draw_text(screen, "+", auto_more_rect.centerx - 8, auto_more_rect.centery - 10, font, (255, 255, 255))
 
-        # SEZIONE 4: NUMERO EPISODI ← NUOVO!
+        #Sezione per il numero degli episodi
         y_start += 90
         draw_text(screen, f"Numero Episodi: {num_episodi}", 0, y_start, font, (0, 0, 0), center=True)
         
-        # Bottoni numero episodi
+        #Bottoni numero episodi
         episodi_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 30, 60, 35)
         episodi_more_rect = pygame.Rect(screen.get_width() // 2 + 190, y_start + 30, 60, 35)
         
@@ -486,58 +486,58 @@ def show_settings(screen, font, env):
         draw_text(screen, "-", episodi_less_rect.centerx - 6, episodi_less_rect.centery - 8, font, (255, 255, 255))
         draw_text(screen, "+", episodi_more_rect.centerx - 6, episodi_more_rect.centery - 8, font, (255, 255, 255))
         
-        # BOTTONI FINALI
+        #Sezione finale
         y_final = y_start + 120
         
-        # Bottone Conferma
+        #Bottone Conferma
         confirm_rect = pygame.Rect(screen.get_width() // 2 - 220, y_final, 180, 50)
         pygame.draw.rect(screen, (0, 150, 0), confirm_rect)          # Verde
         draw_text(screen, "Conferma", confirm_rect.centerx - 45, confirm_rect.centery - 10, font, (255, 255, 255))
         
-        # Bottone Annulla
+        #Bottone Annulla
         cancel_rect = pygame.Rect(screen.get_width() // 2 + 40, y_final, 180, 50)
         pygame.draw.rect(screen, (150, 0, 0), cancel_rect)           # Rosso
         draw_text(screen, "Annulla", cancel_rect.centerx - 40, cancel_rect.centery - 10, font, (255, 255, 255))
         
         pygame.display.flip()
         
-        # GESTIONE EVENTI
+        #Gestione degli eventi
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return  # Esce senza salvare
+                return  #Esce senza salvare
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 
-                # CONTROLLI NUMERO PEDONI (0-10)
+                #Controllo numero dei pedoni (0-10)
                 if pedoni_less_rect.collidepoint(pos):
                     num_pedoni = max(0, num_pedoni - 1)
                 
                 if pedoni_more_rect.collidepoint(pos):
                     num_pedoni = min(10, num_pedoni + 1)
                 
-                # CONTROLLI ERRORE PEDONI (0%-100%, step 10%)
+                #Controllo errore dei pedoni (0%-100%, step del 10%)
                 if err_ped_less_rect.collidepoint(pos):
                     error_prob_pedoni = max(0.0, error_prob_pedoni - 0.10)
                 
                 if err_ped_more_rect.collidepoint(pos):
                     error_prob_pedoni = min(1.0, error_prob_pedoni + 0.10)
                 
-                # CONTROLLI CAMBIO PERCORSO AUTO (0%-100%, step 10%)
+                #Controllo cambio percorso auto (0%-100%, step del 10%)
                 if auto_less_rect.collidepoint(pos):
                     prob_change_auto = max(0.0, prob_change_auto - 0.10)
                 
                 if auto_more_rect.collidepoint(pos):
                     prob_change_auto = min(1.0, prob_change_auto + 0.10)
-                
-                # CONTROLLI NUMERO EPISODI (0-3000, step 5) ← NUOVO!
+
+                #Controllo numero episodi (1-3000, step di 50)
                 if episodi_less_rect.collidepoint(pos):
-                    num_episodi = max(0, num_episodi - 50)
+                    num_episodi = max(1, num_episodi - 50)
                 
                 if episodi_more_rect.collidepoint(pos):
                     num_episodi = min(3000, num_episodi + 50)
                 
-                # BOTTONE CONFERMA
+                #Bottone per la conferma
                 if confirm_rect.collidepoint(pos):
                     # Applica le modifiche all'ambiente
                     env.num_pedoni = num_pedoni
@@ -545,7 +545,7 @@ def show_settings(screen, font, env):
                     env.route_change_probability = prob_change_auto
                     env.num_episodes = num_episodi
                     
-                    # Messaggio di conferma
+                    #Messaggio di conferma delle modifiche
                     screen.fill((255, 255, 255))
                     draw_text(screen, "Impostazioni salvate con successo!", 0, screen.get_height() // 2 - 20, font, (0, 150, 0), center=True)
                     pygame.display.flip()
@@ -553,7 +553,7 @@ def show_settings(screen, font, env):
                     
                     return
                 
-                # BOTTONE ANNULLA
+                #Bottone per annullare le modifiche
                 if cancel_rect.collidepoint(pos):
                     # Messaggio di annullamento
                     screen.fill((255, 255, 255))
@@ -565,16 +565,16 @@ def show_settings(screen, font, env):
 
 def show_training_charts(screen, font, episode_data, cumulative_collisions, env):
     
-    # Salva la modalità di visualizzazione corrente
+    #Salva la modalità di visualizzazione corrente
     current_mode = pygame.display.get_surface().get_size()
     
-    # Usa il backend Agg di matplotlib che non interferisce con la visualizzazione
+    #Usa il backend Agg di matplotlib che non interferisce con la visualizzazione
     import matplotlib
     matplotlib.use('Agg')
     
-    # Estrai i dati
-    episodes = [data[0] for data in episode_data]
-    steps = [data[1] for data in episode_data]
+    #Estrai i dati
+    # episodes = [data[0] for data in episode_data]
+    # steps = [data[1] for data in episode_data]
     rewards = [data[2] for data in episode_data]
 
     # Raccolta dati da aggiungere al grafico
@@ -616,18 +616,18 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     ax2.set_ylabel('Numero di Collisioni')
     ax2.grid(True)
 
-    # INFORMAZIONI SOTTO I GRAFICI (senza emoji)
-    # Prima riga di informazioni
+    #Informazioni per i grafici
+    #Prima riga di informazioni
     info_line1 = f"Mappa: {map_name} | Pedoni: {num_pedoni} | Prob. errore pedoni: {error_prob_pedoni:.1%} | Prob. cambio percorso auto: {prob_change_percorso:.1%}"
     
-    # Seconda riga di informazioni
+    #Seconda riga di informazioni
     info_line2 = f"Episodi: {num_episodes} | Goal raggiunti: {goals_reached} ({success_rate:.1f}%) | Collisioni: {total_collisions} | Reward medio: {avg_reward:.1f} | Reward max: {max_reward:.1f}"
 
-    # Aggiungi le informazioni sotto i grafici
+    #Aggiungi le informazioni sotto i grafici
     fig.text(0.5, 0.06, info_line1, fontsize=10, ha='center', fontweight='bold')
     fig.text(0.5, 0.02, info_line2, fontsize=10, ha='center', fontweight='bold')
 
-    # Aggiusta il layout per lasciare spazio sotto
+    #Aggiusta il layout per lasciare spazio sotto
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.20)  # Lascia spazio sotto per le informazioni
 
@@ -635,7 +635,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     if not os.path.exists(results_folder):
         os.makedirs(results_folder)
 
-    # Nome file più descrittivo
+    #Nome file più descrittivo
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"training_{map_name}_{num_episodes}ep_{timestamp}.png"
     
@@ -643,11 +643,11 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     
     plt.savefig(result_path, dpi=300, bbox_inches='tight')
     
-    # Chiudi la figura per liberare memoria
+    #Chiudi la figura per liberare memoria
     plt.close(fig)
     plt.close('all')
     
-    # Mostra il messaggio di conferma
+    #Mostra il messaggio di conferma
     screen.fill((255, 255, 255))
     draw_text(screen, f"Grafico salvato come: {result_path}", 0, 100, font, (0, 150, 0), center=True)
     pygame.display.flip()
@@ -723,10 +723,11 @@ def main():
                 
                 env = selected_environment_class(
                     48, 25, 32, screen,
-                    num_pedoni=current_num_pedoni,           # ← Mantiene impostazione corrente
-                    pedone_error_prob=current_error_prob,    # ← Mantiene impostazione corrente
-                    route_change_probability=current_route_prob,  # ← Mantiene impostazione corrente
-                    num_episodi=current_num_episodi         # ← Mantiene impostazione corrente
+                    #Le successive quattro righe mantengono le impostazioni correnti
+                    num_pedoni=current_num_pedoni,           
+                    pedone_error_prob=current_error_prob,    
+                    route_change_probability=current_route_prob,  
+                    num_episodi=current_num_episodi         
                 )
 
         elif action == "exit":

@@ -14,6 +14,19 @@ def evaluate_agent(env, font): si occupa di valutare l'agente, scegliendo tramit
 
 def show_menu(screen, font): passandogli il font e l'interfaccia dove disegnare (finestra) viene disegnato un menu grafico per l'utente
 
+def draw_text(screen, text, x, y, font, color=(0,0,0), center=False): funzione per stampare testo su schermo
+
+def show_yes_no_dialog(screen, font, question): mostra all'utente se vuole vedere o no i risultati
+
+def select_map(screen, font): permette di scegliere la mappa all'utente e ritorna la classe della mappa selezionata
+
+def show_training_results(screen, font, episode_data): stampa il resecondo del training dell'agente
+
+def show_settings(screen, font, env): funzione attua nel gestire le impostazioni del simulatore
+
+def show_training_charts(screen, font, episode_data, cumulative_collisions, env): per stampare i grafici con i risultati delle simulazioni
+
+def main
 
 **base_environment.py:**
 
