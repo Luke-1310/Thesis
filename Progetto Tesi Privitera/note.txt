@@ -1,0 +1,22 @@
+APPUNTI SUI DIVERSI FILE PRESENTI NEL PROGETTO, AGGIORNATO AL 28/07/2025
+
+**q_learning_training.py:**
+
+La Q-table è una tabella che usa un agente di Q-learning (tipologia di reinforcement learning) per imparare quale azione fare in ogni stato.
+    Ogni riga rappresenta uno stato (ad esempio: "sono all'incrocio, il semaforo è rosso").
+    Ogni colonna rappresenta una azione possibile (tipo "vai dritto", "gira a destra", "aspetta").
+    Ogni valore dentro la tabella (Q-value) dice quanto è buona quell'azione in quello stato.
+
+def train_agent(env, font): passati enviornment e font, tale funzione ha come scopo quello di addestrare l'agente con diversi parametri.
+
+def evaluate_agent(env, font): si occupa di valutare l'agente, scegliendo tramite np.argmax... (173) l'azione migliore da compiere;
+    chiaramente ci sono due esiti finali, il raggiungimento del parcheggio oppure il fallimento.
+
+def show_menu(screen, font): passandogli il font e l'interfaccia dove disegnare (finestra) viene disegnato un menu grafico per l'utente
+
+
+**base_environment.py:**
+
+**map1_environment.py:**
+
+**map2_environment.py:**

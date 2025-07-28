@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np #Impostata con alias np, essa è una libreria che serve per gestire array multidimensionali e funzioni matematiche
 import pygame
 import os
 from datetime import datetime
@@ -6,18 +6,14 @@ import sys
 from environments.map1_environment import Map1Environment
 from environments.map2_environment import Map2Environment
 
-import matplotlib.pyplot as plt       # Per disegnare i grafici
-import pandas as pd                   # Per gestire e analizzare dati in modo ordinato
+import matplotlib.pyplot as plt       #Per disegnare i grafici
+import pandas as pd                   #Per gestire e analizzare dati in modo ordinato
 
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
 
-# La Q-table è una tabella che usa un agente di Q-learning (un tipo di reinforcement learning) per imparare quale azione fare in ogni stato.
-#     Ogni riga rappresenta uno stato (ad esempio: "sono all'incrocio, il semaforo è rosso").
-#     Ogni colonna rappresenta una azione possibile (tipo "vai dritto", "gira a destra", "aspetta").
-#     Ogni valore dentro la tabella (Q-value) dice quanto è buona quell'azione in quello stato.
-
+#CANCELLABILE (?)
 def print_q_table(q_table):
      print("Q-Table:")
      print(q_table)
@@ -26,9 +22,9 @@ def train_agent(env, font):
     epsilon = 1
     discount_factor = 0.9
     learning_rate = 0.1
-    num_episodes = getattr(env, 'num_episodes', 2000)  # Numero di episodi da eseguire, predefinito a 2000 se non specificato
-    episode_data = []  # lista che contiene (episodio, step, reward)
-    collision_list = []  # Lista per tenere traccia delle collisioni cumulative
+    num_episodes = getattr(env, 'num_episodes', 2000)  #Numero di episodi da eseguire, predefinito a 2000 se non specificato
+    episode_data = []  #Lista che contiene (episodio, step, reward)
+    collision_list = []  #Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
 
     for episode in range(num_episodes):
@@ -36,7 +32,6 @@ def train_agent(env, font):
         total_reward = 0
         steps = 0
 
-        # STRUTTURA DEL FILE 5: while not (env.check_loss() or env.check_goal())
         while not (env.check_loss() or env.check_goal()):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -44,47 +39,44 @@ def train_agent(env, font):
                     return
             pygame.event.pump()
 
-            env.update_traffic_lights()  # Aggiorna lo stato dei semafori
-            env.update_pedoni(env.pedoni)  # Aggiorna lo stato dei pedoni (AGGIUNTO)
+            env.update_traffic_lights()  #Aggiorna lo stato dei semafori
+            env.update_pedoni(env.pedoni)  #Aggiorna lo stato dei pedoni
 
             action_index = env.get_next_action(epsilon)
             old_position = env.agent_position[:]
             old_car_in_vision = int(env.car_in_vision)
-            env.is_car_in_vision()  # Aggiorna lo stato di car_in_vision
+            env.is_car_in_vision()  #Aggiorna lo stato di car_in_vision
             is_valid = env.get_next_location(action_index)
 
-            # LOGICA DEL FILE 5: Gestione reward nel ciclo
             if is_valid:
                 reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
             elif not env.check_loss():
                 reward = -10
             else:
-                reward = -100  # Questo reward non verrà mai usato nel ciclo
+                reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
 
-            # Q-learning update
+            #Q-learning update
             old_q_value = env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index]
             temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])) - old_q_value
             new_q_value = old_q_value + (learning_rate * temporal_difference)
             env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index] = new_q_value
             
             env.display(episode)
-            pygame.time.wait(1)  # Breve pausa per gestire gli eventi
+            pygame.time.wait(1)  #Breve pausa per gestire gli eventi
 
             total_reward += reward
             steps += 1
 
-            if steps > 1000:  # Previeni episodi troppo lunghi (come nel file 5)
+            if steps > 1000:  #Previene loop infiniti
                 break
 
-        # LOGICA DEL FILE 5: Gestione collisioni DOPO il ciclo
         if env.check_loss():
             collision_count += 1
 
-        # Aggiungi il conteggio cumulativo alla lista
         collision_list.append(collision_count)
         
         screen = env.screen
-        screen.fill((255, 255, 255))  # Pulisce lo schermo
+        screen.fill((255, 255, 255))  #Pulisce lo schermo per il prossimo episodio
 
         print(f"Episodio: {episode}")
         print(f"Steps: {steps}")
@@ -93,7 +85,7 @@ def train_agent(env, font):
         print(f"---------------------")
         
         pygame.display.flip()
-        epsilon = max(0.01, epsilon * 0.9995)  # Decay dell'epsilon (come nel file 5)
+        epsilon = max(0.01, epsilon * 0.9995)  #Riduce epsilon per l'esplorazione
 
         episode_data.append((episode, steps, total_reward))
 
@@ -124,9 +116,10 @@ def train_agent(env, font):
     return episode_data
 
 def show_results(env, font):
+
     try:
-        filename = f'q_table_{env.map_name}.npy'  # Nome file dipende dalla mappa
-        path_q_table = f"Progetto Tesi Privitera/q_tables/{filename}"  # Percorso della Q-table
+        filename = f'q_table_{env.map_name}.npy'  #Il nome file dipende dalla mappa selezionata
+        path_q_table = f"Progetto Tesi Privitera/q_tables/{filename}"
         q_table = np.load(path_q_table)
 
         screen = env.screen
@@ -134,13 +127,13 @@ def show_results(env, font):
 
         if q_table.shape != env.q_values.shape:
             message = "Non è stato possibile caricare la Q-table"
-            color = (255, 0, 0)  # Rosso
+            color = (255, 0, 0)  #Rosso
             wait_time = 2000
         else:
             env.q_values = q_table
             message = f"Q-table {env.map_name} caricata con successo."
-            color = (0, 150, 0)  # Verde
-            wait_time = 1500
+            color = (0, 150, 0)  #Verde
+            wait_time = 1500 #Attende 1.5 secondi per mostrare il messaggio
 
         draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, color, center=True)
         pygame.display.flip()
@@ -164,6 +157,7 @@ def evaluate_agent(env, font):
     env.reset_game()
     path = []
     running = True
+
     while running and not (env.check_loss() or env.check_goal()):
         print(f"Posizione attuale: {env.agent_position}")
         
@@ -172,9 +166,9 @@ def evaluate_agent(env, font):
             if event.type == pygame.QUIT:
                 running = False
         
-        env.update_traffic_lights()      # ← AGGIUNTO: Aggiorna semafori
-        env.update_pedoni(env.pedoni)    # ← AGGIUNTO: Aggiorna pedoni  
-        env.is_car_in_vision()           # ← AGGIUNTO: Aggiorna car_in_vision
+        env.update_traffic_lights()      
+        env.update_pedoni(env.pedoni)     
+        env.is_car_in_vision()           
         
         action_index = np.argmax(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])
         env.get_next_location(action_index)
@@ -197,10 +191,9 @@ def evaluate_agent(env, font):
         pygame.time.wait(2000)
 
 
-#Implementazione di una interfaccia grafica per il menù
+#Implementazione di una interfaccia grafica per il menu
 def show_menu(screen, font):
     
-    #Bottoni
     buttons = [
         {"text": "1. Allenare l'agente", "action": "train"},
         {"text": "2. Mostrare risultati", "action": "show"},
@@ -211,10 +204,9 @@ def show_menu(screen, font):
 
     button_rects = []
 
-    # Riempie l'intera finestra di bianco
+    #Riempie l'intera finestra di bianco
     screen.fill((255, 255, 255))
 
-    # Titolo centrato
     title = font.render("Menu Principale", True, (0, 0, 0))
     screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 50))
 
