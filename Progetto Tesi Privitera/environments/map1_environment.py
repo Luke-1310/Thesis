@@ -1,11 +1,9 @@
 import numpy as np
 import pygame
-import os
-import random
 from environments.base_environment import BaseEnvironment
 from environments.pedone import Pedone
 
-#ATTENZIONE IL FORMATO è COLONNA,RIGA
+#Il formato delle coordinate è [riga, colonna] (0-indexed)
 
 class Map1Environment(BaseEnvironment):
     
@@ -28,13 +26,12 @@ class Map1Environment(BaseEnvironment):
 
 
     def load_assets(self):
-        # Carica tutte le immagini che ti servono
 
-        # Inizializza Pygame
+        #Inizializza Pygame
         pygame.init()
         self.screen = pygame.display.set_mode((self.width * self.cell_size, self.height * self.cell_size))
 
-        # Carica l'immagine della macchina
+        #Carica l'immagine della macchina
         self.agent_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car.png")
         self.agent_image = pygame.transform.scale(self.agent_image, (self.cell_size // 2, self.cell_size))
 
@@ -134,8 +131,8 @@ class Map1Environment(BaseEnvironment):
             (1,3): [self.percorso1, self.percorso3]
         }
 
-        # Percorsi di transizione
-        # stai passando dal percorso x al y (x,y) mediante questi passaggi 
+        #Percorsi di transizione
+        #stai passando dal percorso x al y (x,y) mediante questi passaggi 
         self.transizioni = {
             (2, 1): [(34, 10),(35, 10),(36, 10),(37, 10),(38, 10),(39, 10),(40, 10),(41, 10),(42, 10),(43, 10),(44, 10),(45, 10),(46, 10)],
             (3, 1): [(2, 9),(1, 9)],
@@ -177,7 +174,7 @@ class Map1Environment(BaseEnvironment):
             [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
-        #griglia per il pedone (PROBABILMENTE CORRETTA MA DA VEDERE) #2 = striscia pedonale #3 = edificio
+        #griglia per il pedone #2 = striscia pedonale #3 = edificio
         self.map_pedone = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -206,7 +203,7 @@ class Map1Environment(BaseEnvironment):
             [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         ]
 
-        # Inizializza la matrice dei costi PER I PEDONI!
+        #Inizializza la matrice dei costi PER I PEDONI!
         self.cost_matrix = []
         for y, row in enumerate(self.map_pedone):
             cost_row = []
@@ -222,9 +219,9 @@ class Map1Environment(BaseEnvironment):
             self.cost_matrix.append(cost_row) 
 
 
-        # Matrice dei reward (premi e penalità)
+        #Matrice dei reward (premi e penalità)
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
-        # Assegna +100000 alle celle del parcheggio
+        #Assegna +10000 alle celle del parcheggio
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
         
@@ -234,11 +231,11 @@ class Map1Environment(BaseEnvironment):
                 if self.map[y][x] == 0:
                     self.reward_matrix[y][x] = -10  
 
-        def reset_game(self):
-            super().reset_game()
-            self.cars = [
-                {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
-                {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
-                {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0}
-            ]
+    def reset_game(self):
+        super().reset_game()
+        self.cars = [
+            {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
+            {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
+            {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0}
+        ]
 

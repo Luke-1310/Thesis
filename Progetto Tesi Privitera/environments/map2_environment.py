@@ -212,7 +212,7 @@ class Map2Environment(BaseEnvironment):
 
         # Matrice dei reward (premi e penalità)
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
-        # Assegna +100000 alle celle del parcheggio
+        # Assegna 10000 alle celle del parcheggio
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
         
@@ -222,10 +222,10 @@ class Map2Environment(BaseEnvironment):
                 if self.map[y][x] == 0:
                     self.reward_matrix[y][x] = -10
 
-        def reset_game(self):
-            super().reset_game()
-            self.cars = [
-                {'position': [46, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
-                {'position': [32, 2], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
-                {'position': [13, 10], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
-            ]
+    def reset_game(self):
+        super().reset_game()
+        self.cars = [
+            {'position': [46, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
+            {'position': [32, 2], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
+            {'position': [13, 10], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
+        ]
