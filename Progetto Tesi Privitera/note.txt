@@ -30,6 +30,68 @@ def main
 
 **base_environment.py:**
 
+def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000): si occupa di 
+    inizializzare le variabili d'ambiente 
+
+def load_assets(self): ricordando che self è una convenzione in Python che rappresenta l'istanza corrente di una classe, tale funzione carica gli le diverse risorse
+
+def create_grid(self): crea la griglia dell'ambiente
+
+def is_car_in_vision(self): verifica se una delle auto si trova nel campo visivo dell'agente
+
+def update_car_position(self): aggiorna la posizione di una singola auto secondo il suo percorso
+
+def check_and_change_route(self, car): qual ora un auto si dovesse trovare ad un incriocio, con una certà probabilità fornita dall'utente, glielo fa cambiare
+
+def _calculate_rotation(self, car): Serve per far ruotare la macchina durante il training
+
+def get_next_action(self, epsilon): Tale funzione fa scegliere all'agente, in base a dei parametri e sulle conoscenze pregresse, se deve espolrare o "sfruttare"
+
+def is is_valid_move(self, new_position): Valutando la griglia di partenza, fa sì che l'agente non esca fuori dalla strada
+
+def get_next_location(self, action_index): In base alla successiva posizione dell'agente, farà sì che l'auto ruoti con una certa angolatura
+
+def check_goal(self): se l'agente arriva in una delle posizioni "goal" allora vince
+
+def check_loss(self): controlla se l'agente collide con un auto nemica oppure con un pedone
+
+def update_traffic_lights(self): aggiorna i diversi semafori presenti nella mappa
+
+def display(self, episode=None, path=None): Funzione cardine nel disegnare a schermo tutto quello che vede l'utente durante il training
+
+def _display_car(self, car_image, car_position, car_rotation): Richiamata nella funzione precedente, essa si occupa di ruotare le auto durante la simulazione
+
+def pedone_path_callback(self, start, can_make_errors=True):
+
+    Il pedone decide se sbagliare in diverse fasi: 
+        All'inizio: Quando viene creato
+        Durante il movimento: Quando arriva a destinazione e calcola un nuovo percorso
+        Ma non ad ogni step: L'errore è nella destinazione, non nel movimento
+
+def reset_game(self): riavvia il simulatore per un nuovo Episodio
+
+def heuristic(self, a, b): essa calcola la distnaza tra due punti tramite la seguente formula:
+    "DISTANZA DI MANHATTAN": distanza = |x1-x2| + |y1-y2| 
+                             distanza = abs(2 - 5) + abs(3 - 7) = abs(-3) + abs(-4) = 3 + 4 = 7
+                             abs è la funzione valore assoluto ed infatti sta per "absolute"
+    Si chiama così perché ci si immagina di essere a New York con strade a griglia: NON POSSIAMO ANDARE IN DIAGONALE MA SOLO su, giù, sinistra, destra
+
+def find_path(self, grid, start, goal, walkable_value=(1,2), cost_matrix=None): Si utilizza l'algoritmo A* per trovare il percorso più breve tra due punti in una griglia
+
+VIDEO!!!
+
+def move_pedone_along_path(self, pedone, path): sposta il pedone dalla posizione attuale a quella successiva
+
+def update_pedoni(self, pedoni): per ciascun pedone, ne aggiorna la posizione
+
+def check_collision_type(self): controlla con chi ha colliso l'agente
+
+def _find_nearest_valid_cell(self, target): funzione per trovare la cella percorribile più vicina a una cella non percorribile
+
+def _create_error_segment(self, valid_end, error_target): Crea un segmento di percorso che porta dall'ultima cella valida al target di errore 
+
 **map1_environment.py:**
 
 **map2_environment.py:**
+
+**pedone.py**

@@ -665,7 +665,7 @@ def main():
     screen = pygame.display.set_mode((1536, 800))
     pygame.display.update()
     pygame.display.set_caption("Find The Parking v.2")
-    pygame.event.pump()# Forza aggiornamento della finestra
+    pygame.event.pump()#Forza aggiornamento della finestra
     font =  pygame.font.Font("Progetto Tesi Privitera/assets/PixeloidSansBold.ttf", 20)
 
     env = Map1Environment(48, 25, 32, screen,                    
