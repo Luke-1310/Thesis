@@ -14,9 +14,9 @@ os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori prec
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
 
 #CANCELLABILE (?)
-def print_q_table(q_table):
-     print("Q-Table:")
-     print(q_table)
+# def print_q_table(q_table):
+#      print("Q-Table:")
+#      print(q_table)
 
 def train_agent(env, font):
     epsilon = 1
