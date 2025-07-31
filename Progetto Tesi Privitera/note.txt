@@ -117,3 +117,6 @@ def __init__(self, start, goal, path=None, wait_steps = 5, path_callback=None, e
                                                                                                 il percorso e la probabilità che esso ha di sbagliare
 def step(self, map_pedone, traffic_lights=None): fa avanzare il pedone lungo il percorso, gestendo diversi casi tra cui se arriva a destinazione                                                                          
 
+----------PROBLEMI------------
+
+ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agente, strano
