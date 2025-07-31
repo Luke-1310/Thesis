@@ -523,12 +523,12 @@ def show_settings(screen, font, env):
                 if err_ped_more_rect.collidepoint(pos):
                     error_prob_pedoni = min(1.0, error_prob_pedoni + 0.10)
                 
-                #Controllo cambio percorso auto (0%-100%, step del 10%)
+                #Controllo cambio percorso auto (0%-90%, step del 10%)
                 if auto_less_rect.collidepoint(pos):
                     prob_change_auto = max(0.0, prob_change_auto - 0.10)
                 
                 if auto_more_rect.collidepoint(pos):
-                    prob_change_auto = min(1.0, prob_change_auto + 0.10)
+                    prob_change_auto = min(0.9, prob_change_auto + 0.10)
 
                 #Controllo numero episodi (1-3000, step di 50)
                 if episodi_less_rect.collidepoint(pos):
