@@ -6,5 +6,5 @@ def train_traffic_rules(env, font):
     # - Q-learning per comportamento stradale corretto
     # il percorso va calcolato con A* e poi l'agente deve seguirlo rispettando le regole
 
-    #PRIMA LO CALCOLO E POI LUI SI ALLENA
+    #PRIMA LO CALCOLO E POI LUI SI ALLENA dopo averlo calcolato
 
