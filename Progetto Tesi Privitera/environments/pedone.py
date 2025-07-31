@@ -6,15 +6,15 @@ class Pedone:
         self.goal = list(goal) 
         self.arrived = False
 
-        self.wait_steps = wait_steps #numero di frame da aspettare prima di muoversi
+        self.wait_steps = wait_steps #Numero di frame da aspettare prima di muoversi
         self.wait_counter = 0 
 
         self.pre_cross_wait = 0 #Contatore per far attendere il pedone prima dell'incrocio
-        self.pre_cross_max = 3 #Aspetta 3 frame prima di attraversare l'incrocio
+        self.pre_cross_max = 3 #Aspetta 3 frame prima di attraversare l'incrocio per simulare il pedone che guarda a destra e sinistra
 
-        self.path_callback = path_callback  # funzione per generare un nuovo path dopo che il pedone è arrivato
+        self.path_callback = path_callback  #Funzione per generare un nuovo path dopo che il pedone è arrivato
 
-        self.error_prob = error_prob  # Probabilità di sbagliare (0.0 = mai, 1.0 = sempre)
+        self.error_prob = error_prob  #Probabilità di sbagliare (0.0 = mai, 1.0 = sempre)
         self.waiting_for_light = False
         self.traffic_light_position = None
 
@@ -29,7 +29,7 @@ class Pedone:
         self.frame_counter = 0
 
         if not self.path:
-            # Se non c'è un percorso ma c'è una callback, chiedi un nuovo percorso
+            #Se non c'è un percorso ma c'è una callback, chiede un nuovo percorso
             if self.path_callback:
                 new_goal, new_path = self.path_callback(tuple(self.position))
                 if new_path:
@@ -38,18 +38,18 @@ class Pedone:
                     self.arrived = False
                     self.wait_counter = 0
                     self.pre_cross_wait = 0
-                    self.waiting_for_light = False  #Serve per far riprovare il pedone ad attraversare
+                    self.waiting_for_light = False #Serve per far riprovare il pedone ad attraversare
             return
 
         x, y = self.position
         
         if self.position == self.goal:
-            
-            # Quando arriva, scegli una nuova destinazione e path
+
+            #Quando arriva, sceglie una nuova destinazione e un nuovo path
             if self.path_callback:
                 try:
                     result = self.path_callback(tuple(self.position))        
-                    # Verifica che il risultato sia una tupla valida
+                    #Verifica che il risultato sia una tupla valida
                     if result and isinstance(result, tuple) and len(result) == 2:
                         new_goal, new_path = result
                         if new_path:
@@ -69,19 +69,21 @@ class Pedone:
                 self.arrived = True
             return  #Ritorna dopo aver gestito l'arrivo
             
-        # Se il pedone stava aspettando un semaforo, controlla se ora può attraversare
+        #Se il pedone stava aspettando un semaforo, controlla se ora può attraversare
         if self.waiting_for_light and traffic_lights and self.traffic_light_position:
             if traffic_lights.get(self.traffic_light_position) == 'red':
-                # Il semaforo è diventato rosso per le auto, il pedone può attraversare
+                
+                #Il semaforo è diventato rosso per le auto, il pedone può attraversare
                 self.waiting_for_light = False
                 self.traffic_light_position = None
 
-        # Controllo se il prossimo passo è sulle strisce pedonali
+        #Controllo se il prossimo passo è sulle strisce pedonali
         if len(self.path) > 1:
             next_x, next_y = self.path[1]
             
-            # Se sta per entrare sulle strisce
+            #Se sta per entrare sulle strisce
             if map_pedone[next_y][next_x] == 2 and map_pedone[y][x] != 2:
+                
                 # Controlla il semaforo se disponibile
                 if traffic_lights:
                     # Trova il semaforo PIÙ VICINO alle strisce che sta per attraversare
@@ -97,41 +99,41 @@ class Pedone:
                             min_distance = distance
                             nearest_light = (pos, state)
                     
-                    # Se ha trovato un semaforo vicino
+                    #Se ha trovato un semaforo vicino
                     if nearest_light:
                         pos, state = nearest_light
                         
-                        # Se il semaforo è verde per le auto (rosso per i pedoni)
+                        #Se il semaforo è verde per le auto (rosso per i pedoni)
                         if state == 'green':
                             self.waiting_for_light = True
                             self.traffic_light_position = pos
                             return
                         else:
-                            # Il semaforo è rosso per le auto, può attraversare
+                            #Il semaforo è rosso per le auto, può attraversare
                             self.waiting_for_light = False
                             self.traffic_light_position = None
                 
-                # Se nessun semaforo rilevante è stato trovato o il semaforo è rosso per le auto
+                #Se nessun semaforo rilevante è stato trovato o il semaforo è rosso per le auto
                 if self.pre_cross_wait < self.pre_cross_max:
                     self.pre_cross_wait += 1
                     return
                 else:
                     self.pre_cross_wait = 0
 
-        # Attendere sulle strisce pedonali
+        #Attende sulle strisce pedonali
         if map_pedone[y][x] == 2:
             self.wait_counter += 1
             if self.wait_counter < self.wait_steps:
                 return
             self.wait_counter = 0
         else:
-            # Attendere sul marciapiede
+            #Attende sul marciapiede
             self.wait_counter += 1
             if self.wait_counter < self.wait_steps - 3:  # Più veloce sul marciapiede
                 return
             self.wait_counter = 0
 
-        # Avanza lungo il percorso
+        #Avanza lungo il percorso
         if len(self.path) > 1:
             self.position = list(self.path[1])
             self.path.pop(0)

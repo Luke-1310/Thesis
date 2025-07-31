@@ -109,6 +109,11 @@ def create_grid(self): creo la griglia con tutti gli elementi, come, i percorsi 
 
 **map2_environment.py:**
 
-
+similare a map1_environment
 
 **pedone.py**
+
+def __init__(self, start, goal, path=None, wait_steps = 5, path_callback=None, error_prob=0.0): inizializza tutto il necessario per i pedoni, come il punto di partenza, il goal,
+                                                                                                il percorso e la probabilità che esso ha di sbagliare
+def step(self, map_pedone, traffic_lights=None): fa avanzare il pedone lungo il percorso, gestendo diversi casi tra cui se arriva a destinazione                                                                          
+
