@@ -195,11 +195,12 @@ def evaluate_agent(env, font):
 def show_menu(screen, font):
     
     buttons = [
-        {"text": "1. Allenare l'agente", "action": "train"},
+        {"text": "1. Trova il parcheggio", "action": "train"},
         {"text": "2. Mostrare risultati", "action": "show"},
         {"text": "3. Scegli la mappa", "action": "select_map"},
         {"text": "4. Impostazioni", "action": "settings"},
-        {"text": "5. Uscire", "action": "exit"}
+        {"text": "5. Trova il percorso", "action": "null"},
+        {"text": "6. Uscire", "action": "exit"}
     ]
 
     button_rects = []
@@ -213,7 +214,7 @@ def show_menu(screen, font):
     y = 150
 
     for button in buttons:
-        rect = pygame.Rect(screen.get_width() // 2 - 150, y, 300, 50)
+        rect = pygame.Rect(screen.get_width() // 2 - 150, y, 325, 50)
         pygame.draw.rect(screen, (0, 128, 255), rect)  # Rettangolo blu
         text_surface = font.render(button["text"], True, (255, 255, 255))  # Solo testo bianco
         screen.blit(text_surface, (rect.x + 20, rect.y + 10))
@@ -427,19 +428,26 @@ def show_settings(screen, font, env):
     while setting:
         
         screen.fill((255, 255, 255))
-        
         draw_text(screen, "Impostazioni Ambiente", 0, 30, font, (0, 0, 0), center=True)
         
+        #Parametri per creare un layout uniforme
+        button_width = 60
+        button_height = 40
+        center_x = screen.get_width() // 2
+        button_spacing = 300  #Distanza tra bottoni - e +
+
         #Sezione per i pedoni
         y_start = 100
         draw_text(screen, f"Numero Pedoni: {num_pedoni}", 0, y_start, font, (0, 0, 0), center=True)
         
         #Bottoni pedoni
-        pedoni_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
-        pedoni_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
+        # pedoni_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
+        # pedoni_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
+        pedoni_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
+        pedoni_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         
-        pygame.draw.rect(screen, (200, 50, 50), pedoni_less_rect)    # Rosso
-        pygame.draw.rect(screen, (50, 200, 50), pedoni_more_rect)    # Verde
+        pygame.draw.rect(screen, (200, 50, 50), pedoni_less_rect)    #Rosso
+        pygame.draw.rect(screen, (50, 200, 50), pedoni_more_rect)    #Verde
         
         draw_text(screen, "-", pedoni_less_rect.centerx - 8, pedoni_less_rect.centery - 10, font, (255, 255, 255))
         draw_text(screen, "+", pedoni_more_rect.centerx - 8, pedoni_more_rect.centery - 10, font, (255, 255, 255))
@@ -449,11 +457,11 @@ def show_settings(screen, font, env):
         draw_text(screen, f"Prob. Errore Pedoni: {error_prob_pedoni:.0%}", 0, y_start, font, (0, 0, 0), center=True)
         
         #Bottoni errore pedoni
-        err_ped_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
-        err_ped_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
+        err_ped_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
+        err_ped_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         
-        pygame.draw.rect(screen, (200, 50, 50), err_ped_less_rect)   # Rosso
-        pygame.draw.rect(screen, (50, 200, 50), err_ped_more_rect)   # Verde
+        pygame.draw.rect(screen, (200, 50, 50), err_ped_less_rect)   
+        pygame.draw.rect(screen, (50, 200, 50), err_ped_more_rect)   
         
         draw_text(screen, "-", err_ped_less_rect.centerx - 8, err_ped_less_rect.centery - 10, font, (255, 255, 255))
         draw_text(screen, "+", err_ped_more_rect.centerx - 8, err_ped_more_rect.centery - 10, font, (255, 255, 255))
@@ -463,11 +471,11 @@ def show_settings(screen, font, env):
         draw_text(screen, f"Prob. Cambio Percorso Auto: {prob_change_auto:.0%}", 0, y_start, font, (0, 0, 0), center=True)
         
         #Bottoni cambio percorso auto
-        auto_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
-        auto_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
-        
-        pygame.draw.rect(screen, (200, 50, 50), auto_less_rect)      # Rosso
-        pygame.draw.rect(screen, (50, 200, 50), auto_more_rect)      # Verde
+        auto_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
+        auto_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
+
+        pygame.draw.rect(screen, (200, 50, 50), auto_less_rect)     
+        pygame.draw.rect(screen, (50, 200, 50), auto_more_rect)      
         
         draw_text(screen, "-", auto_less_rect.centerx - 8, auto_less_rect.centery - 10, font, (255, 255, 255))
         draw_text(screen, "+", auto_more_rect.centerx - 8, auto_more_rect.centery - 10, font, (255, 255, 255))
@@ -477,8 +485,8 @@ def show_settings(screen, font, env):
         draw_text(screen, f"Numero Episodi: {num_episodi}", 0, y_start, font, (0, 0, 0), center=True)
         
         #Bottoni numero episodi
-        episodi_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 30, 60, 35)
-        episodi_more_rect = pygame.Rect(screen.get_width() // 2 + 190, y_start + 30, 60, 35)
+        episodi_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
+        episodi_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         
         pygame.draw.rect(screen, (200, 50, 50), episodi_less_rect)
         pygame.draw.rect(screen, (50, 200, 50), episodi_more_rect)
@@ -664,7 +672,7 @@ def main():
     
     screen = pygame.display.set_mode((1536, 800))
     pygame.display.update()
-    pygame.display.set_caption("Find The Parking v.2")
+    pygame.display.set_caption("Traffic Learner")
     pygame.event.pump()#Forza aggiornamento della finestra
     font =  pygame.font.Font("Progetto Tesi Privitera/assets/PixeloidSansBold.ttf", 20)
 
