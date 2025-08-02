@@ -239,3 +239,19 @@ class Map1Environment(BaseEnvironment):
             {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0}
         ]
 
+    #Definisce i percorsi del traffico per le auto modalità impara col traffico
+    def traffic_routes(self): #Ogni percorso deve avere delle informazioni fondamentali, nome, punti di partenza e arrivo
+        
+        self.route1 = {
+            "name": "Percorso 1",
+            "start": (24, 2),
+            "end": (4, 39),
+        },
+
+        self.route2 = {
+            "name": "Percorso 2",
+            "start": (24, 14),
+            "end": (1, 46),
+        }
+
+        #per collegare i percorsi con le auto si utilizza A* calcolato sul momento
