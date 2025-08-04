@@ -39,11 +39,9 @@ def train_traffic_rules(env, font):
         
         # ✅ Rotazione tra tutti i percorsi
         current_route = training_routes[episode % len(training_routes)]
-        
         print(f"\nEpisodio {episode}: {current_route['name']} - {current_route['start']} → {current_route['end']}")
 
-        # Reset per questo percorso
-        reset_for_traffic_training(env, current_route)
+        env.reset_for_traffic_rules(current_route['start'], current_route['end'])
 
         episode_reward = 0
         episode_violations = 0
@@ -54,20 +52,20 @@ def train_traffic_rules(env, font):
         while not is_route_completed(env, current_route) and steps < max_steps:
             
             # Update ambiente
-            env.update_traffic_lights()
+            env.update_traffic_lights()  #aggiorna le luce dei semafori
             env.update_pedoni(env.pedoni)
 
             # Azioni
-            action_index = env.get_next_action(epsilon)
+            action_index = env.get_next_action_traffic_rules(epsilon)
             old_position = env.agent_position[:]
             old_car_in_vision = int(env.is_car_in_vision())
 
             # Movimento
-            is_valid = env.get_next_location(action_index)
+            is_valid = env.get_next_location_traffic_rules(action_index)
 
             # Reward
             if is_valid:
-                reward, violations = calculate_traffic_reward(env, old_position, current_route)
+                reward, violations = calculate_traffic_reward_dedicated(env, old_position, current_route)
                 episode_violations += violations
             else:
                 reward = -10  # Penalità per azione non valida
@@ -82,7 +80,7 @@ def train_traffic_rules(env, font):
             env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index] = new_q_value
             
             # ✅ Display per vedere cosa succede
-            display_traffic_training(env, font, episode, current_route, episode_violations)
+            display_traffic_training_dedicated(env, font, episode, current_route, episode_violations)
             pygame.time.wait(50)  # Rallenta per vedere
 
         # ✅ Statistiche episodio
@@ -102,11 +100,9 @@ def train_traffic_rules(env, font):
 
         # Decay epsilon
         epsilon = max(0.01, epsilon * 0.995)
-    
-    # ✅ Risultati finali
-    print_final_stats(episode_data)
 
-# ✅ FUNZIONI DI SUPPORTO:
+    env.set_traffic_rules_mode(False)
+    print_final_stats(episode_data)
 
 def reset_for_traffic_training(env, route):
     """Reset ambiente per percorso specifico"""
@@ -116,7 +112,11 @@ def reset_for_traffic_training(env, route):
     
     # Salva goal temporaneo
     env.current_traffic_goal = route['end']
-    
+
+    #Vogliamo mettere un flag per capire che siamo in modalità training
+    #Ricordiamo che i semafori nel trova parcheggio sono gestiti in modo diverso (forzato da codice)
+    env.traffic_rules_mode = True
+
     # Reset normale
     env.reset_game()
 
@@ -126,33 +126,91 @@ def is_route_completed(env, route):
     distance = abs(env.agent_position[0] - route['end'][0]) + abs(env.agent_position[1] - route['end'][1])
     return distance <= 2
 
-def calculate_traffic_reward(env, old_position, route):
-    """Sistema reward per regole strada"""
+def calculate_traffic_reward_dedicated(env, old_position, route):
+    """Sistema reward dedicato per traffic rules"""
     
     base_reward = 1
     violations = 0
     
-    # Bonus progresso verso goal
-    progress_bonus = calculate_progress_bonus(env, old_position, route['end'])
+    # Bonus progresso
+    progress_bonus = calculate_progress_bonus_dedicated(env, old_position, route['end'])
     
-    # Penalità violazioni
-    safety_penalty, safety_violations = check_safety_violations(env)
-    violations += safety_violations
+    # Violazioni con funzioni dedicate
+    traffic_violations = check_traffic_rules_violations_dedicated(env)
+    violations += traffic_violations['count']
     
-    total_reward = base_reward + progress_bonus + safety_penalty
+    total_reward = base_reward + progress_bonus + traffic_violations['penalty']
     
     return total_reward, violations
 
-def calculate_progress_bonus(env, old_pos, goal):
-    """Bonus avvicinamento"""
+def check_traffic_rules_violations_dedicated(env):
+    """Sistema violazioni dedicato usando le nuove funzioni"""
+    
+    violations = {'count': 0, 'penalty': 0}
+    agent_pos = env.agent_position
+    
+    # ✅ REGOLA 1: Semaforo rosso - con funzione dedicata
+    if env.check_traffic_light_violation_at_position(agent_pos):
+        violations['count'] += 1
+        violations['penalty'] -= 20
+        print(f"🚨 VIOLAZIONE: Passaggio col rosso!")
+    
+    # ✅ REGOLA 2: Mantenimento destra
+    if check_right_lane_rule_dedicated(env):
+        violations['count'] += 1
+        violations['penalty'] -= 5
+        print(f"🚨 VIOLAZIONE: Non mantieni la destra!")
+    
+    # ✅ REGOLA 3: Pedoni
+    for pedone in env.pedoni:
+        distance = abs(agent_pos[0] - pedone.position[0]) + abs(agent_pos[1] - pedone.position[1])
+        if distance <= 1:
+            violations['count'] += 1
+            violations['penalty'] -= 10
+            print(f"🚨 VIOLAZIONE: Investito pedone!")
+            break
+    
+    return violations
+
+def check_right_lane_rule_dedicated(env):
+    """Controllo regola destra con funzioni dedicate"""
+    
+    agent_pos = env.agent_position
+    x, y = agent_pos
+    
+    # Verifica se siamo su strada
+    if env.map[y][x] != 1:
+        return False
+    
+    # Logica semplificata per mantenimento destra
+    # (implementazione dettagliata come prima)
+    return check_lane_position_simple(env, x, y)
+
+def check_lane_position_simple(env, x, y):
+    """Controllo semplificato posizione corsia"""
+    
+    # Per ora implementazione base
+    # Conta strade intorno per determinare se siamo al centro
+    road_count = 0
+    for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < env.width and 0 <= ny < env.height:
+            if env.map[ny][nx] == 1:
+                road_count += 1
+    
+    # Se circondati da molte strade, probabilmente siamo al centro
+    return road_count >= 3
+
+def calculate_progress_bonus_dedicated(env, old_pos, goal):
+    """Bonus progresso con goal dedicato"""
     
     old_distance = abs(old_pos[0] - goal[0]) + abs(old_pos[1] - goal[1])
     new_distance = abs(env.agent_position[0] - goal[0]) + abs(env.agent_position[1] - goal[1])
     
     if new_distance < old_distance:
-        return 2  # Bonus
+        return 2
     elif new_distance > old_distance:
-        return -1  # Penalità
+        return -1
     return 0
 
 def check_safety_violations(env):
@@ -171,28 +229,30 @@ def check_safety_violations(env):
     
     return penalty, violations
 
-def display_traffic_training(env, font, episode, route, violations):
-    """Display con info training"""
+def display_traffic_training_dedicated(env, font, episode, route, violations):
+    """Display dedicato per traffic rules"""
     
-    # Display normale
-    env.display(episode)
+    # Display con funzione dedicata se esiste
+    if hasattr(env, 'display_traffic_rules_info'):
+        env.display_traffic_rules_info(episode)
+    else:
+        env.display(episode)
     
     # Overlay informazioni
     screen = env.screen
     
-    # Info episodio
-    draw_text(screen, f"TRAFFIC RULES - Episode {episode}", 10, 10, font, (0, 0, 0))
-    draw_text(screen, f"Route: {route['name']}", 10, 40, font, (0, 0, 0))
-    draw_text(screen, f"Goal: {route['end']}", 10, 70, font, (0, 0, 150))
+    draw_text(screen, f"TRAFFIC RULES (FUNZIONI DEDICATE)", 10, 10, font, (0, 0, 200))
+    draw_text(screen, f"Episode: {episode}", 10, 40, font, (0, 0, 0))
+    draw_text(screen, f"Route: {route['name']}", 10, 70, font, (0, 0, 0))
     draw_text(screen, f"Violations: {violations}", 10, 100, font, 
              (255, 0, 0) if violations > 0 else (0, 150, 0))
     
-    # Visualizza goal con bordo giallo
-    goal = route['end']
-    goal_rect = pygame.Rect(goal[0] * env.cell_size, goal[1] * env.cell_size, env.cell_size, env.cell_size)
-    pygame.draw.rect(screen, (255, 255, 0), goal_rect, 3)
+    # Goal e start (se non già disegnati dalla funzione dedicata)
+    if not hasattr(env, 'current_traffic_goal'):
+        goal = route['end']
+        goal_rect = pygame.Rect(goal[0] * env.cell_size, goal[1] * env.cell_size, env.cell_size, env.cell_size)
+        pygame.draw.rect(screen, (255, 255, 0), goal_rect, 3)
     
-    # Visualizza start con bordo verde
     start = route['start']
     start_rect = pygame.Rect(start[0] * env.cell_size, start[1] * env.cell_size, env.cell_size, env.cell_size)
     pygame.draw.rect(screen, (0, 255, 0), start_rect, 3)
