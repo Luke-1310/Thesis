@@ -9,11 +9,13 @@ from environments.map2_environment import Map2Environment
 import matplotlib.pyplot as plt       #Per disegnare i grafici
 import pandas as pd                   #Per gestire e analizzare dati in modo ordinato
 
+import traffic_rules_training
+
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
 
-#CANCELLABILE (?)
+#CANCELLABILE
 # def print_q_table(q_table):
 #      print("Q-Table:")
 #      print(q_table)
@@ -201,7 +203,7 @@ def show_menu(screen, font):
         {"text": "2. Mostrare risultati", "action": "show"},
         {"text": "3. Scegli la mappa", "action": "select_map"},
         {"text": "4. Impostazioni", "action": "settings"},
-        {"text": "5. Trova il percorso", "action": "null"},
+        {"text": "5. Training con Regole", "action": "traffic_training"},
         {"text": "6. Uscire", "action": "exit"}
     ]
 
@@ -443,8 +445,6 @@ def show_settings(screen, font, env):
         draw_text(screen, f"Numero Pedoni: {num_pedoni}", 0, y_start, font, (0, 0, 0), center=True)
         
         #Bottoni pedoni
-        # pedoni_less_rect = pygame.Rect(screen.get_width() // 2 - 250, y_start + 40, 80, 40)
-        # pedoni_more_rect = pygame.Rect(screen.get_width() // 2 + 170, y_start + 40, 80, 40)
         pedoni_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         pedoni_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         
@@ -746,6 +746,8 @@ def main():
         elif action == "settings":
             show_settings(screen, font, env)
 
+        elif action == "traffic_training":
+            traffic_rules_training.train_traffic_rules(env, font)
     pygame.quit()
 
 if __name__ == "__main__":
