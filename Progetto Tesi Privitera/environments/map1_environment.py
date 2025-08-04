@@ -24,6 +24,8 @@ class Map1Environment(BaseEnvironment):
         #Mi voglio creare un attributo per capire che mappa sto trattando
         self.map_name = "Città"
 
+        self.traffic_training_routes = self.define_traffic_routes()
+
 
     def load_assets(self):
 
