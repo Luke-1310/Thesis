@@ -247,15 +247,67 @@ class Map1Environment(BaseEnvironment):
         self.traffic_training_routes = [
             {
                 "name": "Percorso 1",
+                "colour": "yellow",
                 "start": (24, 2),
                 "end": (4, 39),
             },
 
             {
                 "name": "Percorso 2",
+                "colour": "sky blue",
                 "start": (24, 14),
                 "end": (1, 46),
-            }
+            },
+
+            {
+                "name": "Percorso 3",
+                "colour": "red",
+                "start": (24, 40 ),
+                "end": (1, 46),
+            },
+
+            {
+                "name": "Percorso 2",
+                "start": (24, 14),
+                "end": (1, 46),
+            },
+
+            {
+                "name": "Percorso 2",
+                "start": (24, 14),
+                "end": (1, 46),
+            },
+
+            {
+                "name": "Percorso 2",
+                "start": (24, 14),
+                "end": (1, 46),
+            },
+
+            {
+                "name": "Percorso 2",
+                "start": (24, 14),
+                "end": (1, 46),
+            },
+
+            {
+                "name": "Percorso 2",
+                "start": (24, 14),
+                "end": (1, 46),
+            },
+
+
+            {
+                "name": "Percorso 2",
+                "start": (24, 14),
+                "end": (1, 46),
+            },
+
+            {
+                "name": "Percorso 2",
+                "start": (24, 14),
+                "end": (1, 46),
+            },
         ]
 
         return self.traffic_training_routes
