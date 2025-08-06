@@ -267,47 +267,33 @@ class Map1Environment(BaseEnvironment):
             },
 
             {
-                "name": "Percorso 2",
-                "start": (24, 14),
-                "end": (1, 46),
+                "name": "Percorso 4",
+                "colour": "purple",
+                "start": (1, 11),
+                "end": (14, 33),
             },
 
             {
-                "name": "Percorso 2",
-                "start": (24, 14),
-                "end": (1, 46),
+                "name": "Percorso 5",
+                "colour": "green",
+                "start": (19, 26),
+                "end": (4, 32),
             },
 
             {
-                "name": "Percorso 2",
-                "start": (24, 14),
-                "end": (1, 46),
+                "name": "Percorso 6",
+                "colour": "orange",
+                "start": (11, 46),
+                "end": (14, 2),
             },
 
             {
-                "name": "Percorso 2",
-                "start": (24, 14),
-                "end": (1, 46),
+                "name": "Percorso 7",
+                "colour": "pink",
+                "start": (16, 14),
+                "end": (3, 22),
             },
 
-            {
-                "name": "Percorso 2",
-                "start": (24, 14),
-                "end": (1, 46),
-            },
-
-
-            {
-                "name": "Percorso 2",
-                "start": (24, 14),
-                "end": (1, 46),
-            },
-
-            {
-                "name": "Percorso 2",
-                "start": (24, 14),
-                "end": (1, 46),
-            },
         ]
 
         return self.traffic_training_routes
