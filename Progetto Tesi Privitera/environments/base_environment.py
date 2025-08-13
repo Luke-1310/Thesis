@@ -50,6 +50,34 @@ class BaseEnvironment:
                 return True
         return False
 
+    def are_pedestrians_in_vision(self):
+        """Verifica se ci sono pedoni nel campo visivo dell'agente (2x2)"""
+        
+        agent_x, agent_y = self.agent_position
+        vision_min_x = max(0, agent_x - 2)
+        vision_max_x = min(self.width - 1, agent_x + 2)
+        vision_min_y = max(0, agent_y - 2)
+        vision_max_y = min(self.height - 1, agent_y + 2)
+        
+        # Controlla se pedoni esistono
+        if not hasattr(self, 'pedoni') or not self.pedoni:
+            return False
+        
+        for pedone in self.pedoni:
+            ped_x, ped_y = pedone.position
+            if vision_min_x <= ped_x <= vision_max_x and vision_min_y <= ped_y <= vision_max_y:
+                return True
+        return False
+
+    def get_vision_state(self):
+        """Ottieni stato completo della visione (auto + pedoni)"""
+        
+        cars_visible = int(self.is_car_in_vision())
+        pedestrians_visible = int(self.are_pedestrians_in_vision())
+        
+        return cars_visible, pedestrians_visible
+
+
     #Aggiorna la posizione di una singola auto secondo il suo percorso
     def update_car_position(self):
         self.prev_car_position = [car['position'][:] for car in self.cars]
@@ -123,10 +151,13 @@ class BaseEnvironment:
         return car.get('rotation', 0)  #Restituisce la rotazione della macchina, o 0 se non è definita
 
     def get_next_action(self, epsilon):
+        
         if np.random.random() < epsilon:
             #Ho lo SFRUTTTAMENTO quando random < epsilon
-            cars_visible = int(self.is_car_in_vision())
-            return np.argmax(self.q_values[self.agent_position[1], self.agent_position[0], cars_visible])
+            cars_visible, pedestrians_visible = self.get_vision_state()
+            current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible]
+            return np.argmax(current_q)
+        
         else:
             #Ho l'ESPLORAZIONE quando random >= epsilon
             return np.random.randint(4)

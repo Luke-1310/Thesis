@@ -103,7 +103,13 @@ class Map1Environment(BaseEnvironment):
             2: self.percorso2,
             3: self.percorso3
         }
-        self.q_values = np.zeros((self.height, self.width, 2, 4))
+        
+        #bisogna modificare la q_table per aggiungervi i pedoni
+        #self.q_values = np.zeros((self.height, self.width, 2, 4))
+
+        #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni]
+        self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
+
         self.actions = ['up', 'down', 'right', 'left']
         self.traffic_lights = {
             (14, 11): 'green',

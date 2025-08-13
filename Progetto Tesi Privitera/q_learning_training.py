@@ -15,11 +15,6 @@ os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori prec
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
 
-#CANCELLABILE
-# def print_q_table(q_table):
-#      print("Q-Table:")
-#      print(q_table)
-
 def train_agent(env, font):
 
     #Parametri di allenamento
@@ -44,12 +39,19 @@ def train_agent(env, font):
             pygame.event.pump()
 
             env.update_traffic_lights()  #Aggiorna lo stato dei semafori
+
+            #Fa muovere le auto nemiche se la mappa lo supporta
+            if hasattr(env, "update_car_position"):
+                env.update_car_position()
+
             env.update_pedoni(env.pedoni)  #Aggiorna lo stato dei pedoni
+
+            #Stato di visione PRIMA della scelta azione
+            old_cars_visible, old_pedestrians_visible = env.get_vision_state()
 
             action_index = env.get_next_action(epsilon)
             old_position = env.agent_position[:]
-            old_car_in_vision = int(env.car_in_vision)
-            env.is_car_in_vision()  #Aggiorna lo stato di car_in_vision
+
             is_valid = env.get_next_location(action_index)
 
             if is_valid:
@@ -60,11 +62,15 @@ def train_agent(env, font):
                 reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
 
             #Q-learning update
-            old_q_value = env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index]
-            temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])) - old_q_value
-            new_q_value = old_q_value + (learning_rate * temporal_difference)
-            env.q_values[old_position[1], old_position[0], old_car_in_vision, action_index] = new_q_value
+            old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index]
+
+            new_cars_visible, new_pedestrians_visible = env.get_vision_state()
+
+            temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], new_cars_visible, new_pedestrians_visible])) - old_q_value
             
+            new_q_value = old_q_value + (learning_rate * temporal_difference)
+            env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index] = new_q_value
+
             env.display(episode)
             pygame.time.wait(1)  #Breve pausa per gestire gli eventi
 
@@ -170,11 +176,18 @@ def evaluate_agent(env, font):
             if event.type == pygame.QUIT:
                 running = False
         
-        env.update_traffic_lights()      
-        env.update_pedoni(env.pedoni)     
-        env.is_car_in_vision()           
+        env.update_traffic_lights()
         
-        action_index = np.argmax(env.q_values[env.agent_position[1], env.agent_position[0], int(env.car_in_vision)])
+        #Aggiorna le auto nemiche
+        if hasattr(env, "update_car_position"):
+            env.update_car_position()
+        env.update_pedoni(env.pedoni)
+
+        #Stato completo e scelta azione con Q-table estesa
+        cars_visible, pedestrians_visible = env.get_vision_state()
+        action_index = np.argmax(
+            env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible]
+        )
         env.get_next_location(action_index)
         path.append(env.agent_position[:])
         env.display(path=path)
@@ -250,7 +263,7 @@ def show_yes_no_dialog(screen, font, question):
     button_height = 50
     spacing = 40  # spazio tra i due bottoni
 
-    # Calcola la posizione centrale dei due bottoni insieme
+    #Calcola la posizione centrale dei due bottoni insieme
     total_width = button_width * 2 + spacing
     start_x = (screen.get_width() - total_width) // 2
     y = 200
@@ -264,7 +277,7 @@ def show_yes_no_dialog(screen, font, question):
     yes_text = font.render("Sì", True, (255, 255, 255))
     no_text = font.render("No", True, (255, 255, 255))
 
-    # Centra il testo all'interno dei bottoni
+    #Centra il testo all'interno dei bottoni
     screen.blit(yes_text, (yes_rect.centerx - yes_text.get_width() // 2, yes_rect.centery - yes_text.get_height() // 2))
     screen.blit(no_text, (no_rect.centerx - no_text.get_width() // 2, no_rect.centery - no_text.get_height() // 2))
 
@@ -423,12 +436,15 @@ def show_settings(screen, font, env):
     
     setting = True
 
-    # Valori attuali dall'ambiente
+    #Valori attuali dall'ambiente
     num_pedoni = env.num_pedoni
     error_prob_pedoni = env.pedone_error_prob
     prob_change_auto = env.route_change_probability
     num_episodi = getattr(env, 'num_episodes', 2000) #Valore predefinito se non esiste
     
+    editing_episodi = False
+    episodi_input = str(num_episodi)
+
     while setting:
         
         screen.fill((255, 255, 255))
@@ -490,12 +506,52 @@ def show_settings(screen, font, env):
         episodi_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         episodi_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         
+        input_width = 160
+        input_height = 50
+        episodi_input_rect = pygame.Rect(center_x - input_width//2, y_start + 40, input_width, input_height)
+
         pygame.draw.rect(screen, (200, 50, 50), episodi_less_rect)
         pygame.draw.rect(screen, (50, 200, 50), episodi_more_rect)
         
         draw_text(screen, "-", episodi_less_rect.centerx - 6, episodi_less_rect.centery - 8, font, (255, 255, 255))
         draw_text(screen, "+", episodi_more_rect.centerx - 6, episodi_more_rect.centery - 8, font, (255, 255, 255))
         
+        # Rendering del box di input con cursore lampeggiante
+        border_color = (0, 150, 0) if editing_episodi else (120, 120, 120)
+        bg_color = (255, 255, 255) if editing_episodi else (245, 245, 245)
+        
+        pygame.draw.rect(screen, bg_color, episodi_input_rect)
+        pygame.draw.rect(screen, border_color, episodi_input_rect, 3)
+
+        #Testo da visualizzare con cursore
+        shown_value = episodi_input if editing_episodi else str(num_episodi)
+        
+        #Cursore lampeggiante quando in editing
+        if editing_episodi:
+            
+            #Cursore lampeggia ogni 500ms
+            cursor_visible = (pygame.time.get_ticks() // 500) % 2
+            if cursor_visible:
+                shown_value += "|"
+        
+        #Colore testo diverso quando editing
+        text_color = (0, 0, 150) if editing_episodi else (0, 0, 0)
+        value_surface = font.render(shown_value, True, text_color)
+        
+        #Placeholder se vuoto
+        if editing_episodi and not episodi_input:
+            placeholder_surface = font.render("Digita qui", True, (150, 150, 150))
+            screen.blit(placeholder_surface, (episodi_input_rect.centerx - placeholder_surface.get_width() // 2,episodi_input_rect.centery - placeholder_surface.get_height() // 2))
+        else:
+            screen.blit(value_surface, (episodi_input_rect.centerx - value_surface.get_width() // 2, episodi_input_rect.centery - value_surface.get_height() // 2))
+        
+        #Istruzioni sotto il campo
+        if editing_episodi:
+            help_text = "INVIO: Conferma | ESC: Annulla | BACKSPACE: Cancella"
+            help_surface = pygame.font.Font(None, 16).render(help_text, True, (100, 100, 100))
+            screen.blit(help_surface, (episodi_input_rect.centerx - help_surface.get_width() // 2,
+                                     episodi_input_rect.bottom + 5))
+
         #Sezione finale
         y_final = y_start + 120
         
@@ -515,6 +571,33 @@ def show_settings(screen, font, env):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return  #Esce senza salvare
+            
+            #Gestione input tastiera durante editing episodi
+            if event.type == pygame.KEYDOWN and editing_episodi:
+                if event.key == pygame.K_RETURN:
+                    try:
+                        if episodi_input.strip():  #Solo se c'è del testo
+                            val = int(episodi_input)
+                            num_episodi = max(1, min(5000, val))  #Range esteso
+                        
+                        #Se vuoto, mantieni valore attuale
+                    except ValueError:
+                        
+                        #In caso di errore, mantieni valore attuale
+                        pass
+                    editing_episodi = False
+
+                elif event.key == pygame.K_ESCAPE:
+                    episodi_input = str(num_episodi)  # Ripristina valore originale
+                    editing_episodi = False
+
+                elif event.key == pygame.K_BACKSPACE:
+                    episodi_input = episodi_input[:-1]
+
+                else:
+                    # Accetta solo cifre, max 5 caratteri (fino a 3000)
+                    if event.unicode.isdigit() and len(episodi_input) < 5:
+                        episodi_input += event.unicode
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
@@ -540,15 +623,31 @@ def show_settings(screen, font, env):
                 if auto_more_rect.collidepoint(pos):
                     prob_change_auto = min(0.9, prob_change_auto + 0.10)
 
-                #Controllo numero episodi (1-3000, step di 50)
+                if episodi_input_rect.collidepoint(pos):
+                    editing_episodi = True
+                    episodi_input = str(num_episodi)
+
+                #Controllo numero episodi (step dinamico: Shift=±100, altrimenti ±10)
+                # Nota: se stai editando da tastiera, i bottoni continuano a funzionare.
+                mods = pygame.key.get_mods()
+                step = 100 if (mods & pygame.KMOD_SHIFT) else 10
+
                 if episodi_less_rect.collidepoint(pos):
-                    num_episodi = max(1, num_episodi - 50)
-                
+                    num_episodi = max(1, num_episodi - step)
+
                 if episodi_more_rect.collidepoint(pos):
-                    num_episodi = min(3000, num_episodi + 50)
+                    num_episodi = min(3000, num_episodi + step)
                 
                 #Bottone per la conferma
                 if confirm_rect.collidepoint(pos):
+                    if editing_episodi:
+                        try:
+                            val = int(episodi_input) if episodi_input.strip() != "" else num_episodi
+                            num_episodi = max(1, min(3000, val))
+                        except ValueError:
+                            pass
+                        editing_episodi = False
+
                     # Applica le modifiche all'ambiente
                     env.num_pedoni = num_pedoni
                     env.pedone_error_prob = error_prob_pedoni
