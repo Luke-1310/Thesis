@@ -106,7 +106,11 @@ def train_agent(env, font):
 
         path_q_table = "Progetto Tesi Privitera/q_tables"
 
-        filename = f'q_table_{env.map_name}.npy'  
+        #creo il timestamp per rendere univoca la q-table
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f'q_table_{env.map_name}_{timestamp}.npy' 
+
         full_path_q_table = f"{path_q_table}/{filename}" 
 
         np.save(full_path_q_table, env.q_values)
@@ -114,8 +118,8 @@ def train_agent(env, font):
         screen = env.screen
         screen.fill((255, 255, 255))
 
-        draw_text(screen, f"Q-table {env.map_name} salvata con successo.", 0, screen.get_height() // 2 - 40, font, (0, 150, 0), center=True)
-        draw_text(screen, f"Percorso: {full_path_q_table}", 0, screen.get_height() // 2, font, (0, 100, 0), center=True)
+        draw_text(screen, f"Q-table salvata con successo!", 0, screen.get_height() // 2 - 40, font, (0, 150, 0), center=True)
+        draw_text(screen, f"Nome: {filename}", 0, screen.get_height() // 2, font, (0, 100, 0), center=True)
         
         pygame.display.flip()
         pygame.time.wait(1500)
@@ -127,39 +131,184 @@ def train_agent(env, font):
 
 def show_results(env, font):
 
+    # try:
+    #     filename = f'q_table_{env.map_name}.npy'  #Il nome file dipende dalla mappa selezionata
+    #     path_q_table = f"Progetto Tesi Privitera/q_tables/{filename}"
+    #     q_table = np.load(path_q_table)
+
+    #     screen = env.screen
+    #     screen.fill((255, 255, 255))
+
+    #     if q_table.shape != env.q_values.shape:
+    #         message = "Non è stato possibile caricare la Q-table"
+    #         color = (255, 0, 0)  #Rosso
+    #         wait_time = 2000
+    #     else:
+    #         env.q_values = q_table
+    #         message = f"Q-table {env.map_name} caricata con successo."
+    #         color = (0, 150, 0)  #Verde
+    #         wait_time = 1500 #Attende 1.5 secondi per mostrare il messaggio
+
+    #     draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, color, center=True)
+    #     pygame.display.flip()
+    #     pygame.time.wait(wait_time)
+
+    #     if q_table.shape == env.q_values.shape:
+    #         evaluate_agent(env, font)
+
+    # except FileNotFoundError:
+    #     screen = env.screen
+    #     screen.fill((255, 255, 255))
+
+    #     message = f"Q-table {env.map_name} non trovata."
+    #     draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, (255, 0, 0), center=True)
+    #     pygame.display.flip()
+    #     pygame.time.wait(1500)
+
+    #Carichiamo le Q-table disponibili
+    qtables_info = []
+    qtables_dir = "Progetto Tesi Privitera/q_tables"
+
     try:
-        filename = f'q_table_{env.map_name}.npy'  #Il nome file dipende dalla mappa selezionata
-        path_q_table = f"Progetto Tesi Privitera/q_tables/{filename}"
-        q_table = np.load(path_q_table)
+        files = os.listdir(qtables_dir)
+        qtable_files = [f for f in files if f.startswith(f"q_table_{env.map_name}_") and f.endswith('.npy')]  # Filtra i file della Q-table
 
+        for qtable_file in qtable_files:
+            
+            #Estraggo timestamp dal nome file per poi mostrarlo a schermo
+            parts = qtable_file.replace('.npy', '').split('_')
+            
+            if len(parts) >= 4:
+                date_part = parts[3]    #Il terzo elemento è la data
+                time_part = parts[4]     #Il quarto elemento è l'ora
+                
+                #Formatta data/ora leggibile
+                try:
+                    formatted_date = f"{date_part[6:8]}/{date_part[4:6]}/{date_part[:4]}"
+                    formatted_time = f"{time_part[:2]}:{time_part[2:4]}:{time_part[4:6]}"
+                    display_name = f"{formatted_date} alle {formatted_time}"
+                
+                except:
+                    display_name = qtable_file.replace('.npy', '')
+            
+            else:
+                display_name = qtable_file.replace('.npy', '')
+            
+            qtables_info.append({
+                'filename': qtable_file,
+                'filepath': os.path.join(qtables_dir, qtable_file),
+                'display_name': display_name
+            })
+        
+        qtables_info.sort(key=lambda x: x['filename'], reverse=True) #Ordina le table dalla più vecchia alla più recente
+               
+    except Exception as e:
+        print(f"Errore caricamento Q-table: {e}")  
+
+    # Se nessuna Q-table trovata
+    if not qtables_info:
         screen = env.screen
         screen.fill((255, 255, 255))
-
-        if q_table.shape != env.q_values.shape:
-            message = "Non è stato possibile caricare la Q-table"
-            color = (255, 0, 0)  #Rosso
-            wait_time = 2000
-        else:
-            env.q_values = q_table
-            message = f"Q-table {env.map_name} caricata con successo."
-            color = (0, 150, 0)  #Verde
-            wait_time = 1500 #Attende 1.5 secondi per mostrare il messaggio
-
-        draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, color, center=True)
+        draw_text(screen, f"Nessuna Q-table trovata per {env.map_name}", 0, screen.get_height() // 2, font, (255, 0, 0), center=True)
+        draw_text(screen, "Esegui prima un training!", 0, screen.get_height() // 2 + 40, font, (100, 100, 100), center=True)
         pygame.display.flip()
-        pygame.time.wait(wait_time)
-
-        if q_table.shape == env.q_values.shape:
-            evaluate_agent(env, font)
-
-    except FileNotFoundError:
+        pygame.time.wait(2000)
+        return
+    
+    # Menu selezione
+    selecting = True
+    selected_index = 0
+    
+    while selecting:
         screen = env.screen
-        screen.fill((255, 255, 255))
-
-        message = f"Q-table {env.map_name} non trovata."
-        draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, (255, 0, 0), center=True)
+        screen.fill((245, 245, 245))
+        
+        # Titolo
+        draw_text(screen, f"Seleziona Q-table per {env.map_name}", 0, 50, font, (0, 0, 0), center=True)
+        draw_text(screen, f"Trovate {len(qtables_info)} Q-table", 0, 80, font, (100, 100, 100), center=True)
+        
+        # Lista Q-table (max 8 visibili)
+        y_start = 140
+        max_visible = 8
+        visible_items = qtables_info[:max_visible]
+        
+        for i, qtable_info in enumerate(visible_items):
+            y_pos = y_start + i * 60
+            
+            # Background per item selezionato
+            item_rect = pygame.Rect(200, y_pos - 5, screen.get_width() - 400, 50)
+            if i == selected_index:
+                pygame.draw.rect(screen, (200, 230, 255), item_rect, border_radius=5)
+                pygame.draw.rect(screen, (0, 120, 255), item_rect, 2, border_radius=5)
+            else:
+                pygame.draw.rect(screen, (255, 255, 255), item_rect, border_radius=5)
+                pygame.draw.rect(screen, (200, 200, 200), item_rect, 1, border_radius=5)
+            
+            # Info Q-table: solo data/ora pulita
+            clean_name = qtable_info['display_name']
+            draw_text(screen, clean_name, item_rect.centerx, y_pos + 15, font, (0, 0, 0), center=True)
+        
+        # Istruzioni
+        draw_text(screen, "↑↓: Naviga | INVIO: Seleziona | ESC: Torna al menu", 
+                 0, screen.get_height() - 40, font, (0, 0, 0), center=True)
+        
         pygame.display.flip()
-        pygame.time.wait(1500)
+        
+        # Gestione eventi
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+                
+                elif event.key == pygame.K_RETURN:
+                    # Carica Q-table selezionata
+                    selected_qtable = qtables_info[selected_index]
+                    
+                    try:
+                        # Carica Q-table
+                        q_table = np.load(selected_qtable['filepath'])
+                        
+                        # Verifica compatibilità
+                        if q_table.shape != env.q_values.shape:
+                            screen = env.screen
+                            screen.fill((255, 255, 255))
+                            draw_text(screen, f"Q-table incompatibile!", 0, screen.get_height() // 2 - 20, font, (255, 0, 0), center=True)
+                            draw_text(screen, f"Forma: {q_table.shape} vs {env.q_values.shape}", 0, screen.get_height() // 2 + 20, font, (255, 0, 0), center=True)
+                            pygame.display.flip()
+                            pygame.time.wait(3000)
+                            continue  # Torna al menu selezione
+                        
+                        # Carica Q-table
+                        env.q_values = q_table
+                        
+                        # Messaggio caricamento
+                        screen = env.screen
+                        screen.fill((255, 255, 255))
+                        draw_text(screen, f"Q-table caricata!", 0, screen.get_height() // 2 - 20, font, (0, 150, 0), center=True)
+                        draw_text(screen, f"{selected_qtable['display_name']}", 0, screen.get_height() // 2 + 20, font, (0, 100, 0), center=True)
+                        pygame.display.flip()
+                        pygame.time.wait(1500)
+                        
+                        # Avvia evaluation e esci
+                        evaluate_agent(env, font)
+                        return
+                        
+                    except Exception as e:
+                        screen = env.screen
+                        screen.fill((255, 255, 255))
+                        draw_text(screen, f"Errore caricamento: {str(e)}", 0, screen.get_height() // 2, font, (255, 0, 0), center=True)
+                        pygame.display.flip()
+                        pygame.time.wait(3000)
+                        continue  # Torna al menu selezione
+                
+                elif event.key == pygame.K_UP:
+                    selected_index = max(0, selected_index - 1)
+                
+                elif event.key == pygame.K_DOWN:
+                    selected_index = min(len(visible_items) - 1, selected_index + 1)
 
 def evaluate_agent(env, font):
     
