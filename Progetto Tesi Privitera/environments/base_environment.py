@@ -235,23 +235,27 @@ class BaseEnvironment:
     def display(self, episode=None, path=None):
         self.screen.blit(self.map_image, (0, 0))
         
+        #Semafori
         for position, state in self.traffic_lights.items():
             color = (255, 0, 0) if state == 'red' else (0, 255, 0)
             pygame.draw.circle(self.screen, color, (position[0] * self.cell_size + self.cell_size // 2, position[1] * self.cell_size + self.cell_size // 2), 10)
-        
+
+        #Agente
         rotated_agent_image = pygame.transform.rotate(self.agent_image, self.agent_rotation)
         rotated_rect = rotated_agent_image.get_rect()
         rotated_rect.center = (self.agent_position[0] * self.cell_size + self.cell_size // 2, self.agent_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_agent_image, rotated_rect)
-        
-        self.update_car_position()
-        self.update_pedoni(self.pedoni)
 
-        #Visualizza i pedoni
+        # da rimuovere perché dovrebbero essere già presenti nel training        
+        # self.update_car_position()
+        # self.update_pedoni(self.pedoni)
+
+        #Visualizza i pedoni(rendering)
         for pedone in self.pedoni:
             x, y = pedone.position
             self.screen.blit(self.pedone_image, (x * self.cell_size, y * self.cell_size))
 
+        #Visualizza le auto(rendering)
         for car in self.cars:
             rotation = self._calculate_rotation(car)
             self._display_car(self.car_image, car['position'], rotation)
@@ -332,7 +336,7 @@ class BaseEnvironment:
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
 
-            # Rigenera i pedoni con nuove posizioni e percorsi
+            # Rigenera i pedoni con nuove posizioni e percorsi (qui inizializzo i pedoni)
             self.pedoni = []
             
             for i in range(self.num_pedoni):
