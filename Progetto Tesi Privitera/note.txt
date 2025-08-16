@@ -122,4 +122,5 @@ def step(self, map_pedone, traffic_lights=None): fa avanzare il pedone lungo il 
 ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agente, strano
 
 08/08/2025 mi sono accorto di un bel problema, i pedoni non sono presenti nella q table quindi suppongo che l'agente non impara veramente, errore logico importante, da sistemare!
-13/08/2025 ora sono stati aggiunti ma  
+13/08/2025 ora sono stati aggiunti
+16/08/2025 dovrebbe andare bene ora, prossimo passo avere + q table e poterle selezionare 
