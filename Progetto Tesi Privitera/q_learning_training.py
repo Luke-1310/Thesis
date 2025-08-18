@@ -131,40 +131,6 @@ def train_agent(env, font):
 
 def show_results(env, font):
 
-    # try:
-    #     filename = f'q_table_{env.map_name}.npy'  #Il nome file dipende dalla mappa selezionata
-    #     path_q_table = f"Progetto Tesi Privitera/q_tables/{filename}"
-    #     q_table = np.load(path_q_table)
-
-    #     screen = env.screen
-    #     screen.fill((255, 255, 255))
-
-    #     if q_table.shape != env.q_values.shape:
-    #         message = "Non è stato possibile caricare la Q-table"
-    #         color = (255, 0, 0)  #Rosso
-    #         wait_time = 2000
-    #     else:
-    #         env.q_values = q_table
-    #         message = f"Q-table {env.map_name} caricata con successo."
-    #         color = (0, 150, 0)  #Verde
-    #         wait_time = 1500 #Attende 1.5 secondi per mostrare il messaggio
-
-    #     draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, color, center=True)
-    #     pygame.display.flip()
-    #     pygame.time.wait(wait_time)
-
-    #     if q_table.shape == env.q_values.shape:
-    #         evaluate_agent(env, font)
-
-    # except FileNotFoundError:
-    #     screen = env.screen
-    #     screen.fill((255, 255, 255))
-
-    #     message = f"Q-table {env.map_name} non trovata."
-    #     draw_text(screen, message, 0, screen.get_height() // 2 - 20, font, (255, 0, 0), center=True)
-    #     pygame.display.flip()
-    #     pygame.time.wait(1500)
-
     #Carichiamo le Q-table disponibili
     qtables_info = []
     qtables_dir = "Progetto Tesi Privitera/q_tables"
