@@ -131,5 +131,3 @@ ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agent
 2) scrivere parte della tesi sul reinforcement learning e su A*
 
 3) eventuali colloqui con chat gpt + ripassare la parte tecnica
-
-4)impostare seed per rendere i percorsi più deterministici
