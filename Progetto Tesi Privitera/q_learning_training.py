@@ -327,12 +327,12 @@ def evaluate_agent(env, font):
 def show_menu(screen, font):
     
     buttons = [
-        {"text": "1. Trova il parcheggio", "action": "train"},
-        {"text": "2. Mostrare risultati", "action": "show"},
-        {"text": "3. Scegli la mappa", "action": "select_map"},
-        {"text": "4. Impostazioni", "action": "settings"},
-        {"text": "5. Training con Regole", "action": "traffic_training"},
-        {"text": "6. Uscire", "action": "exit"}
+        {"text": "1. Avvio simulazione", "action": "train"},
+        {"text": "2. Visualizza risultati", "action": "show"},
+        {"text": "3. Seleziona mappa", "action": "select_map"},
+        {"text": "4. Opzioni", "action": "settings"},
+        {"text": "5. Training Regolamentato", "action": "traffic_training"},
+        {"text": "6. Esci", "action": "exit"}
     ]
 
     button_rects = []
@@ -346,7 +346,7 @@ def show_menu(screen, font):
     y = 150
 
     for button in buttons:
-        rect = pygame.Rect(screen.get_width() // 2 - 150, y, 325, 50)
+        rect = pygame.Rect(screen.get_width() // 2 - 200, y, 380, 50)
         pygame.draw.rect(screen, (0, 128, 255), rect)  # Rettangolo blu
         text_surface = font.render(button["text"], True, (255, 255, 255))  # Solo testo bianco
         screen.blit(text_surface, (rect.x + 20, rect.y + 10))
@@ -538,7 +538,7 @@ def show_training_results(screen, font, episode_data):
         #Bottone "Torna al menu"
         button_rects.clear()
         for button in buttons:
-            rect = pygame.Rect(screen.get_width() // 2 - 150, y, 250, 50)
+            rect = pygame.Rect(screen.get_width() // 2 - 200, y, 400, 50)
             pygame.draw.rect(screen, (0, 128, 255), rect)
             text_surface = font.render(button["text"], True, (255, 255, 255))
             screen.blit(text_surface, (rect.x + 20, rect.y + 10))
