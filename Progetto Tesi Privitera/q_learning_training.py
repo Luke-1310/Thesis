@@ -673,13 +673,15 @@ def show_settings(screen, font, env):
         #Bottone Conferma
         confirm_rect = pygame.Rect(screen.get_width() // 2 - 220, y_final, 180, 50)
         pygame.draw.rect(screen, (0, 150, 0), confirm_rect)          # Verde
-        draw_text(screen, "Conferma", confirm_rect.centerx - 45, confirm_rect.centery - 10, font, (255, 255, 255))
+        confirm_text = font.render("Conferma", True, (255, 255, 255))
+        screen.blit(confirm_text, (confirm_rect.centerx - confirm_text.get_width() // 2, confirm_rect.centery - confirm_text.get_height() // 2))
         
         #Bottone Annulla
         cancel_rect = pygame.Rect(screen.get_width() // 2 + 40, y_final, 180, 50)
         pygame.draw.rect(screen, (150, 0, 0), cancel_rect)           # Rosso
-        draw_text(screen, "Annulla", cancel_rect.centerx - 40, cancel_rect.centery - 10, font, (255, 255, 255))
-        
+        cancel_text = font.render("Annulla", True, (255, 255, 255))
+        screen.blit(cancel_text, (cancel_rect.centerx - cancel_text.get_width() // 2, cancel_rect.centery - cancel_text.get_height() // 2))
+
         pygame.display.flip()
         
         #Gestione degli eventi
@@ -697,8 +699,6 @@ def show_settings(screen, font, env):
                         
                         #Se vuoto, mantieni valore attuale
                     except ValueError:
-                        
-                        #In caso di errore, mantieni valore attuale
                         pass
                     editing_episodi = False
 
@@ -743,7 +743,7 @@ def show_settings(screen, font, env):
                     episodi_input = str(num_episodi)
 
                 #Controllo numero episodi (step dinamico: Shift=±100, altrimenti ±10)
-                # Nota: se stai editando da tastiera, i bottoni continuano a funzionare.
+                #Nota:Se stai editando da tastiera, i bottoni continuano a funzionare.
                 mods = pygame.key.get_mods()
                 step = 100 if (mods & pygame.KMOD_SHIFT) else 10
 
