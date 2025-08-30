@@ -69,14 +69,27 @@ class BaseEnvironment:
                 return True
         return False
 
+    #Ottieni stato completo della visione (auto + pedoni)
     def get_vision_state(self):
-        """Ottieni stato completo della visione (auto + pedoni)"""
         
-        cars_visible = int(self.is_car_in_vision())
+        cars_visible = int(self.is_car_in_vision()) 
         pedestrians_visible = int(self.are_pedestrians_in_vision())
         
         return cars_visible, pedestrians_visible
+    
+    #SEMAFORI
+    # def get_vision_state(self):
+        
+    #     cars_visible = int(self.is_car_in_vision()) 
+    #     pedestrians_visible = int(self.are_pedestrians_in_vision())
 
+    #     traffic_light_state = 0
+    #     current_position = tuple(self.agent_position)
+
+    #     if current_position in self.traffic_lights:
+    #         traffic_light_state = 1 if self.traffic_lights[current_position] == 'green' else 0
+
+    #     return cars_visible, pedestrians_visible, traffic_light_state
 
     #Aggiorna la posizione di una singola auto secondo il suo percorso
     def update_car_position(self):

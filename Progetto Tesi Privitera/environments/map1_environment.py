@@ -110,6 +110,9 @@ class Map1Environment(BaseEnvironment):
         #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
         self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
 
+        #[y, x, auto_visibili, pedoni_visibili, semafori (rosso/verde), azioni]
+        #self.q_values = np.zeros((self.height, self.width, 2, 2, 2, 4))
+
         self.actions = ['up', 'down', 'right', 'left']
         self.traffic_lights = {
             (14, 11): 'green',
