@@ -133,3 +133,4 @@ ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agent
 3) eventuali colloqui con chat gpt + ripassare la parte tecnica
 
 30/08/2025 provo ad introdurre anche i semafori nel training dell'agente (riprendere dal punto 3)
+31/08/2025 if per semafori

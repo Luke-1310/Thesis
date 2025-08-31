@@ -71,6 +71,43 @@ def train_agent(env, font):
             new_q_value = old_q_value + (learning_rate * temporal_difference)
             env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index] = new_q_value
 
+            #nuova versione con i semafori-----------
+            #Stato di visione PRIMA della scelta azione
+            # old_cars_visible, old_pedestrians_visible,  old_traffic_light = env.get_vision_state()
+
+            # action_index = env.get_next_action(epsilon)
+            # old_position = env.agent_position[:]
+
+            # is_valid = env.get_next_location(action_index)
+
+            # if is_valid:
+            #     reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+
+            #     #Penalty e Reward per i semafori
+            #     current_position = tuple(env.agent_position)
+                
+            #     if current_position in env.traffic_lights:
+                    
+            #         if env.traffic_lights[current_position] == 'red':
+            #             reward -= -50 
+            #         else:
+            #             reward += 20
+            # elif not env.check_loss():
+            #     reward = -10
+            # else:
+            #     reward = -100  # Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+
+            # #Q-learning update
+            # old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
+
+            # new_cars_visible, new_pedestrians_visible, new_traffic_light = env.get_vision_state()
+
+            # temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], new_cars_visible, new_pedestrians_visible, new_traffic_light])) - old_q_value
+            
+            # new_q_value = old_q_value + (learning_rate * temporal_difference)
+            # env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index] = new_q_value
+            #---------------------------------------
+
             env.display(episode)
             pygame.time.wait(1)  #Breve pausa per gestire gli eventi
 
@@ -303,6 +340,14 @@ def evaluate_agent(env, font):
         action_index = np.argmax(
             env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible]
         )
+
+        #CON SEMAFORI
+        # cars_visible, pedestrians_visible, traffic_light = env.get_vision_state()
+        # action_index = np.argmax(
+        #     env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible, traffic_light]
+        # )
+        #-----
+
         env.get_next_location(action_index)
         path.append(env.agent_position[:])
         env.display(path=path)

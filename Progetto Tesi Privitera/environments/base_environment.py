@@ -169,6 +169,9 @@ class BaseEnvironment:
             #Ho lo SFRUTTTAMENTO quando random < epsilon
             cars_visible, pedestrians_visible = self.get_vision_state()
             current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible]
+            #PER I SEMAFORI
+            #cars_visible, pedestrians_visible, traffic_light = self.get_vision_state()
+            #current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible, traffic_light]
             return np.argmax(current_q)
         
         else:
