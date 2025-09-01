@@ -126,7 +126,6 @@ ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agent
 16/08/2025 dovrebbe andare bene ora, prossimo passo avere + q table e poterle selezionare
 17/08/2025 per risolvere il problema della sovrapposizione delle auto e dei pedoni a tempo di visualizzazione si potrebbero levare oppure cercare di gestire il problema a tempo di inferenza
 
-0) questioniaro almalaurea
 1) risolvere il problema dell'inferenza durante la visualizzazione della q table
 2) scrivere parte della tesi sul reinforcement learning e su A*
 

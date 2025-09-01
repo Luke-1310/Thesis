@@ -82,23 +82,35 @@ class BaseEnvironment:
         cars_visible = int(self.is_car_in_vision()) 
         pedestrians_visible = int(self.are_pedestrians_in_vision())
 
-        #Se si imposta la modalità realistica si devono considerare anche altre regole    
-        if self.realistic_mode:
+        #Se si imposta la modalità realistica si devono considerare anche altre regole
+        if getattr(self, 'realistic_mode', False):
+
+            # Modalità realistica: includi anche lo stato del semaforo
+            traffic_light = 0  # Default
+            agent_pos_tuple = tuple(self.agent_position)
             
-            traffic_light_state = 0
-            current_position = tuple(self.agent_position)
-
-            #Controlla semaforo nelle vicinanze (non solo posizione esatta)
-            for light_pos, state in self.traffic_lights.items():
-                distance = abs(current_position[0] - light_pos[0]) + abs(current_position[1] - light_pos[1])
-                
-                if distance <= 1:  #Semaforo nelle vicinanze immediate
-                    traffic_light_state = 1 if state == 'green' else 2  #0=nessuno, 1=verde, 2=rosso
-                break
-
-            return cars_visible, pedestrians_visible, traffic_light_state
+            if agent_pos_tuple in self.traffic_lights:
+                traffic_light = 1 if self.traffic_lights[agent_pos_tuple] == 'red' else 2
+            
+            return cars_visible, pedestrians_visible, traffic_light
         else:
-            return cars_visible, pedestrians_visible
+            return cars_visible, pedestrians_visible  
+        # if self.realistic_mode:
+            
+        #     traffic_light_state = 0
+        #     current_position = tuple(self.agent_position)
+
+        #     #Controlla semaforo nelle vicinanze (non solo posizione esatta)
+        #     for light_pos, state in self.traffic_lights.items():
+        #         distance = abs(current_position[0] - light_pos[0]) + abs(current_position[1] - light_pos[1])
+                
+        #         if distance <= 1:  #Semaforo nelle vicinanze immediate
+        #             traffic_light_state = 1 if state == 'green' else 2  #0=nessuno, 1=verde, 2=rosso
+        #         break
+
+        #     return cars_visible, pedestrians_visible, traffic_light_state
+        # else:
+        #     return cars_visible, pedestrians_visible
     
     #Aggiorna la posizione di una singola auto secondo il suo percorso
     def update_car_position(self):

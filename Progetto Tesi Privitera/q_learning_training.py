@@ -361,17 +361,21 @@ def evaluate_agent(env, font):
         env.update_pedoni(env.pedoni)
 
         if env.realistic_mode:
-
-            #Stato completo e scelta azione con Q-table estesa con semafori
+            
             cars_visible, pedestrians_visible, traffic_light = env.get_vision_state()
             action_index = np.argmax(
                 env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible, traffic_light]
             )
-        
+
         else:
-            #Stato completo e scelta azione con Q-table estesa
-            cars_visible, pedestrians_visible = env.get_vision_state()
-            action_index = np.argmax(
+            vision_state = env.get_vision_state()
+
+            if len(vision_state) == 3:  #Modalità realistica ma env.realistic_mode è False 
+                cars_visible, pedestrians_visible, _ = vision_state
+            
+            else:  #Modalità semplificata
+                cars_visible, pedestrians_visible = env.get_vision_state()
+                action_index = np.argmax(
                 env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible]
             )
 
@@ -891,7 +895,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     #Usa il backend Agg di matplotlib che non interferisce con la visualizzazione
     import matplotlib
     matplotlib.use('Agg')
-    
+
     #Estrai i dati
     # episodes = [data[0] for data in episode_data]
     # steps = [data[1] for data in episode_data]
@@ -941,7 +945,12 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     info_line1 = f"Mappa: {map_name} | Pedoni: {num_pedoni} | Prob. errore pedoni: {error_prob_pedoni:.1%} | Prob. cambio percorso auto: {prob_change_percorso:.1%}"
     
     #Seconda riga di informazioni
-    info_line2 = f"Episodi: {num_episodes} | Goal raggiunti: {goals_reached} ({success_rate:.1f}%) | Collisioni: {total_collisions} | Reward medio: {avg_reward:.1f} | Reward max: {max_reward:.1f}"
+    if(env.realistic_mode):
+        modalita = "Realistica"
+    else:    
+        modalita = "Semplificata"
+
+    info_line2 = f"Episodi: {num_episodes} | Goal raggiunti: {goals_reached} ({success_rate:.1f}%) | Collisioni: {total_collisions} | Reward medio: {avg_reward:.1f} | Reward max: {max_reward:.1f} | Modalità: {modalita}"
 
     #Aggiungi le informazioni sotto i grafici
     fig.text(0.5, 0.06, info_line1, fontsize=10, ha='center', fontweight='bold')
