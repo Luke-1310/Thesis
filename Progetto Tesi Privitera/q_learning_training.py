@@ -32,10 +32,13 @@ def train_agent(env, font):
         steps = 0
 
         while not (env.check_loss() or env.check_goal()):
+           
             for event in pygame.event.get():
+                
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
+            
             pygame.event.pump()
 
             env.update_traffic_lights()  #Aggiorna lo stato dei semafori
@@ -46,67 +49,66 @@ def train_agent(env, font):
 
             env.update_pedoni(env.pedoni)  #Aggiorna lo stato dei pedoni
 
-            #Stato di visione PRIMA della scelta azione
-            old_cars_visible, old_pedestrians_visible = env.get_vision_state()
-
-            action_index = env.get_next_action(epsilon)
-            old_position = env.agent_position[:]
-
-            is_valid = env.get_next_location(action_index)
-
-            if is_valid:
-                reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-            elif not env.check_loss():
-                reward = -10
-            else:
-                reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
-
-            #Q-learning update
-            old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index]
-
-            new_cars_visible, new_pedestrians_visible = env.get_vision_state()
-
-            temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], new_cars_visible, new_pedestrians_visible])) - old_q_value
+            #Bisogna valutare qual è la modalità scelta dall'utente
+            if env.realistic_mode:
             
-            new_q_value = old_q_value + (learning_rate * temporal_difference)
-            env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index] = new_q_value
+                #Stato di visione PRIMA della scelta azione con semafori
+                old_cars_visible, old_pedestrians_visible,  old_traffic_light = env.get_vision_state()
+                action_index = env.get_next_action(epsilon)
+                old_position = env.agent_position[:]
 
-            #nuova versione con i semafori-----------
-            #Stato di visione PRIMA della scelta azione
-            # old_cars_visible, old_pedestrians_visible,  old_traffic_light = env.get_vision_state()
+                is_valid = env.get_next_location(action_index)
 
-            # action_index = env.get_next_action(epsilon)
-            # old_position = env.agent_position[:]
+                if is_valid:
+                    reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
 
-            # is_valid = env.get_next_location(action_index)
-
-            # if is_valid:
-            #     reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-
-            #     #Penalty e Reward per i semafori
-            #     current_position = tuple(env.agent_position)
-                
-            #     if current_position in env.traffic_lights:
+                    #Penalty e Reward per i semafori
+                    current_position = tuple(env.agent_position)
                     
-            #         if env.traffic_lights[current_position] == 'red':
-            #             reward -= -50 
-            #         else:
-            #             reward += 20
-            # elif not env.check_loss():
-            #     reward = -10
-            # else:
-            #     reward = -100  # Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+                    if current_position in env.traffic_lights:
+                        
+                        if env.traffic_lights[current_position] == 'red':
+                            reward -= -50 
+                        else:
+                            reward += 20
+                elif not env.check_loss():
+                    reward = -10
+                else:
+                    reward = -100  # Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
 
-            # #Q-learning update
-            # old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
+                #Q-learning update
+                old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
 
-            # new_cars_visible, new_pedestrians_visible, new_traffic_light = env.get_vision_state()
+                new_cars_visible, new_pedestrians_visible, new_traffic_light = env.get_vision_state()
 
-            # temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], new_cars_visible, new_pedestrians_visible, new_traffic_light])) - old_q_value
+                temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], new_cars_visible, new_pedestrians_visible, new_traffic_light])) - old_q_value
+                
+                new_q_value = old_q_value + (learning_rate * temporal_difference)
+                env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index] = new_q_value
             
-            # new_q_value = old_q_value + (learning_rate * temporal_difference)
-            # env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index] = new_q_value
-            #---------------------------------------
+            else:
+                #Stato di visione PRIMA della scelta azione senza semafori
+                old_cars_visible, old_pedestrians_visible = env.get_vision_state()
+                action_index = env.get_next_action(epsilon)
+                old_position = env.agent_position[:]
+
+                is_valid = env.get_next_location(action_index)
+
+                if is_valid:
+                    reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                elif not env.check_loss():
+                    reward = -10
+                else:
+                    reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+
+                #Q-learning update
+                old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index]
+                new_cars_visible, new_pedestrians_visible = env.get_vision_state()
+                
+                temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], new_cars_visible, new_pedestrians_visible])) - old_q_value
+
+                new_q_value = old_q_value + (learning_rate * temporal_difference)
+                env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index] = new_q_value
 
             env.display(episode)
             pygame.time.wait(1)  #Breve pausa per gestire gli eventi
@@ -144,9 +146,16 @@ def train_agent(env, font):
         path_q_table = "Progetto Tesi Privitera/q_tables"
 
         #creo il timestamp per rendere univoca la q-table
-
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f'q_table_{env.map_name}_{timestamp}.npy' 
+
+        #aggiungo un suffisso se la modalità è realistica
+        if getattr(env, 'realistic_mode', False):
+    
+            filename = f'q_table_{env.map_name}_{timestamp}_realistic.npy'
+        
+        else:    
+            filename = f'q_table_{env.map_name}_{timestamp}.npy'
+
 
         full_path_q_table = f"{path_q_table}/{filename}" 
 
@@ -174,7 +183,18 @@ def show_results(env, font):
 
     try:
         files = os.listdir(qtables_dir)
-        qtable_files = [f for f in files if f.startswith(f"q_table_{env.map_name}_") and f.endswith('.npy')]  # Filtra i file della Q-table
+
+        #è necessario un filtro in base alla modalità
+
+        if getattr(env, 'realistic_mode', False):
+
+            #Modalità realistica: cerca Q-table con suffisso "_realistic"
+            qtable_files = [f for f in files if f.startswith(f"q_table_{env.map_name}_") and f.endswith('_realistic.npy')]
+
+        else:
+            #Modalità normale: cerca Q-table senza suffisso "_realistic"
+            qtable_files = [f for f in files if f.startswith(f"q_table_{env.map_name}_") and f.endswith('.npy') and '_realistic' not in f]
+
 
         for qtable_file in qtable_files:
             
@@ -189,8 +209,9 @@ def show_results(env, font):
                 try:
                     formatted_date = f"{date_part[6:8]}/{date_part[4:6]}/{date_part[:4]}"
                     formatted_time = f"{time_part[:2]}:{time_part[2:4]}:{time_part[4:6]}"
-                    display_name = f"{formatted_date} alle {formatted_time}"
-                
+                    mode_suffix = " (Realistica)" if "_realistic" in qtable_file else " (Normale)"
+                    display_name = f"{formatted_date} alle {formatted_time}{mode_suffix}"
+
                 except:
                     display_name = qtable_file.replace('.npy', '')
             
@@ -208,17 +229,18 @@ def show_results(env, font):
     except Exception as e:
         print(f"Errore caricamento Q-table: {e}")  
 
-    # Se nessuna Q-table trovata
+    #Se nessuna Q-table è stata trovata
     if not qtables_info:
         screen = env.screen
         screen.fill((255, 255, 255))
-        draw_text(screen, f"Nessuna Q-table trovata per {env.map_name}", 0, screen.get_height() // 2, font, (255, 0, 0), center=True)
-        draw_text(screen, "Esegui prima un training!", 0, screen.get_height() // 2 + 40, font, (100, 100, 100), center=True)
+        mode_text = "realistica" if getattr(env, 'realistic_mode', False) else "semplificata"
+        draw_text(screen, f"Nessuna Q-table {mode_text} trovata per {env.map_name}", 0, screen.get_height() // 2, font, (255, 0, 0), center=True)
+        draw_text(screen, "Esegui prima un training.", 0, screen.get_height() // 2 + 40, font, (100, 100, 100), center=True)
         pygame.display.flip()
         pygame.time.wait(2000)
         return
     
-    # Menu selezione
+    #Menu selezione
     selecting = True
     selected_index = 0
     
@@ -321,6 +343,7 @@ def evaluate_agent(env, font):
     running = True
 
     while running and not (env.check_loss() or env.check_goal()):
+       
         print(f"Posizione attuale: {env.agent_position}")
         
         for event in pygame.event.get():
@@ -332,21 +355,25 @@ def evaluate_agent(env, font):
         
         #Aggiorna le auto nemiche
         if hasattr(env, "update_car_position"):
+            
             env.update_car_position()
+        
         env.update_pedoni(env.pedoni)
 
-        #Stato completo e scelta azione con Q-table estesa
-        cars_visible, pedestrians_visible = env.get_vision_state()
-        action_index = np.argmax(
-            env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible]
-        )
+        if env.realistic_mode:
 
-        #CON SEMAFORI
-        # cars_visible, pedestrians_visible, traffic_light = env.get_vision_state()
-        # action_index = np.argmax(
-        #     env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible, traffic_light]
-        # )
-        #-----
+            #Stato completo e scelta azione con Q-table estesa con semafori
+            cars_visible, pedestrians_visible, traffic_light = env.get_vision_state()
+            action_index = np.argmax(
+                env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible, traffic_light]
+            )
+        
+        else:
+            #Stato completo e scelta azione con Q-table estesa
+            cars_visible, pedestrians_visible = env.get_vision_state()
+            action_index = np.argmax(
+                env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible]
+            )
 
         env.get_next_location(action_index)
         path.append(env.agent_position[:])
@@ -376,7 +403,7 @@ def show_menu(screen, font):
         {"text": "2. Visualizza risultati", "action": "show"},
         {"text": "3. Seleziona mappa", "action": "select_map"},
         {"text": "4. Opzioni", "action": "settings"},
-        {"text": "5. Training Regolamentato", "action": "traffic_training"},
+        {"text": "5. Training Regolamentato", "action": "null"},
         {"text": "6. Esci", "action": "exit"}
     ]
 
@@ -712,8 +739,28 @@ def show_settings(screen, font, env):
             screen.blit(help_surface, (episodi_input_rect.centerx - help_surface.get_width() // 2,
                                      episodi_input_rect.bottom + 5))
 
-        #Sezione finale
-        y_final = y_start + 120
+        #SEZIONE MODALITÀ REALISTICA 
+        y_start += 120  #Spazio dopo la sezione episodi
+        
+        #Stato attuale della modalità
+        mode_text = "ATTIVATA" if getattr(env, 'realistic_mode', False) else "DISATTIVATA"
+        #mode_color = (0, 150, 0) if getattr(env, 'realistic_mode', False) else (150, 0, 0)
+        
+        draw_text(screen, f"Modalità Realistica: {mode_text}", 0, y_start, font, (0,0,0), center=True)
+        
+        #Bottone toggle
+        toggle_width = 200
+        toggle_height = 50
+        toggle_rect = pygame.Rect(center_x - toggle_width//2, y_start + 40, toggle_width, toggle_height)
+        
+        button_color = (150, 0, 0) if getattr(env, 'realistic_mode', False) else (0, 150, 0)
+        button_text = "DISATTIVA" if getattr(env, 'realistic_mode', False) else "ATTIVA"
+        
+        pygame.draw.rect(screen, button_color, toggle_rect)
+        draw_text(screen, button_text, toggle_rect.centerx - 50, toggle_rect.centery - 10, font, (255, 255, 255))
+
+        #Si definisce y_final dopo tutte le sezioni
+        y_final = y_start + 120 
         
         #Bottone Conferma
         confirm_rect = pygame.Rect(screen.get_width() // 2 - 220, y_final, 180, 50)
@@ -786,7 +833,7 @@ def show_settings(screen, font, env):
                 if episodi_input_rect.collidepoint(pos):
                     editing_episodi = True
                     episodi_input = str(num_episodi)
-
+                
                 #Controllo numero episodi (step dinamico: Shift=±100, altrimenti ±10)
                 #Nota:Se stai editando da tastiera, i bottoni continuano a funzionare.
                 mods = pygame.key.get_mods()
@@ -797,6 +844,10 @@ def show_settings(screen, font, env):
 
                 if episodi_more_rect.collidepoint(pos):
                     num_episodi = min(3000, num_episodi + step)
+
+                #BOTTONE TOGGLE MODALITÀ REALISTICA
+                if toggle_rect.collidepoint(pos):
+                    env.realistic_mode = not getattr(env, 'realistic_mode', False)
                 
                 #Bottone per la conferma
                 if confirm_rect.collidepoint(pos):

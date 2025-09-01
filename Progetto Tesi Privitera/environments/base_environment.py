@@ -7,7 +7,7 @@ from environments.pedone import Pedone
 
 class BaseEnvironment:
     
-    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000):
+    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000, realistic_mode=False):
 
         #Inizializzazione dei parametri di base dell'ambiente
         self.width = width
@@ -27,6 +27,10 @@ class BaseEnvironment:
         self.pedone_error_prob = pedone_error_prob #probabilità che un pedone sbagli il percorso
         self.route_change_probability = route_change_probability  #Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre 
         self.num_episodi = num_episodi  #Numero di episodi per l'addestramento
+
+        #Modalità realistica (con regole della strada)
+        self.realistic_mode = realistic_mode #Parametro per la modalità realistica
+        #self.traffic_rules_mode = realistic_mode 
     
     #Carica immagini e risorse
     def load_assets(self):
@@ -50,8 +54,8 @@ class BaseEnvironment:
                 return True
         return False
 
+    #Controlla se ci sono pedoni nel campo visivo dell'agente 2x2
     def are_pedestrians_in_vision(self):
-        """Verifica se ci sono pedoni nel campo visivo dell'agente (2x2)"""
         
         agent_x, agent_y = self.agent_position
         vision_min_x = max(0, agent_x - 2)
@@ -59,14 +63,17 @@ class BaseEnvironment:
         vision_min_y = max(0, agent_y - 2)
         vision_max_y = min(self.height - 1, agent_y + 2)
         
-        # Controlla se pedoni esistono
+        #Controlla se pedoni esistono
         if not hasattr(self, 'pedoni') or not self.pedoni:
             return False
         
         for pedone in self.pedoni:
+            
             ped_x, ped_y = pedone.position
+            
             if vision_min_x <= ped_x <= vision_max_x and vision_min_y <= ped_y <= vision_max_y:
                 return True
+        
         return False
 
     #Ottieni stato completo della visione (auto + pedoni)
@@ -74,23 +81,25 @@ class BaseEnvironment:
         
         cars_visible = int(self.is_car_in_vision()) 
         pedestrians_visible = int(self.are_pedestrians_in_vision())
-        
-        return cars_visible, pedestrians_visible
+
+        #Se si imposta la modalità realistica si devono considerare anche altre regole    
+        if self.realistic_mode:
+            
+            traffic_light_state = 0
+            current_position = tuple(self.agent_position)
+
+            #Controlla semaforo nelle vicinanze (non solo posizione esatta)
+            for light_pos, state in self.traffic_lights.items():
+                distance = abs(current_position[0] - light_pos[0]) + abs(current_position[1] - light_pos[1])
+                
+                if distance <= 1:  #Semaforo nelle vicinanze immediate
+                    traffic_light_state = 1 if state == 'green' else 2  #0=nessuno, 1=verde, 2=rosso
+                break
+
+            return cars_visible, pedestrians_visible, traffic_light_state
+        else:
+            return cars_visible, pedestrians_visible
     
-    #SEMAFORI
-    # def get_vision_state(self):
-        
-    #     cars_visible = int(self.is_car_in_vision()) 
-    #     pedestrians_visible = int(self.are_pedestrians_in_vision())
-
-    #     traffic_light_state = 0
-    #     current_position = tuple(self.agent_position)
-
-    #     if current_position in self.traffic_lights:
-    #         traffic_light_state = 1 if self.traffic_lights[current_position] == 'green' else 0
-
-    #     return cars_visible, pedestrians_visible, traffic_light_state
-
     #Aggiorna la posizione di una singola auto secondo il suo percorso
     def update_car_position(self):
         self.prev_car_position = [car['position'][:] for car in self.cars]

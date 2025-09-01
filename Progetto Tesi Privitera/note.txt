@@ -134,3 +134,8 @@ ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agent
 
 30/08/2025 provo ad introdurre anche i semafori nel training dell'agente (riprendere dal punto 3)
 31/08/2025 if per semafori
+1/09/2025 ho pensato di introdurre i semafori con un if, in modo tale che da avere due versioni del simulatore, una complicata e una semplificata dove quella complicata tende a seguire le regole della strafa
+
+DOMANDE PER RICEVIMENTO 09/09
+
+Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata
