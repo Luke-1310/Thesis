@@ -65,25 +65,63 @@ class BaseEnvironment:
     #Controlla se ci sono pedoni nel campo visivo dell'agente 2x2
     def are_pedestrians_in_vision(self):
         
-        agent_x, agent_y = self.agent_position
-        vision_min_x = max(0, agent_x - 2)
-        vision_max_x = min(self.width - 1, agent_x + 2)
-        vision_min_y = max(0, agent_y - 2)
-        vision_max_y = min(self.height - 1, agent_y + 2)
+        # agent_x, agent_y = self.agent_position
+        # vision_min_x = max(0, agent_x - 2)
+        # vision_max_x = min(self.width - 1, agent_x + 2)
+        # vision_min_y = max(0, agent_y - 2)
+        # vision_max_y = min(self.height - 1, agent_y + 2)
         
-        #Controlla se pedoni esistono
+        # #Controlla se pedoni esistono
+        # if not hasattr(self, 'pedoni') or not self.pedoni:
+        #     return False
+        
+        # for pedone in self.pedoni:
+            
+        #     ped_x, ped_y = pedone.position
+            
+        #     if vision_min_x <= ped_x <= vision_max_x and vision_min_y <= ped_y <= vision_max_y:
+        #         return True
+        
+        # return False
+        
+        # Vede solo pedoni davanti (allineati) e su carreggiata o strisce
         if not hasattr(self, 'pedoni') or not self.pedoni:
             return False
-        
-        for pedone in self.pedoni:
-            
-            ped_x, ped_y = pedone.position
-            
-            if vision_min_x <= ped_x <= vision_max_x and vision_min_y <= ped_y <= vision_max_y:
-                return True
-        
-        return False
 
+        ax, ay = self.agent_position
+        rot = self.agent_rotation
+        ahead = 3  # profondità di vista in celle
+
+        for pedone in self.pedoni:
+            px, py = pedone.position
+
+            # Devono essere DAVANTI e ALLINEATI alla corsia (niente laterali)
+            in_front = False
+
+            if rot == 0:        #su
+                in_front = (px == ax and py < ay and ay - py <= ahead)
+            
+            elif rot == 180:    #giù
+                in_front = (px == ax and py > ay and py - ay <= ahead)
+            
+            elif rot == -90:    #destra
+                in_front = (py == ay and px > ax and px - ax <= ahead)
+            
+            elif rot == 90:     #sinistra
+                in_front = (py == ay and px < ax and ax - px <= ahead)
+
+            if not in_front:
+                continue
+
+            #Considera solo pedoni su strada o strisce (ignora marciapiede)
+            on_road = (self.map[py][px] == 1)
+            on_cross = (hasattr(self, 'map_pedone') and self.map_pedone[py][px] == 2)
+
+            if on_road or on_cross:
+                return True
+
+        return False
+    
     #Ottieni stato completo della visione (auto + pedoni)
     def get_vision_state(self):
         
