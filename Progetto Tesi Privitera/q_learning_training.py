@@ -68,7 +68,7 @@ def train_agent(env, font):
                     if current_position in env.traffic_lights:
                         
                         if env.traffic_lights[current_position] == 'red':
-                            reward -= -50 
+                            reward -= 50 
                         else:
                             reward += 20
                 elif not env.check_loss():
@@ -78,7 +78,6 @@ def train_agent(env, font):
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
-
                 new_cars_visible, new_pedestrians_visible, new_traffic_light = env.get_vision_state()
 
                 temporal_difference = reward + (discount_factor * np.max(env.q_values[env.agent_position[1], env.agent_position[0], new_cars_visible, new_pedestrians_visible, new_traffic_light])) - old_q_value
@@ -355,34 +354,26 @@ def evaluate_agent(env, font):
         
         #Aggiorna le auto nemiche
         if hasattr(env, "update_car_position"):
-            
             env.update_car_position()
         
         env.update_pedoni(env.pedoni)
 
         if env.realistic_mode:
-            
             cars_visible, pedestrians_visible, traffic_light = env.get_vision_state()
             action_index = np.argmax(
                 env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible, traffic_light]
             )
 
         else:
-            vision_state = env.get_vision_state()
-
-            if len(vision_state) == 3:  #Modalità realistica ma env.realistic_mode è False 
-                cars_visible, pedestrians_visible, _ = vision_state
-            
-            else:  #Modalità semplificata
-                cars_visible, pedestrians_visible = env.get_vision_state()
-                action_index = np.argmax(
+            cars_visible, pedestrians_visible = env.get_vision_state()
+            action_index = np.argmax(
                 env.q_values[env.agent_position[1], env.agent_position[0], cars_visible, pedestrians_visible]
             )
 
         env.get_next_location(action_index)
         path.append(env.agent_position[:])
         env.display(path=path)
-        pygame.time.wait(500)# Attende 500 ms tra ogni movimento
+        pygame.time.wait(500)
     
     if env.check_goal():
         screen = env.screen
@@ -852,7 +843,11 @@ def show_settings(screen, font, env):
                 #BOTTONE TOGGLE MODALITÀ REALISTICA
                 if toggle_rect.collidepoint(pos):
                     env.realistic_mode = not getattr(env, 'realistic_mode', False)
-                
+                    
+                    #Reinizializza la Q-table per evitare shape mismatch (5D vs 6D)
+                    if hasattr(env, 'reinitialize_q_values'):
+                        env.reinitialize_q_values()
+
                 #Bottone per la conferma
                 if confirm_rect.collidepoint(pos):
                     if editing_episodi:
@@ -1049,14 +1044,16 @@ def main():
                 current_error_prob = env.pedone_error_prob if 'env' in locals() else 0.0
                 current_route_prob = env.route_change_probability if 'env' in locals() else 0.2
                 current_num_episodi = getattr(env, 'num_episodi', 2000) if 'env' in locals() else 2000 
-                
+                current_realistic_mode = getattr(env, 'realistic_mode', False) if 'env' in locals() else False
+
                 env = selected_environment_class(
                     48, 25, 32, screen,
-                    #Le successive quattro righe mantengono le impostazioni correnti
+                    #Le successive cinque righe mantengono le impostazioni correnti
                     num_pedoni=current_num_pedoni,           
                     pedone_error_prob=current_error_prob,    
                     route_change_probability=current_route_prob,  
-                    num_episodi=current_num_episodi         
+                    num_episodi=current_num_episodi,
+                    realistic_mode=current_realistic_mode
                 )
 
         elif action == "exit":

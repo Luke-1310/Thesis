@@ -95,22 +95,6 @@ class BaseEnvironment:
             return cars_visible, pedestrians_visible, traffic_light
         else:
             return cars_visible, pedestrians_visible  
-        # if self.realistic_mode:
-            
-        #     traffic_light_state = 0
-        #     current_position = tuple(self.agent_position)
-
-        #     #Controlla semaforo nelle vicinanze (non solo posizione esatta)
-        #     for light_pos, state in self.traffic_lights.items():
-        #         distance = abs(current_position[0] - light_pos[0]) + abs(current_position[1] - light_pos[1])
-                
-        #         if distance <= 1:  #Semaforo nelle vicinanze immediate
-        #             traffic_light_state = 1 if state == 'green' else 2  #0=nessuno, 1=verde, 2=rosso
-        #         break
-
-        #     return cars_visible, pedestrians_visible, traffic_light_state
-        # else:
-        #     return cars_visible, pedestrians_visible
     
     #Aggiorna la posizione di una singola auto secondo il suo percorso
     def update_car_position(self):
@@ -185,14 +169,18 @@ class BaseEnvironment:
         return car.get('rotation', 0)  #Restituisce la rotazione della macchina, o 0 se non è definita
 
     def get_next_action(self, epsilon):
-        
+
         if np.random.random() < epsilon:
-            #Ho lo SFRUTTTAMENTO quando random < epsilon
-            cars_visible, pedestrians_visible = self.get_vision_state()
-            current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible]
-            #PER I SEMAFORI
-            #cars_visible, pedestrians_visible, traffic_light = self.get_vision_state()
-            #current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible, traffic_light]
+        #Ho lo SFRUTTTAMENTO quando random < epsilon
+            
+            if getattr(self, 'realistic_mode', False):
+                cars_visible, pedestrians_visible, traffic_light = self.get_vision_state()
+                current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible, traffic_light, :]
+            
+            else:
+                cars_visible, pedestrians_visible = self.get_vision_state()
+                current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible, :]
+            
             return np.argmax(current_q)
         
         else:
@@ -511,149 +499,159 @@ class BaseEnvironment:
             path.append((next_x, next_y))
         
         return path
-
+    
+    #Reinizializza la Q-table in base alla modalità attuale
+    def reinitialize_q_values(self):
+        
+        if getattr(self, 'realistic_mode', False):
+            # [y, x, auto_visibili, pedoni_visibili, semaforo(0/1/2), azione]
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 4))
+        
+        else:
+            # [y, x, auto_visibili, pedoni_visibili, azione]
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
 #--------------------------------------------------------------------------- FUNZIONI PER MODALITA' TRAFFIC RULES TRAINING ---------------------------------------------------------------------------
 
-def get_next_action_traffic_rules(self, epsilon):
-    """Azione specifica per traffic rules - AI pura senza logica automatica"""
+# def get_next_action_traffic_rules(self, epsilon):
+#     """Azione specifica per traffic rules - AI pura senza logica automatica"""
     
-    if np.random.random() < epsilon:
-        # Sfruttamento basato solo su Q-values
-        cars_visible = int(self.is_car_in_vision())
-        return np.argmax(self.q_values[self.agent_position[1], self.agent_position[0], cars_visible])
-    else:
-        # Esplorazione pura - l'AI deve imparare TUTTO
-        return np.random.randint(4)
+#     if np.random.random() < epsilon:
+#         # Sfruttamento basato solo su Q-values
+#         cars_visible = int(self.is_car_in_vision())
+#         return np.argmax(self.q_values[self.agent_position[1], self.agent_position[0], cars_visible])
+#     else:
+#         # Esplorazione pura - l'AI deve imparare TUTTO
+#         return np.random.randint(4)
 
-def get_next_location_traffic_rules(self, action_index):
-    """Movimento specifico per traffic rules - NESSUNA logica automatica semafori"""
+# def get_next_location_traffic_rules(self, action_index):
+#     """Movimento specifico per traffic rules - NESSUNA logica automatica semafori"""
     
-    new_position = self.agent_position[:]
+#     new_position = self.agent_position[:]
     
-    # Calcola nuova posizione
-    if self.actions[action_index] == "up":
-        new_position[1] = max(0, self.agent_position[1] - 1)
-        self.agent_rotation = 0
-    elif self.actions[action_index] == "down":
-        new_position[1] = min(self.height - 1, self.agent_position[1] + 1)
-        self.agent_rotation = 180
-    elif self.actions[action_index] == "right":
-        new_position[0] = min(self.width - 1, self.agent_position[0] + 1)
-        self.agent_rotation = -90
-    elif self.actions[action_index] == "left":
-        new_position[0] = max(0, self.agent_position[0] - 1)
-        self.agent_rotation = 90
+#     # Calcola nuova posizione
+#     if self.actions[action_index] == "up":
+#         new_position[1] = max(0, self.agent_position[1] - 1)
+#         self.agent_rotation = 0
+#     elif self.actions[action_index] == "down":
+#         new_position[1] = min(self.height - 1, self.agent_position[1] + 1)
+#         self.agent_rotation = 180
+#     elif self.actions[action_index] == "right":
+#         new_position[0] = min(self.width - 1, self.agent_position[0] + 1)
+#         self.agent_rotation = -90
+#     elif self.actions[action_index] == "left":
+#         new_position[0] = max(0, self.agent_position[0] - 1)
+#         self.agent_rotation = 90
 
-    # ✅ SOLO controlli base - NO logica semafori automatica
-    is_valid = self.is_valid_move_traffic_rules(new_position)
+#     # ✅ SOLO controlli base - NO logica semafori automatica
+#     is_valid = self.is_valid_move_traffic_rules(new_position)
     
-    if is_valid:
-        self.prev_agent_position = self.agent_position[:]
-        self.agent_position = new_position
+#     if is_valid:
+#         self.prev_agent_position = self.agent_position[:]
+#         self.agent_position = new_position
     
-    return is_valid
+#     return is_valid
 
-def is_valid_move_traffic_rules(self, new_position):
-    """Controlli validità SOLO base per traffic rules - l'AI deve imparare i semafori"""
+# def is_valid_move_traffic_rules(self, new_position):
+#     """Controlli validità SOLO base per traffic rules - l'AI deve imparare i semafori"""
     
-    # Controlli confini
-    if not (0 <= new_position[0] < self.width and 0 <= new_position[1] < self.height):
-        return False
+#     # Controlli confini
+#     if not (0 <= new_position[0] < self.width and 0 <= new_position[1] < self.height):
+#         return False
     
-    # Controlli ostacoli (muri, edifici)
-    if self.map[new_position[1]][new_position[0]] != 1:
-        return False
+#     # Controlli ostacoli (muri, edifici)
+#     if self.map[new_position[1]][new_position[0]] != 1:
+#         return False
     
-    # ✅ IMPORTANTE: NON controlla semafori automaticamente!
-    # L'AI deve imparare da sola quando fermarsi!
+#     # ✅ IMPORTANTE: NON controlla semafori automaticamente!
+#     # L'AI deve imparare da sola quando fermarsi!
     
-    return True
+#     return True
 
-def check_traffic_light_violation_at_position(self, position):
-    """Controlla se c'è violazione semaforo in una posizione specifica"""
+# def check_traffic_light_violation_at_position(self, position):
+#     """Controlla se c'è violazione semaforo in una posizione specifica"""
     
-    # Verifica se la posizione ha un semaforo rosso
-    if tuple(position) in self.traffic_lights:
-        if self.traffic_lights[tuple(position)] == 'red':
-            return True
+#     # Verifica se la posizione ha un semaforo rosso
+#     if tuple(position) in self.traffic_lights:
+#         if self.traffic_lights[tuple(position)] == 'red':
+#             return True
     
-    return False
+#     return False
 
-def set_traffic_rules_mode(self, enabled=True):
-    """Attiva/disattiva modalità traffic rules training"""
-    self.traffic_rules_mode = enabled
-    print(f"🚦 Modalità Traffic Rules: {'ATTIVA' if enabled else 'DISATTIVA'}")
+# def set_traffic_rules_mode(self, enabled=True):
+#     """Attiva/disattiva modalità traffic rules training"""
+#     self.traffic_rules_mode = enabled
+#     print(f"🚦 Modalità Traffic Rules: {'ATTIVA' if enabled else 'DISATTIVA'}")
 
-def reset_for_traffic_rules(self, start_position, goal_position):
-    """Reset specifico per traffic rules training"""
+# def reset_for_traffic_rules(self, start_position, goal_position):
+#     """Reset specifico per traffic rules training"""
     
-    # Posiziona agente alla posizione di start del percorso
-    self.agent_position = list(start_position)
-    self.agent_rotation = 0
+#     # Posiziona agente alla posizione di start del percorso
+#     self.agent_position = list(start_position)
+#     self.agent_rotation = 0
     
-    # Salva goal temporaneo per questo percorso
-    self.current_traffic_goal = goal_position
+#     # Salva goal temporaneo per questo percorso
+#     self.current_traffic_goal = goal_position
     
-    # Attiva modalità traffic rules
-    self.set_traffic_rules_mode(True)
+#     # Attiva modalità traffic rules
+#     self.set_traffic_rules_mode(True)
     
-    # Reset normale dell'ambiente (auto, semafori, pedoni)
-    self.traffic_light_cycle = 0
-    self.car_in_vision = False
-    self.prev_car_position = [car['position'] for car in self.cars]
-    self.prev_agent_position = self.agent_position[:]
+#     # Reset normale dell'ambiente (auto, semafori, pedoni)
+#     self.traffic_light_cycle = 0
+#     self.car_in_vision = False
+#     self.prev_car_position = [car['position'] for car in self.cars]
+#     self.prev_agent_position = self.agent_position[:]
     
-    # Rigenera pedoni (opzionale per traffic rules)
-    # self.reset_pedoni_for_traffic_rules()
+#     # Rigenera pedoni (opzionale per traffic rules)
+#     # self.reset_pedoni_for_traffic_rules()
 
-def check_traffic_goal_reached(self):
-    """Verifica se goal del percorso traffic rules è raggiunto"""
+# def check_traffic_goal_reached(self):
+#     """Verifica se goal del percorso traffic rules è raggiunto"""
     
-    if hasattr(self, 'current_traffic_goal'):
-        distance = abs(self.agent_position[0] - self.current_traffic_goal[0]) + abs(self.agent_position[1] - self.current_traffic_goal[1])
-        return distance <= 2  # Margine di 2 celle
+#     if hasattr(self, 'current_traffic_goal'):
+#         distance = abs(self.agent_position[0] - self.current_traffic_goal[0]) + abs(self.agent_position[1] - self.current_traffic_goal[1])
+#         return distance <= 2  # Margine di 2 celle
     
-    return False
+#     return False
 
-def get_traffic_light_at_position(self, position):
-    """Ottiene stato semaforo in una posizione"""
+# def get_traffic_light_at_position(self, position):
+#     """Ottiene stato semaforo in una posizione"""
     
-    pos_tuple = tuple(position)
-    if pos_tuple in self.traffic_lights:
-        return self.traffic_lights[pos_tuple]
-    return None
+#     pos_tuple = tuple(position)
+#     if pos_tuple in self.traffic_lights:
+#         return self.traffic_lights[pos_tuple]
+#     return None
 
-def get_nearby_traffic_lights(self, radius=2):
-    """Ottiene semafori nelle vicinanze dell'agente"""
+# def get_nearby_traffic_lights(self, radius=2):
+#     """Ottiene semafori nelle vicinanze dell'agente"""
     
-    agent_pos = self.agent_position
-    nearby_lights = []
+#     agent_pos = self.agent_position
+#     nearby_lights = []
     
-    for light_pos, state in self.traffic_lights.items():
-        distance = abs(agent_pos[0] - light_pos[0]) + abs(agent_pos[1] - light_pos[1])
-        if distance <= radius:
-            nearby_lights.append({
-                'position': light_pos,
-                'state': state,
-                'distance': distance
-            })
+#     for light_pos, state in self.traffic_lights.items():
+#         distance = abs(agent_pos[0] - light_pos[0]) + abs(agent_pos[1] - light_pos[1])
+#         if distance <= radius:
+#             nearby_lights.append({
+#                 'position': light_pos,
+#                 'state': state,
+#                 'distance': distance
+#             })
     
-    return nearby_lights
+#     return nearby_lights
 
-def display_traffic_rules_info(self, episode=None):
-    """Display con informazioni aggiuntive per traffic rules"""
+# def display_traffic_rules_info(self, episode=None):
+#     """Display con informazioni aggiuntive per traffic rules"""
     
-    # Display normale
-    self.display(episode)
+#     # Display normale
+#     self.display(episode)
     
-    # Overlay aggiuntivo per traffic rules
-    if hasattr(self, 'current_traffic_goal'):
-        goal = self.current_traffic_goal
-        goal_rect = pygame.Rect(goal[0] * self.cell_size, goal[1] * self.cell_size, self.cell_size, self.cell_size)
-        pygame.draw.rect(self.screen, (255, 255, 0), goal_rect, 3)  # Goal giallo
+#     # Overlay aggiuntivo per traffic rules
+#     if hasattr(self, 'current_traffic_goal'):
+#         goal = self.current_traffic_goal
+#         goal_rect = pygame.Rect(goal[0] * self.cell_size, goal[1] * self.cell_size, self.cell_size, self.cell_size)
+#         pygame.draw.rect(self.screen, (255, 255, 0), goal_rect, 3)  # Goal giallo
     
-    # Mostra violazioni recenti se implementato
-    if hasattr(self, 'recent_violations'):
-        for violation in self.recent_violations[-5:]:  # Ultime 5 violazioni
-            # Disegna indicatori violazioni
-            pass  
+#     # Mostra violazioni recenti se implementato
+#     if hasattr(self, 'recent_violations'):
+#         for violation in self.recent_violations[-5:]:  # Ultime 5 violazioni
+#             # Disegna indicatori violazioni
+#             pass  

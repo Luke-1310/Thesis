@@ -6,11 +6,11 @@ from environments.base_environment import BaseEnvironment
 from environments.pedone import Pedone
 
 class Map2Environment(BaseEnvironment):
-    
-    def __init__(self, width, height, cell_size, screen=None, num_pedoni = 0,pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000):
-        
+
+    def __init__(self, width, height, cell_size, screen=None, num_pedoni=0, pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000, realistic_mode=False):
+
         # Inizializza tutto ciò che serve nella superclasse
-        super().__init__(width, height, cell_size, screen, num_pedoni, pedone_error_prob, route_change_probability, num_episodi)
+        super().__init__(width, height, cell_size, screen, num_pedoni, pedone_error_prob, route_change_probability, num_episodi, realistic_mode)
 
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[22, 23]
@@ -22,6 +22,15 @@ class Map2Environment(BaseEnvironment):
         self.create_grid()
 
         self.map_name = "Foresta"
+
+        self.realistic_mode = realistic_mode
+
+        if getattr(self, 'realistic_mode', False):
+            #[y, x, auto_visibili, pedoni_visibili, semafori (#0=nessuno, 1=verde, 2=rosso), azioni]
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 4))
+        else:
+            #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
 
     def load_assets(self):
         # Carica tutte le immagini che ti servono
@@ -96,13 +105,13 @@ class Map2Environment(BaseEnvironment):
             2: self.percorso2,
             3: self.percorso3
         }
-        
-        if getattr(self, 'realistic_mode', False):
-            #[y, x, auto_visibili, pedoni_visibili, semafori (#0=nessuno, 1=verde, 2=rosso), azioni]
-            self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 4))
-        else:
-            #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
-            self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
+
+        # if getattr(self, 'realistic_mode', False):
+        #     #[y, x, auto_visibili, pedoni_visibili, semafori (#0=nessuno, 1=verde, 2=rosso), azioni]
+        #     self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 4))
+        # else:
+        #     #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
+        #     self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
 
         self.actions = ['up', 'down', 'right', 'left']
         self.traffic_lights = {
