@@ -107,7 +107,7 @@ def load_assets(self): ricordando che self è una convenzione in Python che rapp
 def create_grid(self): creo la griglia con tutti gli elementi, come, i percorsi delle auto nemiche, i semafori, gli incroci, la mappa per i pedoni, 
                        inizializza la matrice dei costi per i pedoni,  matrice dei reward e penalità
 
-**map2_environment.py:**
+**/ap2_environment.py:**
 
 similare a map1_environment
 
@@ -134,7 +134,7 @@ ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agent
 30/08/2025 provo ad introdurre anche i semafori nel training dell'agente (riprendere dal punto 3)
 31/08/2025 if per semafori
 1/09/2025 ho pensato di introdurre i semafori con un if, in modo tale che da avere due versioni del simulatore, una complicata e una semplificata dove quella complicata tende a seguire le regole della strafa
-
+2/09/2025 possibile risoluzione della q tabel con semaofori solo che ora ho ben molti più stati rispetto al caso semplificato + implementazione del seed per i pedoni per omogeneità nei test
 DOMANDE PER RICEVIMENTO 09/09
 
 Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata

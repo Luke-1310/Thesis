@@ -992,11 +992,14 @@ def main():
     pygame.event.pump()#Forza aggiornamento della finestra
     font =  pygame.font.Font("Progetto Tesi Privitera/assets/PixeloidSansBold.ttf", 20)
 
+    #Inizializzo l'ambiente
     env = Map1Environment(48, 25, 32, screen,                    
         num_pedoni=0,           
         pedone_error_prob=0.0,              
         route_change_probability=0.2,  
-        num_episodi = 2000      
+        num_episodi = 2000,
+        realistic_mode=False,
+        seed=88
     )
     running = True
     action = None
@@ -1045,6 +1048,7 @@ def main():
                 current_route_prob = env.route_change_probability if 'env' in locals() else 0.2
                 current_num_episodi = getattr(env, 'num_episodi', 2000) if 'env' in locals() else 2000 
                 current_realistic_mode = getattr(env, 'realistic_mode', False) if 'env' in locals() else False
+                current_seed = getattr(env, 'seed', None) if 'env' in locals() else None
 
                 env = selected_environment_class(
                     48, 25, 32, screen,
@@ -1053,7 +1057,8 @@ def main():
                     pedone_error_prob=current_error_prob,    
                     route_change_probability=current_route_prob,  
                     num_episodi=current_num_episodi,
-                    realistic_mode=current_realistic_mode
+                    realistic_mode=current_realistic_mode,
+                    seed= current_seed
                 )
 
         elif action == "exit":

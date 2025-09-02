@@ -6,8 +6,8 @@ import heapq
 from environments.pedone import Pedone
 
 class BaseEnvironment:
-    
-    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000, realistic_mode=False):
+
+    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000, realistic_mode=False, seed=None):
 
         #Inizializzazione dei parametri di base dell'ambiente
         self.width = width
@@ -30,8 +30,16 @@ class BaseEnvironment:
 
         #Modalità realistica (con regole della strada)
         self.realistic_mode = realistic_mode #Parametro per la modalità realistica
-        #self.traffic_rules_mode = realistic_mode 
-    
+
+        self.seed = seed
+        self.rng = np.random.default_rng(seed)
+
+    #Casomai dovesse servire per cambiare il seed senza ricreare l'ambiente    
+    # def set_seed(self, seed):
+    #     self.seed = seed
+    #     self.rng = np.random.default_rng(seed)
+
+
     #Carica immagini e risorse
     def load_assets(self):
         raise NotImplementedError("Questo metodo non è stato implementato correttamente.")
@@ -150,12 +158,16 @@ class BaseEnvironment:
         current_position = tuple(car['position']) #converte la posizione dell'auto in una tupla per poterla confrontare con le chiavi del dizionario degli incroci
         
         #Controlla se la posizione attuale è un incrocio (presente in self.incroci) e se un numero casuale tra 0 e 1 è inferiore al parametro di probabilità di cambio percorso (ex. 0.4 < 0.6 -> NON CAMBIA PERCORSO HO QUINDI IL 40% DI POSSIBILITÀ DI CAMBIARE PERCORSO)
-        if current_position in self.incroci and random.random() < self.route_change_probability:
+        if current_position in self.incroci and self.rng.random() < self.route_change_probability:
             possible_routes = [route for route in self.incroci[current_position] if route != self.percorsi[car['route']]]#Recupera tutte le rotte alternative disponibili all’incrocio, escludendo quella attuale dell’auto
             
             #Se c'è un percorso disponibile, lo cambia
             if possible_routes:
-                new_route = random.choice(possible_routes)
+
+                #Anche per le auto è necessario il seed per avere omogeneità nei test
+                idx = int(self.rng.integers(0, len(possible_routes)))
+
+                new_route = possible_routes[idx]
                 new_route_index = list(self.percorsi.values()).index(new_route)
                 transition_key = (car['route'], new_route_index + 1)
                 
@@ -307,11 +319,11 @@ class BaseEnvironment:
 
         #Ogni pedone ha una probabilità di errore da 0 a 1 scelto dal menu
         try:
-            make_error = can_make_errors and random.random() < self.pedone_error_prob #Se il pedone può fare errori e se la probabilità casuale è inferiore alla probabilità di errore del pedone
+            make_error = can_make_errors and (float(self.rng.random()) < self.pedone_error_prob) #Se il pedone può fare errori e se la probabilità casuale è inferiore alla probabilità di errore del pedone
 
             while True:
-                goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
-                
+                goal = (int(self.rng.integers(0, self.width)), int(self.rng.integers(0, self.height)))
+
                 #Se deve sbagliare cerca una cella che deve essere non percorribile
                 if make_error:
                     if self.map_pedone[goal[1]][goal[0]] == 0 and goal != start:
@@ -368,21 +380,24 @@ class BaseEnvironment:
                 
                 while True:
                     
-                    start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                    #start = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                    #Uso l'RNG col seed anziché quello standard
+                    start = (int(self.rng.integers(0, self.width)), int(self.rng.integers(0, self.height)))
                     if self.map_pedone[start[1]][start[0]] == 1: #controllo se la cella è percorribile
                         break
                
                 while True:
                     
-                    goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                    #goal = (random.randint(0, self.width-1), random.randint(0, self.height-1))
+                    goal = (int(self.rng.integers(0, self.width)), int(self.rng.integers(0, self.height)))
                     if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
                         break
                 
                 path = self.find_path(self.map_pedone, start, goal, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
                 
                 if path:
-                    # Assegna un valore di errore casuale tra 0 e self.pedone_error_prob -> Ogni pedone ha una tendenza all'errore diversa
-                    error_prob = random.random() * self.pedone_error_prob
+                    #Tendenza all'errore del singolo pedone deterministica dato il seed
+                    error_prob = float(self.rng.random()) * self.pedone_error_prob
                     self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
     
     #Funzione per calcolare la distanza tra due punti, utilizza la distanza di Manhattan, che è la somma delle differenze assolute delle coordinate x e y
