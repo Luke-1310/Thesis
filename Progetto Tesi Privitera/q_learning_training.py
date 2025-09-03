@@ -838,7 +838,7 @@ def show_settings(screen, font, env):
                     num_episodi = max(1, num_episodi - step)
 
                 if episodi_more_rect.collidepoint(pos):
-                    num_episodi = min(3000, num_episodi + step)
+                    num_episodi = min(10000, num_episodi + step)
 
                 #BOTTONE TOGGLE MODALITÀ REALISTICA
                 if toggle_rect.collidepoint(pos):
@@ -853,7 +853,7 @@ def show_settings(screen, font, env):
                     if editing_episodi:
                         try:
                             val = int(episodi_input) if episodi_input.strip() != "" else num_episodi
-                            num_episodi = max(1, min(3000, val))
+                            num_episodi = max(1, min(10000, val))
                         except ValueError:
                             pass
                         editing_episodi = False

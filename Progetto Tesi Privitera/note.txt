@@ -139,6 +139,30 @@ ho notato che durante la q table foresta un'auto nemica passa sopra l'auto agent
 Stati modalità semplficata: 25 × 48 × 2 × 2 x 4 = 19.200
 Stati modalità realistica: 25 × 48 × 2 × 2 x 3 x 4 = 57.600
 
+3/09/2025
+
+Seed opzionale:
+Se passi seed=qualcosa al costruttore, tutte le chiamate a self.rng (pedoni, auto, errori pedoni) sono riproducibili.
+Se lasci seed=None, ogni run è diversa.
+
+Azioni dell’agente:
+La funzione get_next_action usa np.random.random() e np.random.randint(4), che NON dipendono dal seed passato a self.rng.
+Quindi la sequenza di azioni dell’agente NON è riproducibile, anche se passi il seed.
+
+Pedoni:
+Ogni pedone riceve una probabilità di errore individuale (error_prob = float(self.rng.random()) * self.pedone_error_prob), quindi la tendenza all’errore è diversa per ogni pedone, ma deterministica col seed.
+
+Auto:
+Cambiano percorso in modo deterministico se il seed è fisso.
+
+Conclusione:
+
+Se vuoi test omogenei, passa sempre lo stesso seed.
+Se vuoi run sempre diverse, lascia seed=None.
+La policy dell’agente NON è riproducibile (per ora).
+
+
 
 DOMANDE PER RICEVIMENTO 09/09
 Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata
+
