@@ -161,6 +161,7 @@ Se vuoi test omogenei, passa sempre lo stesso seed.
 Se vuoi run sempre diverse, lascia seed=None.
 La policy dell’agente NON è riproducibile (per ora).
 
+04/09 devi aggiungere la regola sul tenere la destra
 
 
 DOMANDE PER RICEVIMENTO 09/09

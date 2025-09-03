@@ -563,6 +563,32 @@ class BaseEnvironment:
         else:
             # [y, x, auto_visibili, pedoni_visibili, azione]
             self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
+
+    # #Cerca di capire se l'auto è nella corsia di destra se no, la penalizza
+    # def check_right_lane(self, position, action_index):
+        
+    #     x, y = position
+
+    #     if action_index == 0:      # up → destra è x+1, y
+    #         right_x, right_y = x + 1, y
+        
+    #     elif action_index == 1:    # down → destra è x-1, y
+    #         right_x, right_y = x - 1, y
+        
+    #     elif action_index == 2:    # right → destra è x, y+1
+    #         right_x, right_y = x, y + 1
+        
+    #     elif action_index == 3:    # left → destra è x, y-1
+    #         right_x, right_y = x, y - 1
+        
+    #     else:
+    #         return 0
+
+    #     # Penalità se la cella a destra non è strada
+    #     if self.map[right_y][right_x] != 1:
+    #         return -15
+    #     return 0
+        
 #--------------------------------------------------------------------------- FUNZIONI PER MODALITA' TRAFFIC RULES TRAINING ---------------------------------------------------------------------------
 
 # def get_next_action_traffic_rules(self, epsilon):
