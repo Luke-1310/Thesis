@@ -166,4 +166,7 @@ La policy dell’agente NON è riproducibile (per ora).
 
 DOMANDE PER RICEVIMENTO 09/09
 Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata
+Non so coem implementare la feature del "tenere la destra"
+Potrei aggiungere un incrocio in più nella mappa 1?
+Chiedere tempistiche sulla tesi etc, magari fatti dire anche il titolo e come procedere.
 
