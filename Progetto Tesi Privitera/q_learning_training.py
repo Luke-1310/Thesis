@@ -9,8 +9,6 @@ from environments.map2_environment import Map2Environment
 import matplotlib.pyplot as plt       #Per disegnare i grafici
 import pandas as pd                   #Per gestire e analizzare dati in modo ordinato
 
-import traffic_rules_training
-
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
 np.set_printoptions(precision=3, suppress=True, linewidth=200)
@@ -398,7 +396,7 @@ def show_menu(screen, font):
         {"text": "2. Visualizza risultati", "action": "show"},
         {"text": "3. Seleziona mappa", "action": "select_map"},
         {"text": "4. Opzioni", "action": "settings"},
-        {"text": "5. Training Regolamentato", "action": "null"},
+        {"text": "5. DA CANCELLARE", "action": "null"},
         {"text": "6. Esci", "action": "exit"}
     ]
 
@@ -1068,7 +1066,7 @@ def main():
             show_settings(screen, font, env)
 
         elif action == "traffic_training":
-            traffic_rules_training.train_traffic_rules(env, font)
+            pass
     pygame.quit()
 
 if __name__ == "__main__":
