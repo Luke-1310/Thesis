@@ -65,25 +65,6 @@ class BaseEnvironment:
     #Controlla se ci sono pedoni nel campo visivo dell'agente 2x2
     def are_pedestrians_in_vision(self):
         
-        # agent_x, agent_y = self.agent_position
-        # vision_min_x = max(0, agent_x - 2)
-        # vision_max_x = min(self.width - 1, agent_x + 2)
-        # vision_min_y = max(0, agent_y - 2)
-        # vision_max_y = min(self.height - 1, agent_y + 2)
-        
-        # #Controlla se pedoni esistono
-        # if not hasattr(self, 'pedoni') or not self.pedoni:
-        #     return False
-        
-        # for pedone in self.pedoni:
-            
-        #     ped_x, ped_y = pedone.position
-            
-        #     if vision_min_x <= ped_x <= vision_max_x and vision_min_y <= ped_y <= vision_max_y:
-        #         return True
-        
-        # return False
-        
         # Vede solo pedoni davanti (allineati) e su carreggiata o strisce
         if not hasattr(self, 'pedoni') or not self.pedoni:
             return False
@@ -564,30 +545,7 @@ class BaseEnvironment:
             # [y, x, auto_visibili, pedoni_visibili, azione]
             self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
 
-    # #Cerca di capire se l'auto è nella corsia di destra se no, la penalizza
-    # def check_right_lane(self, position, action_index):
-        
-    #     x, y = position
-
-    #     if action_index == 0:      # up → destra è x+1, y
-    #         right_x, right_y = x + 1, y
-        
-    #     elif action_index == 1:    # down → destra è x-1, y
-    #         right_x, right_y = x - 1, y
-        
-    #     elif action_index == 2:    # right → destra è x, y+1
-    #         right_x, right_y = x, y + 1
-        
-    #     elif action_index == 3:    # left → destra è x, y-1
-    #         right_x, right_y = x, y - 1
-        
-    #     else:
-    #         return 0
-
-    #     # Penalità se la cella a destra non è strada
-    #     if self.map[right_y][right_x] != 1:
-    #         return -15
-    #     return 0
+    
         
 #--------------------------------------------------------------------------- FUNZIONI PER MODALITA' TRAFFIC RULES TRAINING ---------------------------------------------------------------------------
 
