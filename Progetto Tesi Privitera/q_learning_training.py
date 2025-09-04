@@ -70,7 +70,7 @@ def train_agent(env, font):
                         else:
                             #reward += 20 
                             #reward = 0  #Nessun incentivo a restare sul verde (MA CI RESTA COMUNQUE, OUCH)
-                            reward = -1
+                            reward = -10
 
                 elif not env.check_loss():
                     reward = -10
