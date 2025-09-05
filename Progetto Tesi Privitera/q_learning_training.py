@@ -66,7 +66,7 @@ def train_agent(env, font):
                     if current_position in env.traffic_lights:
                         
                         if env.traffic_lights[current_position] == 'red':
-                            reward -= 20 #forse 50 è troppo 
+                            reward = -20 #forse 50 è troppo 
                         else:
                             #reward += 20 
                             #reward = 0  #Nessun incentivo a restare sul verde (MA CI RESTA COMUNQUE, OUCH)

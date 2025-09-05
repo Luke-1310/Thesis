@@ -163,6 +163,26 @@ La policy dell’agente NON è riproducibile (per ora).
 
 04/09 devi aggiungere la regola sul tenere la destra, la griglia apposita è inutile. NON HO IDEA DI COME FARLOOOOO
 
+05/09
+
+Semaforo rosso: reward = -20 (penalità per infrazione)
+Semaforo verde: reward = -10 (stesso costo di uno step normale)
+Mossa non valida: reward = -10 (costo step)
+Collisione: reward = -100 (penalità grave)
+Il Ragionamento è Corretto
+Se mettessi reward = 0 per il semaforo verde, l'agente potrebbe:
+
+Rimanere fermo sul semaforo verde per sempre (reward neutro)
+Non essere incentivato a proseguire verso l'obiettivo
+Con reward = -10 per il verde:
+
+L'agente paga il costo normale di uno step
+È incentivato a muoversi verso l'obiettivo
+Non viene penalizzato extra per il verde (solo il costo naturale del movimento)
+
+
+
+
 
 DOMANDE PER RICEVIMENTO 09/09
 Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata
