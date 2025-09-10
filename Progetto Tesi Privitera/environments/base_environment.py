@@ -546,64 +546,50 @@ class BaseEnvironment:
             self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
 
 
-    # # --- TENERE LA DESTRA: Penalità dinamica con filtro incroci ---
+    # --- TENERE LA DESTRA: Penalità per filtro incroci ---
     
-    # #Restituisce True se la cella a destra dell'agente  
-    # def is_on_right_edge(self, position=None, rotation=None):
-    #     """
-    #     Restituisce True se la cella alla destra relativa rispetto all'orientamento è bordo strada (0 o out of bounds)
-    #     oppure se davanti ci sono più direzioni (incrocio).
-    #     """
-    #     if position is None:
-    #         position = self.agent_position
-    #     if rotation is None:
-    #         rotation = self.agent_rotation
+    #Restituisce True/False se la cella a destra dell'agente è/non è un bordo strada  
+    def is_on_right_edge(self, position=None, rotation=None):
+        
+        if position is None:
+            position = self.agent_position
 
-    #     x, y = position
+        if rotation is None:
+            rotation = self.agent_rotation
 
-    #     #Rotazione: 0=su, 180=giù, -90=destra, 90=sinistra
-    #     if rotation == 0:        # su → destra è x+1, avanti è y-1
-    #         rx, ry = x+1, y
-    #         ahead = [(x, y-1)]
-    #     elif rotation == 180:    # giù → destra è x-1, avanti è y+1
-    #         rx, ry = x-1, y
-    #         ahead = [(x, y+1)]
-    #     elif rotation == -90:    # destra → destra è y+1, avanti è x+1
-    #         rx, ry = x, y+1
-    #         ahead = [(x+1, y)]
-    #     elif rotation == 90:     # sinistra → destra è y-1, avanti è x-1
-    #         rx, ry = x, y-1
-    #         ahead = [(x-1, y)]
-    #     else:
-    #         rx, ry = x, y
-    #         ahead = []
+        x, y = position
 
-    #     # Conta quante celle "strada" ci sono davanti
-    #     num_ahead = 0
-    #     for ax, ay in ahead:
-    #         if 0 <= ax < self.width and 0 <= ay < self.height:
-    #             if self.map[ay][ax] == 1:
-    #                 num_ahead += 1
+        #Rotazione: 0=su, 180=giù, -90=destra, 90=sinistra
+        if rotation == 0:        #su → destra è x+1
+            rx, ry = x+1, y
+        
+        elif rotation == 180:    #giù → destra è x-1
+            rx, ry = x-1, y
+        
+        elif rotation == -90:    #destra → destra è y+1
+            rx, ry = x, y+1
+        
+        elif rotation == 90:     #sinistra → destra è y-1
+            rx, ry = x, y-1
+        
+        else:
+            rx, ry = x, y
 
-    #     # Se davanti c'è più di una direzione (incrocio), non penalizzare
-    #     if num_ahead != 1:
-    #         return True
+    #Fuori mappa o non strada = bordo strada
+        if not (0 <= rx < self.width and 0 <= ry < self.height):
+            
+            return True
+        
+        return self.map[ry][rx] == 0
 
-    #     # Fuori mappa = bordo strada
-    #     if not (0 <= rx < self.width and 0 <= ry < self.height):
-    #         return True
-    #     # Se la cella a destra non è strada = bordo strada
-    #     return self.map[ry][rx] == 0
+    #Restituisce una penalità se l'agente non è aderente al bordo destro della carreggiata
+    def right_edge_penalty(self):
 
-    # def compute_keep_right_penalty(self):
-    #     """
-    #     Penalizza se l'agente non sta tenendo la destra, evitando penalità agli incroci.
-    #     """
-    #     if not getattr(self, 'realistic_mode', False):
-    #         return 0.0
-    #     # Imposta la penalità desiderata
-    #     self.keep_right_penalty_value = getattr(self, 'keep_right_penalty_value', 2.0)
-    #     # Penalizza solo se NON sei aderente al bordo destro e NON sei a un incrocio
-    #     if not self.is_on_right_edge():
-    #         return -self.keep_right_penalty_value
-    #     return 0.0
+        #Controllo modalità realistica
+        if not getattr(self, 'realistic_mode', False):
+            return 0
+        
+        #Penalizza se NON sei aderente al bordo destro (sempre)
+        if not self.is_on_right_edge():
+            return -1.5 #con -3 si bloccava, idem con -1, con -0.5 la ignora
+        return 0

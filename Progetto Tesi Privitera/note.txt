@@ -180,9 +180,10 @@ L'agente paga il costo normale di uno step
 È incentivato a muoversi verso l'obiettivo
 Non viene penalizzato extra per il verde (solo il costo naturale del movimento)
 
+09/09/2025 CONTROLLARE PRIMA DEL TESTING!!!!    
 
-
-
+10/09/2025 NON CI SIAMO PURTROPPO TEST DELLE 16:23 FALLITO
+10/09/2025 3500 episodi va bene ma non tiene la destra
 
 DOMANDE PER RICEVIMENTO 09/09
 Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata

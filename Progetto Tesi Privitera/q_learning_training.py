@@ -60,6 +60,10 @@ def train_agent(env, font):
                 if is_valid:
                     reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
 
+                    #AGGIUNGO LA PENALITÀ PER NON TENERE LA DESTRA!!!!!!!!!!!!!!!!!!!!!!
+                    right_penalty = env.right_edge_penalty()
+                    reward += right_penalty
+
                     #Penalty e Reward per i semafori
                     current_position = tuple(env.agent_position)
                     
@@ -70,7 +74,7 @@ def train_agent(env, font):
                         else:
                             #reward += 20 
                             #reward = 0  #Nessun incentivo a restare sul verde (MA CI RESTA COMUNQUE, OUCH)
-                            reward = -10
+                            reward = -2  #Piccola penalità sul verde per evitare di restarci sopra
 
                 elif not env.check_loss():
                     reward = -10
