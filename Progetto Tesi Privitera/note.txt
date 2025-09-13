@@ -185,9 +185,37 @@ Non viene penalizzato extra per il verde (solo il costo naturale del movimento)
 10/09/2025 NON CI SIAMO PURTROPPO TEST DELLE 16:23 FALLITO
 10/09/2025 3500 episodi va bene ma non tiene la destra
 
+11/9/2025 con penalizzazione da 1 a 3 si blocca mentre per 0.5 la ignora, provo a premiarlo ma con 1.5 si ferma subito
+            prova 2.5k ma con discount_factor da 0.9 a 0.95
+
+12/09/2025 BIG TEST DA 5K EPISODI
+
+def right_edge_penalty(self):
+    #Controllo modalità realistica
+    if not getattr(self, 'realistic_mode', False):
+        return 0
+    
+    if self.is_on_right_edge():
+        return +0.2   # Premio leggero ma significativo
+    else:
+        return -0.9   # Penalità più forte del movimento normale (-1)
+
+discount_factor = 0.95
+epsilon = max(0.01, epsilon * 0.9998)  # Rallentato da 0.9995 per più esplorazione
+
+nulla, non tiene ancora la destra....
+
+13/09/2025 provo con         
+
+if self.is_on_right_edge():
+            return 0.2 # Piccola ricompensa per essere sul bordo destro
+        else:
+            return -1.5#0.9   # Penalità più forte del movimento normale (-1)
+
+L'AGENTE NON STA IMPARANDO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 DOMANDE PER RICEVIMENTO 09/09
 Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata
 Non so coem implementare la feature del "tenere la destra"
 Potrei aggiungere un incrocio in più nella mappa 1?
 Chiedere tempistiche sulla tesi etc, magari fatti dire anche il titolo e come procedere.
-

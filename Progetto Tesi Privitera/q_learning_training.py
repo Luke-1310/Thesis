@@ -17,7 +17,7 @@ def train_agent(env, font):
 
     #Parametri di allenamento
     epsilon = 1 #Esplorazione iniziale
-    discount_factor = 0.9 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
+    discount_factor = 0.95 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
     learning_rate = 0.1 #Tasso di apprendimento
     num_episodes = getattr(env, 'num_episodes', 2000)  #Numero di episodi da eseguire, predefinito a 2000 se non specificato
     episode_data = []  #Lista che contiene (episodio, step, reward)
@@ -74,8 +74,7 @@ def train_agent(env, font):
                         else:
                             #reward += 20 
                             #reward = 0  #Nessun incentivo a restare sul verde (MA CI RESTA COMUNQUE, OUCH)
-                            reward = -2  #Piccola penalità sul verde per evitare di restarci sopra
-
+                            reward = -1  #Piccola penalità sul verde per evitare di restarci sopra
                 elif not env.check_loss():
                     reward = -10
                 else:
@@ -118,6 +117,7 @@ def train_agent(env, font):
             pygame.time.wait(1)  #Breve pausa per gestire gli eventi
 
             total_reward += reward
+            total_reward = round(total_reward, 1) #approssima a 1 decimale
             steps += 1
 
             if steps > 1000:  #Previene loop infiniti
@@ -138,7 +138,8 @@ def train_agent(env, font):
         print(f"---------------------")
         
         pygame.display.flip()
-        epsilon = max(0.01, epsilon * 0.9995)  #Riduce epsilon per l'esplorazione
+        #epsilon = max(0.01, epsilon * 0.9995)  #Riduce epsilon per l'esplorazione 0.9995 -> 0.9998
+        epsilon = max(0.01, epsilon * 0.9998)
 
         episode_data.append((episode, steps, total_reward))
 

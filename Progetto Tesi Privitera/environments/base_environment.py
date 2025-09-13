@@ -583,13 +583,33 @@ class BaseEnvironment:
         return self.map[ry][rx] == 0
 
     #Restituisce una penalità se l'agente non è aderente al bordo destro della carreggiata
-    def right_edge_penalty(self):
+    # def right_edge_penalty(self):
 
+    #     #Controllo modalità realistica
+    #     if not getattr(self, 'realistic_mode', False):
+    #         return 0
+        
+    #     #Penalizza se NON sei aderente al bordo destro (sempre)
+    #     # if not self.is_on_right_edge():
+    #     #     return -1.5 #con -3 si bloccava (minimo locale?), idem con -1 con -1.5  
+    #     #                 #con -0.5 la ignora, 
+    #     # return 0
+
+    #     #Provo un approccio positivo: premia se sei aderente al bordo destro
+    #     if self.is_on_right_edge():
+    #         return 0.5
+    #     return 0
+
+    #Peoviamo così
+    def right_edge_penalty(self):
         #Controllo modalità realistica
         if not getattr(self, 'realistic_mode', False):
             return 0
         
-        #Penalizza se NON sei aderente al bordo destro (sempre)
-        if not self.is_on_right_edge():
-            return -1.5 #con -3 si bloccava, idem con -1, con -0.5 la ignora
-        return 0
+        if self.is_on_right_edge():
+            return 0.5 # Piccola ricompensa per essere sul bordo destro
+        else:
+            return -1.0#0.9   # Penalità più forte del movimento normale (-1)
+        
+
+#PER TENERE LA DESTRA
