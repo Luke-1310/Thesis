@@ -138,8 +138,8 @@ def train_agent(env, font):
         print(f"---------------------")
         
         pygame.display.flip()
-        #epsilon = max(0.01, epsilon * 0.9995)  #Riduce epsilon per l'esplorazione 0.9995 -> 0.9998
-        epsilon = max(0.01, epsilon * 0.9998)
+        #epsilon = max(0.01, epsilon * 0.9995)  #Riduce epsilon per l'esplorazione 0.9995 -> 0.9999
+        epsilon = max(0.01, epsilon * 0.9999)
 
         episode_data.append((episode, steps, total_reward))
 
@@ -404,8 +404,7 @@ def show_menu(screen, font):
         {"text": "2. Visualizza risultati", "action": "show"},
         {"text": "3. Seleziona mappa", "action": "select_map"},
         {"text": "4. Opzioni", "action": "settings"},
-        {"text": "5. DA CANCELLARE", "action": "null"},
-        {"text": "6. Esci", "action": "exit"}
+        {"text": "5. Esci", "action": "exit"}
     ]
 
     button_rects = []
@@ -745,20 +744,24 @@ def show_settings(screen, font, env):
         
         #Stato attuale della modalità
         mode_text = "ATTIVATA" if getattr(env, 'realistic_mode', False) else "DISATTIVATA"
-        #mode_color = (0, 150, 0) if getattr(env, 'realistic_mode', False) else (150, 0, 0)
         
         draw_text(screen, f"Modalità Realistica: {mode_text}", 0, y_start, font, (0,0,0), center=True)
         
         #Bottone toggle
-        toggle_width = 200
-        toggle_height = 50
+        toggle_width = 150  
+        toggle_height = 45
         toggle_rect = pygame.Rect(center_x - toggle_width//2, y_start + 40, toggle_width, toggle_height)
         
         button_color = (150, 0, 0) if getattr(env, 'realistic_mode', False) else (0, 150, 0)
         button_text = "DISATTIVA" if getattr(env, 'realistic_mode', False) else "ATTIVA"
         
         pygame.draw.rect(screen, button_color, toggle_rect)
-        draw_text(screen, button_text, toggle_rect.centerx - 50, toggle_rect.centery - 10, font, (255, 255, 255))
+    
+        
+        button_text_surface = font.render(button_text, True, (255, 255, 255))
+        text_x = toggle_rect.centerx - button_text_surface.get_width() // 2
+        text_y = toggle_rect.centery - button_text_surface.get_height() // 2
+        screen.blit(button_text_surface, (text_x, text_y))
 
         #Si definisce y_final dopo tutte le sezioni
         y_final = y_start + 120 
@@ -788,7 +791,7 @@ def show_settings(screen, font, env):
                     try:
                         if episodi_input.strip():  #Solo se c'è del testo
                             val = int(episodi_input)
-                            num_episodi = max(1, min(5000, val))  #Range esteso
+                            num_episodi = max(1, min(10000, val))  #Range esteso
                         
                         #Se vuoto, mantieni valore attuale
                     except ValueError:

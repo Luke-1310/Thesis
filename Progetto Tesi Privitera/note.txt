@@ -214,6 +214,22 @@ if self.is_on_right_edge():
 
 L'AGENTE NON STA IMPARANDO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+7K EPISODI
+
+def right_edge_penalty(self):
+    #Controllo modalità realistica
+    if not getattr(self, 'realistic_mode', False):
+        return 0
+    
+    if self.is_on_right_edge():
+        return +0.5   # Premio leggero ma significativo
+    else:
+        return -1   # Penalità più forte del movimento normale (-1)
+
+discount_factor = 0.95
+epsilon = max(0.01, epsilon * 0.9999)  # Rallentato da 0.9995 per più esplorazione
+
+
 DOMANDE PER RICEVIMENTO 09/09
 Noto che impostando un il campo di visivo per i pedoni 2x2 l'agente fa attenzione anche ai pedoni sulla carreggiata
 Non so coem implementare la feature del "tenere la destra"
