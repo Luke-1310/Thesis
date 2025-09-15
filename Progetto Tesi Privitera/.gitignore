@@ -152,8 +152,8 @@ Thumbs.db
 # Log files
 *.log
 
-# Q-tables salvate (opzionale - rimuovi questa riga se vuoi tracciare le Q-tables)
-q_tables/*.npy
+# # Q-tables salvate (opzionale - rimuovi questa riga se vuoi tracciare le Q-tables)
+# q_tables/*.npy
 
-# Grafici di training (opzionale - rimuovi questa riga se vuoi tracciare i grafici)
-training_charts/*.png
+# # Grafici di training (opzionale - rimuovi questa riga se vuoi tracciare i grafici)
+# training_charts/*.png
