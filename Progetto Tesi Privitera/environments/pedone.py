@@ -23,7 +23,7 @@ class Pedone:
         #Questa porzione di codice permette di eseguire un passo ogni 5 frame
         self.frame_counter = getattr(self, 'frame_counter', 0) + 1 
         
-        if self.frame_counter < 5: 
+        if self.frame_counter < 2: 
             return
         
         self.frame_counter = 0
