@@ -302,10 +302,6 @@ class BaseEnvironment:
         rotated_rect.center = (self.agent_position[0] * self.cell_size + self.cell_size // 2, self.agent_position[1] * self.cell_size + self.cell_size // 2)
         self.screen.blit(rotated_agent_image, rotated_rect)
 
-        # da rimuovere perché dovrebbero essere già presenti nel training        
-        # self.update_car_position()
-        # self.update_pedoni(self.pedoni)
-
         #Visualizza i pedoni(rendering)
         for pedone in self.pedoni:
             x, y = pedone.position

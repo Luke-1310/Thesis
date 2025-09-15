@@ -32,12 +32,11 @@ def train_agent(env, font):
         while not (env.check_loss() or env.check_goal()):
            
             for event in pygame.event.get():
-                
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
             
-            pygame.event.pump()
+            pygame.event.pump() #.pump serve per aggiornare lo stato degli eventi di pygame
 
             env.update_traffic_lights()  #Aggiorna lo stato dei semafori
 
@@ -45,7 +44,8 @@ def train_agent(env, font):
             if hasattr(env, "update_car_position"):
                 env.update_car_position()
 
-            env.update_pedoni(env.pedoni)  #Aggiorna lo stato dei pedoni
+            
+            env.update_pedoni(env.pedoni)
 
             #Bisogna valutare qual è la modalità scelta dall'utente
             if env.realistic_mode:
@@ -66,15 +66,35 @@ def train_agent(env, font):
 
                     #Penalty e Reward per i semafori
                     current_position = tuple(env.agent_position)
+                    old_position_tuple = tuple(old_position)
                     
+                    #Controlla se l'agente è in una posizione con semaforo
                     if current_position in env.traffic_lights:
                         
-                        if env.traffic_lights[current_position] == 'red':
-                            reward = -20 #forse 50 è troppo 
+                        #Se era in una safe zone, non penalizzare (già dentro l'incrocio)
+                        if old_position_tuple in env.safe_zones:
+                            pass  # Movimento da safe zone = nessuna penalità
+                        
                         else:
-                            #reward += 20 
-                            #reward = 0  #Nessun incentivo a restare sul verde (MA CI RESTA COMUNQUE, OUCH)
-                            reward = -1  #Piccola penalità sul verde per evitare di restarci sopra
+                            #Verifica se è un PRIMO ingresso nell'incrocio
+                            is_entering_intersection = (old_position_tuple not in env.traffic_lights and 
+                                                      current_position in env.traffic_lights)
+                            
+                            #Penalità SOLO per il primo ingresso con rosso
+                            if is_entering_intersection and env.traffic_lights[current_position] == 'red':
+                                reward = -25
+                                print(f"Penalità semaforo: entrato in {current_position} con rosso")
+                            else:
+                                pass
+                    
+                    # Se esce dall'incrocio (era in safe zone o traffic_lights, ora non più)
+                    elif (old_position_tuple in env.safe_zones or old_position_tuple in env.traffic_lights):
+                        # Sta uscendo dall'incrocio = nessuna penalità
+                        pass
+                    
+                    else:
+                        pass
+
                 elif not env.check_loss():
                     reward = -10
                 else:
@@ -119,6 +139,7 @@ def train_agent(env, font):
             total_reward += reward
             total_reward = round(total_reward, 1) #approssima a 1 decimale
             steps += 1
+            
 
             if steps > 1000:  #Previene loop infiniti
                 break
@@ -352,17 +373,19 @@ def evaluate_agent(env, font):
         print(f"Posizione attuale: {env.agent_position}")
         
         for event in pygame.event.get():
-            
             if event.type == pygame.QUIT:
                 running = False
-        
+    
         env.update_traffic_lights()
         
         #Aggiorna le auto nemiche
         if hasattr(env, "update_car_position"):
             env.update_car_position()
         
-        env.update_pedoni(env.pedoni)
+        #env.update_pedoni(env.pedoni)
+
+        if hasattr(env, "pedoni"):
+            env.update_pedoni(env.pedoni)
 
         if env.realistic_mode:
             cars_visible, pedestrians_visible, traffic_light = env.get_vision_state()
@@ -379,6 +402,7 @@ def evaluate_agent(env, font):
         env.get_next_location(action_index)
         path.append(env.agent_position[:])
         env.display(path=path)
+
         pygame.time.wait(500)
     
     if env.check_goal():
