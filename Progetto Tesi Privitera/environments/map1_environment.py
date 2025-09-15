@@ -136,7 +136,7 @@ class Map1Environment(BaseEnvironment):
             (34, 18): 'red'
         }
         self.traffic_light_cycle = 0  # Contatore per il ciclo dei semafori
-        self.traffic_light_duration = 120  # Durata del ciclo del semaforo in frame
+        self.traffic_light_duration = 40  # Durata del ciclo del semaforo in frame
         
         # Zone "sicure" dove fermarsi anche se il semaforo è rosso
         self.safe_zones = [(14, 10), (13, 10),(14, 9), (13, 9),
