@@ -19,7 +19,7 @@ def train_agent(env, font):
     epsilon = 1 #Esplorazione iniziale
     discount_factor = 0.95 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
     learning_rate = 0.1 #Tasso di apprendimento
-    num_episodes = getattr(env, 'num_episodes', 2000)  #Numero di episodi da eseguire, predefinito a 2000 se non specificato
+    num_episodes = getattr(env, 'num_episodes', 5000)  #Numero di episodi da eseguire, predefinito a 2000 se non specificato
     episode_data = []  #Lista che contiene (episodio, step, reward)
     collision_list = []  #Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
@@ -932,7 +932,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     # Raccolta dati da aggiungere al grafico
     map_name = env.map_name
     num_pedoni = len(env.pedoni)
-    prob_change_percorso = env.route_change_probability  # ← CORRETTO
+    prob_change_percorso = env.route_change_probability
     error_prob_pedoni = env.pedone_error_prob
     
     # Calcola statistiche
