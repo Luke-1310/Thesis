@@ -152,6 +152,8 @@ Thumbs.db
 # Log files
 *.log
 
+*.txt
+
 # # Q-tables salvate (opzionale - rimuovi questa riga se vuoi tracciare le Q-tables)
 # q_tables/*.npy
 
