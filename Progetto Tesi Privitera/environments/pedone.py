@@ -20,7 +20,7 @@ class Pedone:
 
     def step(self, map_pedone, traffic_lights=None):
 
-        #Questa porzione di codice permette di eseguire un passo ogni 5 frame
+        #Questa porzione di codice permette di eseguire un passo ogni 2 frame
         self.frame_counter = getattr(self, 'frame_counter', 0) + 1 
         
         if self.frame_counter < 2: 
