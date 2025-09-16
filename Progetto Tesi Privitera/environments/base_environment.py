@@ -388,7 +388,7 @@ class BaseEnvironment:
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
 
-            # Rigenera i pedoni con nuove posizioni e percorsi (qui inizializzo i pedoni)
+            #Rigenera i pedoni con nuove posizioni e percorsi (qui inizializzo i pedoni)
             self.pedoni = []
             
             for i in range(self.num_pedoni):
@@ -540,9 +540,6 @@ class BaseEnvironment:
         else:
             # [y, x, auto_visibili, pedoni_visibili, azione]
             self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
-
-
-    # --- TENERE LA DESTRA: Penalità per filtro incroci ---
     
     #Restituisce True/False se la cella a destra dell'agente è/non è un bordo strada  
     def is_on_right_edge(self, position=None, rotation=None):
@@ -578,25 +575,7 @@ class BaseEnvironment:
         
         return self.map[ry][rx] == 0
 
-    #Restituisce una penalità se l'agente non è aderente al bordo destro della carreggiata
-    # def right_edge_penalty(self):
-
-    #     #Controllo modalità realistica
-    #     if not getattr(self, 'realistic_mode', False):
-    #         return 0
-        
-    #     #Penalizza se NON sei aderente al bordo destro (sempre)
-    #     # if not self.is_on_right_edge():
-    #     #     return -1.5 #con -3 si bloccava (minimo locale?), idem con -1 con -1.5  
-    #     #                 #con -0.5 la ignora, 
-    #     # return 0
-
-    #     #Provo un approccio positivo: premia se sei aderente al bordo destro
-    #     if self.is_on_right_edge():
-    #         return 0.5
-    #     return 0
-
-    #Peoviamo così
+    #Penalità o ricompensa per essere sul bordo destro della strada
     def right_edge_penalty(self):
         #Controllo modalità realistica
         if not getattr(self, 'realistic_mode', False):
