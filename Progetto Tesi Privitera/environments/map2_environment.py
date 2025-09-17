@@ -27,10 +27,10 @@ class Map2Environment(BaseEnvironment):
 
         if getattr(self, 'realistic_mode', False):
             #[y, x, auto_visibili, pedoni_visibili, semafori (#0=nessuno, 1=verde, 2=rosso), azioni]
-            self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 4))
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 5))
         else:
             #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
-            self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 5))
 
     def load_assets(self):
         # Carica tutte le immagini che ti servono
@@ -107,14 +107,7 @@ class Map2Environment(BaseEnvironment):
             3: self.percorso3
         }
 
-        # if getattr(self, 'realistic_mode', False):
-        #     #[y, x, auto_visibili, pedoni_visibili, semafori (#0=nessuno, 1=verde, 2=rosso), azioni]
-        #     self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 4))
-        # else:
-        #     #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
-        #     self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
-
-        self.actions = ['up', 'down', 'right', 'left']
+        self.actions = ['up', 'down', 'right', 'left', 'stay']
         self.traffic_lights = {
             (14, 18): 'green',
             (13, 18): 'green',
