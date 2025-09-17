@@ -82,7 +82,7 @@ def train_agent(env, font):
                             
                             #Penalità SOLO per il primo ingresso con rosso
                             if is_entering_intersection and env.traffic_lights[current_position] == 'red':
-                                reward = -5
+                                reward = -10
                                 print(f"Penalità semaforo: entrato in {current_position} con rosso")
                             else:
                                 pass
