@@ -1,7 +1,5 @@
 import numpy as np
 import pygame
-import os
-import random
 import heapq
 from environments.pedone import Pedone
 
@@ -33,12 +31,6 @@ class BaseEnvironment:
 
         self.seed = seed
         self.rng = np.random.default_rng(seed)
-
-    #Casomai dovesse servire per cambiare il seed senza ricreare l'ambiente    
-    # def set_seed(self, seed):
-    #     self.seed = seed
-    #     self.rng = np.random.default_rng(seed)
-
 
     #Carica immagini e risorse
     def load_assets(self):
@@ -216,7 +208,7 @@ class BaseEnvironment:
         
         else:
             #Ho l'ESPLORAZIONE quando random >= epsilon
-            return np.random.randint(4)
+            return np.random.randint(5)
         
         #Prima era al contrario, favorendo l'esplorazione quando random < epsilon e lo sfruttamento quando random >= epsilon;
         #comportando un non raggiungimento dell'obiettivo, visto che l'agente non sfruttava le conoscenze acquisite
@@ -231,21 +223,34 @@ class BaseEnvironment:
         if self.actions[action_index] == "up":
             new_position[1] = max(0, self.agent_position[1] - 1)
             self.agent_rotation = 0
+        
         elif self.actions[action_index] == "down":
             new_position[1] = min(self.height - 1, self.agent_position[1] + 1)
             self.agent_rotation = 180
+        
         elif self.actions[action_index] == "right":
             new_position[0] = min(self.width - 1, self.agent_position[0] + 1)
             self.agent_rotation = -90
+        
         elif self.actions[action_index] == "left":
             new_position[0] = max(0, self.agent_position[0] - 1)
             self.agent_rotation = 90
+        
+        elif self.actions[action_index] == "stay":
+            new_position = self.agent_position[:]
 
         is_valid = self.is_valid_move(new_position)
+        
         if is_valid:
-            if tuple(new_position) in self.traffic_lights and self.traffic_lights[tuple(new_position)] == 'red':
-                if not tuple(self.agent_position) in self.safe_zones:
-                    return False
+            if not getattr(self, 'realistic_mode', False):  # Modalità SEMPLIFICATA
+                
+                # Blocca TUTTI i semafori (rossi E verdi)
+                if hasattr(self, 'traffic_lights') and tuple(new_position) in self.traffic_lights:
+                    return False  # BLOCCO FISICO - non può andare sui semafori
+            
+            # In modalità realistica: può andare sui semafori
+            # (le regole rosso/verde saranno gestite nel training tramite ricompense)
+                
             self.prev_agent_position = self.agent_position[:]
             self.agent_position = new_position
         return is_valid   
@@ -535,11 +540,11 @@ class BaseEnvironment:
         
         if getattr(self, 'realistic_mode', False):
             # [y, x, auto_visibili, pedoni_visibili, semaforo(0/1/2), azione]
-            self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 4))
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 3, 5))
         
         else:
             # [y, x, auto_visibili, pedoni_visibili, azione]
-            self.q_values = np.zeros((self.height, self.width, 2, 2, 4))
+            self.q_values = np.zeros((self.height, self.width, 2, 2, 5))
     
     #Restituisce True/False se la cella a destra dell'agente è/non è un bordo strada  
     def is_on_right_edge(self, position=None, rotation=None):
