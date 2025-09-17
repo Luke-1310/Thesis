@@ -1,7 +1,5 @@
 import numpy as np
 import pygame
-import os
-import random
 from environments.base_environment import BaseEnvironment
 from environments.pedone import Pedone
 
