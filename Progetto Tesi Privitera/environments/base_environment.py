@@ -104,12 +104,12 @@ class BaseEnvironment:
         #Se si imposta la modalità realistica si devono considerare anche altre regole
         if getattr(self, 'realistic_mode', False):
 
-            # Modalità realistica: includi anche lo stato del semaforo
-            traffic_light = 0  # Default
+            #Semafori: #0=nessuno, 1=verde, 2=rosso
+            traffic_light = 0
             agent_pos_tuple = tuple(self.agent_position)
             
             if agent_pos_tuple in self.traffic_lights:
-                traffic_light = 1 if self.traffic_lights[agent_pos_tuple] == 'red' else 2
+                traffic_light = 2 if self.traffic_lights[agent_pos_tuple] == 'red' else 1
             
             return cars_visible, pedestrians_visible, traffic_light
         else:
@@ -191,27 +191,22 @@ class BaseEnvironment:
     def _calculate_rotation(self, car):
         return car.get('rotation', 0)  #Restituisce la rotazione della macchina, o 0 se non è definita
 
-    def get_next_action(self, epsilon):
-
-        if np.random.random() < epsilon:
-        #Ho lo SFRUTTTAMENTO quando random < epsilon
-            
+    def get_next_action(self, epsilon, traffic_light=None):
+        
+        if np.random.random() < epsilon:   #ESPLORAZIONE
+            return np.random.randint(5)
+        else:   #SFRUTTAMENTO
             if getattr(self, 'realistic_mode', False):
                 cars_visible, pedestrians_visible, traffic_light = self.get_vision_state()
-                current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible, traffic_light, :]
-            
+                current_q = self.q_values[self.agent_position[1], self.agent_position[0],
+                                        cars_visible, pedestrians_visible, traffic_light, :]
             else:
                 cars_visible, pedestrians_visible = self.get_vision_state()
-                current_q = self.q_values[self.agent_position[1], self.agent_position[0], cars_visible, pedestrians_visible, :]
+                current_q = self.q_values[self.agent_position[1], self.agent_position[0],
+                                        cars_visible, pedestrians_visible, :]
             
             return np.argmax(current_q)
-        
-        else:
-            #Ho l'ESPLORAZIONE quando random >= epsilon
-            return np.random.randint(5)
-        
-        #Prima era al contrario, favorendo l'esplorazione quando random < epsilon e lo sfruttamento quando random >= epsilon;
-        #comportando un non raggiungimento dell'obiettivo, visto che l'agente non sfruttava le conoscenze acquisite
+
 
     def is_valid_move(self, new_position):
         if 0 <= new_position[0] < self.width and 0 <= new_position[1] < self.height:
