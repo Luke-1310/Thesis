@@ -40,7 +40,9 @@ class BaseEnvironment:
     def create_grid(self):
         raise NotImplementedError("Questo metodo non è stato implementato correttamente.")
 
-    #Verifica se una delle auto si trova nel campo visivo dell'agente 
+    #Verifica se una delle auto si trova nel campo visivo dell'agente
+    #MAX → prende il valore più grande → serve per il bound inferiore
+    #MIN → prende il valore più piccolo → serve per il bound superiore
     def is_car_in_vision(self):
         agent_x, agent_y = self.agent_position
         vision_min_x = max(0, agent_x - 2)
@@ -50,11 +52,11 @@ class BaseEnvironment:
         
         for car in self.cars:
             car_x, car_y = car['position']
-            if vision_min_x <= car_x <= vision_max_x and vision_min_y <= car_y <= vision_max_y:
+            if vision_min_x <= car_x <= vision_max_x and vision_min_y <= car_y <= vision_max_y: #si crea un quadrato 5x5 intorno all'agente
                 return True
         return False
 
-    #Controlla se ci sono pedoni nel campo visivo dell'agente 2x2
+    #Controlla se ci sono pedoni
     def are_pedestrians_in_vision(self):
         
         # Vede solo pedoni davanti (allineati) e su carreggiata o strisce
@@ -63,12 +65,12 @@ class BaseEnvironment:
 
         ax, ay = self.agent_position
         rot = self.agent_rotation
-        ahead = 3  # profondità di vista in celle
+        ahead = 3  #profondità di vista in celle
 
         for pedone in self.pedoni:
             px, py = pedone.position
 
-            # Devono essere DAVANTI e ALLINEATI alla corsia (niente laterali)
+            #Devono essere DAVANTI e ALLINEATI alla corsia (niente laterali)
             in_front = False
 
             if rot == 0:        #su
@@ -195,6 +197,7 @@ class BaseEnvironment:
         
         if np.random.random() < epsilon:   #ESPLORAZIONE
             return np.random.randint(5)
+        
         else:   #SFRUTTAMENTO
             if getattr(self, 'realistic_mode', False):
                 cars_visible, pedestrians_visible, traffic_light = self.get_vision_state()
