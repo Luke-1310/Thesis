@@ -141,6 +141,7 @@ def train_agent(env, font):
             
 
             if steps > 1000:  #Previene loop infiniti
+                collision_count += 1
                 break
 
         if env.check_loss():
@@ -158,8 +159,7 @@ def train_agent(env, font):
         print(f"---------------------")
         
         pygame.display.flip()
-        #epsilon = max(0.01, epsilon * 0.9995)  #Riduce epsilon per l'esplorazione 0.9995 -> 0.9999
-        epsilon = max(0.01, epsilon * 0.9999)
+        epsilon = max(0.01, epsilon * 0.9995)  #Decadimento di epsilon, mai sotto 0.01
 
         episode_data.append((episode, steps, total_reward))
 
