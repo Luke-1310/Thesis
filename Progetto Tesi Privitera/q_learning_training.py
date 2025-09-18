@@ -52,7 +52,7 @@ def train_agent(env, font):
             
                 #Stato di visione PRIMA della scelta azione con semafori
                 old_cars_visible, old_pedestrians_visible,  old_traffic_light = env.get_vision_state()
-                action_index = env.get_next_action(epsilon)
+                action_index = env.get_next_action(epsilon, old_traffic_light)
                 old_position = env.agent_position[:]
 
                 is_valid = env.get_next_location(action_index)
@@ -60,7 +60,6 @@ def train_agent(env, font):
                 if is_valid:
                     reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
 
-                    #AGGIUNGO LA PENALITÀ PER NON TENERE LA DESTRA!!!!!!!!!!!!!!!!!!!!!!
                     right_penalty = env.right_edge_penalty()
                     reward += right_penalty
 
@@ -82,7 +81,7 @@ def train_agent(env, font):
                             
                             #Penalità SOLO per il primo ingresso con rosso
                             if is_entering_intersection and env.traffic_lights[current_position] == 'red':
-                                reward = -10
+                                reward = -30
                                 print(f"Penalità semaforo: entrato in {current_position} con rosso")
                             else:
                                 pass
