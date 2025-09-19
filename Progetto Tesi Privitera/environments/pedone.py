@@ -46,13 +46,16 @@ class Pedone:
         if self.position == self.goal:
 
             #Quando arriva, sceglie una nuova destinazione e un nuovo path
-            if self.path_callback:
+            if self.path_callback:       
+                
                 try:
                     result = self.path_callback(tuple(self.position))        
+                    
                     #Verifica che il risultato sia una tupla valida
                     if result and isinstance(result, tuple) and len(result) == 2:
                         new_goal, new_path = result
-                        if new_path:
+                        
+                        if new_path and len(new_path) > 1: #per essere sicuri che il percorso non sia vuoto
                             self.goal = list(new_goal)
                             self.path = new_path
                             self.arrived = False
@@ -60,14 +63,22 @@ class Pedone:
                             self.pre_cross_wait = 0
                             self.waiting_for_light = False  # Reset lo stato di attesa
                             return
-                    #Se arriviamo qui, qualcosa è andato storto
-                    self.arrived = True
-                except:
-                    #Gestisci eventuali eccezioni
-                    self.arrived = True
+                        
+                        else:
+                            #Gestisci eventuali eccezioni
+                            self.arrived = False
+                            self.path = []
+                    
+                    else:
+                        self.arrived = False
+                        self.path = []
+                
+                except Exception as e:
+                    self.arrived = False
+                    self.path = []
             else:
                 self.arrived = True
-            return  #Ritorna dopo aver gestito l'arrivo
+            return
             
         #Se il pedone stava aspettando un semaforo, controlla se ora può attraversare
         if self.waiting_for_light and traffic_lights and self.traffic_light_position:
