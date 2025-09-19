@@ -17,8 +17,9 @@ def train_agent(env, font):
 
     #Parametri di allenamento
     epsilon = 1 #Esplorazione iniziale
-    discount_factor = 0.95 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
+    discount_factor = 0.9 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
     learning_rate = 0.1 #Tasso di apprendimento
+    gamma = 0.9995 #Fattore di decadimento per epsilon
     num_episodes = getattr(env, 'num_episodes', 5000)  #Numero di episodi da eseguire, predefinito a 2000 se non specificato
     episode_data = []  #Lista che contiene (episodio, step, reward)
     collision_list = []  #Lista per tenere traccia delle collisioni cumulative
@@ -81,7 +82,7 @@ def train_agent(env, font):
                             
                             #Penalità SOLO per il primo ingresso con rosso
                             if is_entering_intersection and env.traffic_lights[current_position] == 'red':
-                                reward = -30
+                                reward = -150
                                 print(f"Penalità semaforo: entrato in {current_position} con rosso")
                             else:
                                 pass
@@ -159,7 +160,7 @@ def train_agent(env, font):
         print(f"---------------------")
         
         pygame.display.flip()
-        epsilon = max(0.01, epsilon * 0.9995)  #Decadimento di epsilon, mai sotto 0.01
+        epsilon = max(0.01, epsilon * gamma)  #Decadimento di epsilon, mai sotto 0.01
 
         episode_data.append((episode, steps, total_reward))
 
