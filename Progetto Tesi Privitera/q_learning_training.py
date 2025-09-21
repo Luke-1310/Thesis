@@ -41,7 +41,7 @@ def train_agent(env, font):
 
             env.update_traffic_lights()  #Aggiorna lo stato dei semafori
 
-            #Fa muovere le auto nemiche se la mappa lo supporta
+            #Fa muovere le auto nemiche
             if hasattr(env, "update_car_position"):
                 env.update_car_position()
 
@@ -82,7 +82,7 @@ def train_agent(env, font):
                             
                             #Penalità SOLO per il primo ingresso con rosso
                             if is_entering_intersection and env.traffic_lights[current_position] == 'red':
-                                reward = -90
+                                reward = -100
                                 print(f"Penalità semaforo: entrato in {current_position} con rosso")
                             else:
                                 pass
