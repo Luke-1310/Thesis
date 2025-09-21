@@ -24,8 +24,6 @@ class Map1Environment(BaseEnvironment):
         #Mi voglio creare un attributo per capire che mappa sto trattando
         self.map_name = "Città"
 
-        self.traffic_training_routes = self.traffic_routes()
-
         self.realistic_mode = realistic_mode
 
         if getattr(self, 'realistic_mode', False):
@@ -270,6 +268,11 @@ class Map1Environment(BaseEnvironment):
         #         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         # ]
 
+        #incroci della mappa
+        # self.intersections = {
+
+        # }
+
     def reset_game(self):
         super().reset_game()
         self.cars = [
@@ -278,60 +281,3 @@ class Map1Environment(BaseEnvironment):
             {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0}
         ]
 
-    #Definisce i percorsi del traffico per le auto modalità impara col traffico
-    def traffic_routes(self): #Ogni percorso deve avere delle informazioni fondamentali, nome, punti di partenza e arrivo
-        
-        self.traffic_training_routes = [
-            {
-                "name": "Percorso 1",
-                "colour": "yellow",
-                "start": (24, 2),
-                "end": (4, 39),
-            },
-
-            {
-                "name": "Percorso 2",
-                "colour": "sky blue",
-                "start": (24, 14),
-                "end": (1, 46),
-            },
-
-            {
-                "name": "Percorso 3",
-                "colour": "red",
-                "start": (24, 40 ),
-                "end": (1, 46),
-            },
-
-            {
-                "name": "Percorso 4",
-                "colour": "purple",
-                "start": (1, 11),
-                "end": (14, 33),
-            },
-
-            {
-                "name": "Percorso 5",
-                "colour": "green",
-                "start": (19, 26),
-                "end": (4, 32),
-            },
-
-            {
-                "name": "Percorso 6",
-                "colour": "orange",
-                "start": (11, 46),
-                "end": (14, 2),
-            },
-
-            {
-                "name": "Percorso 7",
-                "colour": "pink",
-                "start": (16, 14),
-                "end": (3, 22),
-            },
-
-        ]
-
-        return self.traffic_training_routes
-    #per collegare i percorsi con le auto si utilizza A* calcolato sul momento
