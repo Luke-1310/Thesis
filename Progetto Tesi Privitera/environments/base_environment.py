@@ -65,7 +65,7 @@ class BaseEnvironment:
 
         ax, ay = self.agent_position
         rot = self.agent_rotation
-        ahead = 3  #profondità di vista in celle
+        ahead = 2  #profondità di vista in celle
 
         for pedone in self.pedoni:
             px, py = pedone.position
@@ -580,12 +580,14 @@ class BaseEnvironment:
 
     #Penalità o ricompensa per essere sul bordo destro della strada
     def right_edge_penalty(self):
+
         #Controllo modalità realistica
         if not getattr(self, 'realistic_mode', False):
             return 0
         
         if self.is_on_right_edge():
-            return 0.3 # Piccola ricompensa per essere sul bordo destro
+            return 1  #Nessuna penalità se è sul bordo destro
         else:
-            return -0.9   # Penalità più forte del movimento normale (-1)
+            return -3   #Penalità più forte del movimento normale (-1)
     
+   
