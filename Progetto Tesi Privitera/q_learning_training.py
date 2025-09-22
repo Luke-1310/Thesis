@@ -19,7 +19,7 @@ def train_agent(env, font):
     epsilon = 1 #Esplorazione iniziale
     discount_factor = 0.9 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
     learning_rate = 0.1 #Tasso di apprendimento
-    gamma = 0.9995 #Fattore di decadimento per epsilon
+    gamma = 0.9999 #Fattore di decadimento per epsilon
     num_episodes = getattr(env, 'num_episodes', 5000)  #Numero di episodi da eseguire, predefinito a 2000 se non specificato
     episode_data = []  #Lista che contiene (episodio, step, reward)
     collision_list = []  #Lista per tenere traccia delle collisioni cumulative
