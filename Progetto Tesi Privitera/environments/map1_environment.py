@@ -15,6 +15,7 @@ class Map1Environment(BaseEnvironment):
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
         self.agent_position = self.start_position
+        self.intermediate_goals = [(14, 20), (34, 10)]  # Obiettivi intermedi
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
 
         # Carica le risorse specifiche della mappa
@@ -33,6 +34,7 @@ class Map1Environment(BaseEnvironment):
             #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
             self.q_values = np.zeros((self.height, self.width, 2, 2, 5))
 
+        self.visited_goals = set()  #Insieme per tracciare gli obiettivi intermedi visitati
 
     def load_assets(self):
 
@@ -93,7 +95,8 @@ class Map1Environment(BaseEnvironment):
                         [17, 1],[16, 1],[15, 1],[14, 1],[13, 1],[12, 1],[11, 1],[10, 1],[9, 1],[8, 1],[7, 1],
                         [6, 1],[5, 1],[4, 1],[3, 1],[2, 1],[1, 1],[1, 2],[1, 3],[1, 4],[1, 5],[1, 6],[1, 7],
                         [1, 8],[1, 9],[1, 10],[1, 11],[1, 12],[1, 13],[1, 14],[1, 15],[1, 16],[1, 17],[1, 18],[1, 19],
-                        [1, 20],[1, 21],[1, 22],[1, 23],[1, 24]]
+                        [1, 20],[2, 20],[3, 20],[4, 20],[5, 20],[6, 20],[7, 20],[8, 20],[9, 20],[10, 20],[11, 20],[12, 20],
+                        [13, 20], [13, 21], [13, 22], [13, 23], [13, 24]]
        
         self.percorso2 = [[15, 15],[16, 15],[17, 15],[18, 15],[19, 15],[20, 15],[21, 15],[22, 15],[23, 15],[24, 15],[25, 15],[26, 15],
                            [27, 15],[28, 15],[29, 15],[30, 15],[31, 15],[32, 15],[33, 15],[34, 15],[34, 14],[34, 13],[34, 12],[34, 11],
@@ -230,23 +233,25 @@ class Map1Environment(BaseEnvironment):
 
         #Matrice dei reward (premi e penalità)
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
+
         #Assegna +10000 alle celle del parcheggio
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
         
+        #Premi per obiettivi intermedi
+        for pos in self.intermediate_goals:
+                intermediate_reward = 200
+                self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
+
         # Assegna -10 ai bordi delle strade
         for y in range(self.height):
             for x in range(self.width):
                 if self.map[y][x] == 0:
                     self.reward_matrix[y][x] = -10  
 
-        #incroci della mappa
-        self.intersections = {
-
-        }
-
     def reset_game(self):
         super().reset_game()
+        self.visited_goals = set()  # Resetta gli obiettivi visitati ad ogni nuovo episodio
         self.cars = [
             {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
             {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
