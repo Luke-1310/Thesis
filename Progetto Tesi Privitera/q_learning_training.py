@@ -59,7 +59,15 @@ def train_agent(env, font):
                 is_valid = env.get_next_location(action_index)
 
                 if is_valid:
-                    reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                    
+                    current_pos = tuple(env.agent_position)
+    
+                    #Controlla se è un obiettivo intermedio non ancora visitato
+                    if current_pos in env.intermediate_goals and current_pos not in env.visited_goals:
+                        reward = 200  # Il reward per obiettivo intermedio
+                        env.visited_goals.add(current_pos)  # Marca come visitato
+                    else:
+                        reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
 
                     right_penalty = env.right_edge_penalty()
                     reward += right_penalty

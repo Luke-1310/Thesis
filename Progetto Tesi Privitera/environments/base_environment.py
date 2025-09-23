@@ -586,8 +586,8 @@ class BaseEnvironment:
             return 0
         
         if self.is_on_right_edge():
-            return 1  #Nessuna penalità se è sul bordo destro
+            return 0.45  #Nessuna penalità se è sul bordo destro
         else:
-            return -3   #Penalità più forte del movimento normale (-1)
+            return -0.9  #Penalità se non è sul bordo destro
     
    
