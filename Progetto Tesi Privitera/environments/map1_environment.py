@@ -15,7 +15,7 @@ class Map1Environment(BaseEnvironment):
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
         self.agent_position = self.start_position
-        self.intermediate_goals = [(14, 20), (34, 10)]  # Obiettivi intermedi
+        self.intermediate_goals = [(14, 20), (14,15), (22,10), (31,20), (34, 10), (34,16), (39,10)]  # Obiettivi intermedi
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
 
         # Carica le risorse specifiche della mappa
@@ -215,7 +215,7 @@ class Map1Environment(BaseEnvironment):
             [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         ]
 
-        #Inizializza la matrice dei costi PER I PEDONI!
+        #Inizializza la matrice dei costi per i pedoni, serve per A*!
         self.cost_matrix = []
         for y, row in enumerate(self.map_pedone):
             cost_row = []
@@ -242,12 +242,6 @@ class Map1Environment(BaseEnvironment):
         for pos in self.intermediate_goals:
                 intermediate_reward = 200
                 self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
-
-        # Assegna -10 ai bordi delle strade
-        for y in range(self.height):
-            for x in range(self.width):
-                if self.map[y][x] == 0:
-                    self.reward_matrix[y][x] = -10  
 
     def reset_game(self):
         super().reset_game()
