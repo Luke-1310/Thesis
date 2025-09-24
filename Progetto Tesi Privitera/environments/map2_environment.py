@@ -203,7 +203,7 @@ class Map2Environment(BaseEnvironment):
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
         ]
 
-        #Inizializza la matrice dei costi
+        #Inizializza la matrice dei costi per i pedoni, serve per A*
         self.cost_matrix = []
         for y, row in enumerate(self.map_pedone):
             cost_row = []
@@ -220,15 +220,10 @@ class Map2Environment(BaseEnvironment):
 
         # Matrice dei reward (premi e penalità)
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
+
         # Assegna 10000 alle celle del parcheggio
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
-        
-        # Assegna -10 ai bordi delle strade
-        for y in range(self.height):
-            for x in range(self.width):
-                if self.map[y][x] == 0:
-                    self.reward_matrix[y][x] = -10
 
     def reset_game(self):
         super().reset_game()
