@@ -28,6 +28,7 @@ def train_agent(env, font):
     for episode in range(num_episodes):
         env.reset_game()
         total_reward = 0
+        reward = 0
         steps = 0
 
         while not (env.check_loss() or env.check_goal()):
@@ -44,7 +45,6 @@ def train_agent(env, font):
             #Fa muovere le auto nemiche
             if hasattr(env, "update_car_position"):
                 env.update_car_position()
-
             
             env.update_pedoni(env.pedoni)
 
@@ -60,22 +60,19 @@ def train_agent(env, font):
 
                 if is_valid:
                     
-                    current_pos = tuple(env.agent_position)
-    
-                    #Controlla se è un obiettivo intermedio non ancora visitato
-                    if current_pos in env.intermediate_goals and current_pos not in env.visited_goals:
-                        reward = 200  # Il reward per obiettivo intermedio
-                        env.visited_goals.add(current_pos)  # Marca come visitato
-                    else:
-                        reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-
-                    right_penalty = env.right_edge_penalty()
-                    reward += right_penalty
-
-                    #Penalty e Reward per i semafori
                     current_position = tuple(env.agent_position)
                     old_position_tuple = tuple(old_position)
                     
+                    #Controlla se è un obiettivo intermedio non ancora visitato
+                    if current_position in env.intermediate_goals and current_position not in env.visited_goals:
+                        
+                        reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                        env.visited_goals.add(current_position)  #Marca come visitato
+                        print(f"Obiettivo intermedio raggiunto in {current_position}!")
+
+                    right_penalty = env.right_edge_penalty()
+                    reward += right_penalty
+      
                     #Controlla se l'agente è in una posizione con semaforo
                     if current_position in env.traffic_lights:
                         
@@ -126,7 +123,14 @@ def train_agent(env, font):
                 is_valid = env.get_next_location(action_index)
 
                 if is_valid:
-                    reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                    
+                    current_position = tuple(env.agent_position)
+
+                    if current_position in env.intermediate_goals and current_position not in env.visited_goals:
+                        reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                        env.visited_goals.add(current_position)  #Marca come visitato
+                        print(f"Obiettivo intermedio raggiunto in {current_position}!")
+
                 elif not env.check_loss():
                     reward = -10
                 else:
@@ -147,7 +151,6 @@ def train_agent(env, font):
             total_reward += reward
             total_reward = round(total_reward, 1) #approssima a 1 decimale
             steps += 1
-            
 
             if steps > 1000:  #Previene loop infiniti
                 collision_count += 1
@@ -426,7 +429,6 @@ def evaluate_agent(env, font):
         draw_text(screen, "L'agente ha perso.", 0, screen.get_height() // 2 - 20, font, (200, 0, 0), center=True)
         pygame.display.flip()
         pygame.time.wait(2000)
-
 
 #Implementazione di una interfaccia grafica per il menu
 def show_menu(screen, font):
