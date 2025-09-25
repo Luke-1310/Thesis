@@ -134,6 +134,7 @@ def train_agent(env, font):
                 env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index] = new_q_value
             
             else:
+
                 #Stato di visione PRIMA della scelta azione senza semafori
                 old_cars_visible, old_pedestrians_visible = env.get_vision_state()
                 action_index = env.get_next_action(epsilon)
@@ -449,7 +450,6 @@ def evaluate_agent(env, font):
         pygame.display.flip()
         pygame.time.wait(2000)
 
-#Implementazione di una interfaccia grafica per il menu
 def show_menu(screen, font):
     
     buttons = [
@@ -492,7 +492,7 @@ def draw_text(screen, text, x, y, font, color=(0, 0, 0), center=False):
 
     screen.blit(text_surface, (x, y))
 
-#Funzione per poter chiedere all'utente, dal punto di vista grafico, se vuole o no vedere i risultati
+#Funzione per poter chiedere all'utente di fare una scelta sì/no
 def show_yes_no_dialog(screen, font, question):
     screen.fill((255, 255, 255))
 
@@ -540,7 +540,6 @@ available_maps = {
     "2": ("Foresta", Map2Environment),
 }
 
-#Funzione che mi permette di scegliere la mappa
 def select_map(screen, font):
     selecting = True
     selected_map_class = None
@@ -613,7 +612,6 @@ def select_map(screen, font):
 
     return selected_map_class #Ritorna la classe della mappa selezionata
 
-#Funzione per stampare il resoconto del training del agente
 def show_training_results(screen, font, episode_data):
 
     scroll_y = 0
