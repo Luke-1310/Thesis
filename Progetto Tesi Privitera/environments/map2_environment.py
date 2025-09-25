@@ -217,11 +217,10 @@ class Map2Environment(BaseEnvironment):
                 else:
                     cost_row.append(1)  # Costo normale
             self.cost_matrix.append(cost_row) 
-
-        # Matrice dei reward (premi e penalità)
+            
+        #Creo una matrice con tutti -1 e poi modifico i reward delle posizioni di goal e intermediate 
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
 
-        # Assegna 10000 alle celle del parcheggio
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
 

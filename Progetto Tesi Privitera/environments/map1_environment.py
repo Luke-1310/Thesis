@@ -230,18 +230,15 @@ class Map1Environment(BaseEnvironment):
                     cost_row.append(1)  # Costo normale
             self.cost_matrix.append(cost_row) 
 
-
-        #Matrice dei reward (premi e penalità)
+        #Creo una matrice con tutti -1 e poi modifico i reward delle posizioni di goal e intermediate 
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
 
-        #Assegna +10000 alle celle del parcheggio
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
         
-        #Premi per obiettivi intermedi
         for pos in self.intermediate_goals:
-                intermediate_reward = 500
-                self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
+            intermediate_reward = 500
+            self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
 
     def reset_game(self):
         super().reset_game()
