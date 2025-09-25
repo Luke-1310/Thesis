@@ -64,7 +64,7 @@ def train_agent(env, font):
                     old_position_tuple = tuple(old_position)
                     
                     #Controlla se è un obiettivo intermedio non ancora visitato
-                    if current_position in env.intermediate_goals and current_position not in env.visited_goals:
+                    if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals and current_position not in env.visited_goals:
                         
                         reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
                         env.visited_goals.add(current_position)  #Marca come visitato
@@ -101,9 +101,28 @@ def train_agent(env, font):
                         pass
 
                 elif not env.check_loss():
-                    reward = -10
+                    
+                    #Reward per aspettare davanti al semaforo rosso
+                    old_position_tuple = tuple(old_position)
+                    
+                    # Verifica se l'agente ha usato l'azione "stay"
+                    if env.actions[action_index] == "stay":
+                        
+                        # Controlla se c'è un semaforo rosso nella direzione di movimento
+                        next_pos_if_moving = env._get_next_position_in_direction(old_position, env.agent_rotation)
+                        
+                        if (next_pos_if_moving and 
+                            tuple(next_pos_if_moving) in env.traffic_lights and 
+                            env.traffic_lights[tuple(next_pos_if_moving)] == 'red'):
+                        
+                            reward = 15  #Reward positivo per aspettare al semaforo rosso
+                            print(f"Reward: agente aspetta al semaforo rosso in {next_pos_if_moving}")
+                        else:
+                            reward = -10  #Penalty per movimento non valido
+                    else:
+                        reward = -10  #Penalty per movimento non valido
                 else:
-                    reward = -100  # Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+                    reward = -100  #Penalty se collide
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
@@ -126,7 +145,7 @@ def train_agent(env, font):
                     
                     current_position = tuple(env.agent_position)
 
-                    if current_position in env.intermediate_goals and current_position not in env.visited_goals:
+                    if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals and current_position not in env.visited_goals:
                         reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
                         env.visited_goals.add(current_position)  #Marca come visitato
                         print(f"Obiettivo intermedio raggiunto in {current_position}!")
