@@ -15,21 +15,21 @@ np.set_printoptions(precision=3, suppress=True, linewidth=200)
 
 def train_agent(env, font):
 
-    #Parametri di allenamento
     epsilon = 1 #Esplorazione iniziale
     discount_factor = 0.9 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
     learning_rate = 0.1 #Tasso di apprendimento
     gamma = 0.9999 #Fattore di decadimento per epsilon
-    num_episodes = getattr(env, 'num_episodes', 5000)  #Numero di episodi da eseguire, predefinito a 2000 se non specificato
+    num_episodes = getattr(env, 'num_episodes', 5000)
     episode_data = []  #Lista che contiene (episodio, step, reward)
     collision_list = []  #Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
 
     for episode in range(num_episodes):
         env.reset_game()
-        total_reward = 0
-        reward = 0
         steps = 0
+        total_steps_reward = 0.0
+        total_right_penalty = 0.0
+        total_reward = 0.0
 
         while not (env.check_loss() or env.check_goal()):
            
@@ -40,15 +40,17 @@ def train_agent(env, font):
             
             pygame.event.pump() #.pump serve per aggiornare lo stato degli eventi di pygame
 
-            env.update_traffic_lights()  #Aggiorna lo stato dei semafori
+            if hasattr(env, "update_traffic_lights"):
+                env.update_traffic_lights()  #Aggiorna lo stato dei semafori
 
-            #Fa muovere le auto nemiche
             if hasattr(env, "update_car_position"):
-                env.update_car_position()
+                env.update_car_position() #Aggiorna le auto nemiche
             
-            env.update_pedoni(env.pedoni)
+            if hasattr(env, "pedoni"):
+                env.update_pedoni(env.pedoni) #Aggiorna i pedoni
+            
+            reward = 0.0
 
-            #Bisogna valutare qual è la modalità scelta dall'utente
             if env.realistic_mode:
             
                 #Stato di visione PRIMA della scelta azione con semafori
@@ -59,70 +61,56 @@ def train_agent(env, font):
                 is_valid = env.get_next_location(action_index)
 
                 if is_valid:
-                    
+
                     current_position = tuple(env.agent_position)
                     old_position_tuple = tuple(old_position)
-                    
-                    #Controlla se è un obiettivo intermedio non ancora visitato
-                    if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals and current_position not in env.visited_goals:
-                        
+
+                    if env.reward_matrix[env.agent_position[1]][env.agent_position[0]] == -1:
                         reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-                        env.visited_goals.add(current_position)  #Marca come visitato
-                        print(f"Obiettivo intermedio raggiunto in {current_position}!")
+                        total_steps_reward += -1
+
+                    #Controlla se è un obiettivo intermedio non ancora visitato e in caso gli da il reward
+                    if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals:
+                        if current_position not in env.visited_goals:
+                            reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                            env.visited_goals.add(current_position)  
+                            print(f"Obiettivo intermedio raggiunto in {current_position}!")
+                        else:
+                            print(f"Obiettivo già visitato in {current_position}, nessun reward aggiuntivo")
 
                     right_penalty = env.right_edge_penalty()
                     reward += right_penalty
-      
-                    #Controlla se l'agente è in una posizione con semaforo
-                    if current_position in env.traffic_lights:
-                        
-                        #Se era in una safe zone, non penalizzare (già dentro l'incrocio)
-                        if old_position_tuple in env.safe_zones:
-                            pass  # Movimento da safe zone = nessuna penalità
-                        
-                        else:
-                            #Verifica se è un PRIMO ingresso nell'incrocio
-                            is_entering_intersection = (old_position_tuple not in env.traffic_lights and 
-                                                      current_position in env.traffic_lights)
-                            
-                            #Penalità SOLO per il primo ingresso con rosso
-                            if is_entering_intersection and env.traffic_lights[current_position] == 'red':
-                                reward = -100
-                                print(f"Penalità semaforo: entrato in {current_position} con rosso")
-                            else:
-                                pass
-                    
-                    # Se esce dall'incrocio (era in safe zone o traffic_lights, ora non più)
-                    elif (old_position_tuple in env.safe_zones or old_position_tuple in env.traffic_lights):
-                        # Sta uscendo dall'incrocio = nessuna penalità
-                        pass
-                    
-                    else:
-                        pass
+                    total_right_penalty += right_penalty
 
-                elif not env.check_loss():
-                    
-                    #Reward per aspettare davanti al semaforo rosso
-                    old_position_tuple = tuple(old_position)
-                    
-                    # Verifica se l'agente ha usato l'azione "stay"
-                    if env.actions[action_index] == "stay":
-                        
-                        # Controlla se c'è un semaforo rosso nella direzione di movimento
-                        next_pos_if_moving = env._get_next_position_in_direction(old_position, env.agent_rotation)
-                        
-                        if (next_pos_if_moving and 
-                            tuple(next_pos_if_moving) in env.traffic_lights and 
-                            env.traffic_lights[tuple(next_pos_if_moving)] == 'red'):
-                        
-                            reward = 15  #Reward positivo per aspettare al semaforo rosso
-                            print(f"Reward: agente aspetta al semaforo rosso in {next_pos_if_moving}")
+                    #Logica semafori
+                    if current_position in env.traffic_lights:
+                        if old_position_tuple in env.safe_zones:   #Se era in una safe zone, non penalizza
+                            pass
                         else:
-                            reward = -10  #Penalty per movimento non valido
-                    else:
-                        reward = -10  #Penalty per movimento non valido
+                            is_entering_intersection = (old_position_tuple not in env.traffic_lights and 
+                                                      current_position in env.traffic_lights)   #Verifica se è un PRIMO ingresso nell'incrocio e se passa col rosso lo penalizza
+                            
+                            if is_entering_intersection and env.traffic_lights[current_position] == 'red':
+                                reward += -100.0
+                                print(f"Penalità semaforo: entrato in {current_position} con rosso")
+
+                # elif not env.check_loss():
+                #     old_position_tuple = tuple(old_position) #Reward per aspettare davanti al semaforo rosso
+                    
+                #     if env.actions[action_index] == "stay":
+                        
+                #         # Controlla se c'è un semaforo rosso nella direzione di movimento
+                #         next_pos_if_moving = env._get_next_position_in_direction(old_position, env.agent_rotation)
+                        
+                #         if (next_pos_if_moving and 
+                #             tuple(next_pos_if_moving) in env.traffic_lights and 
+                #             env.traffic_lights[tuple(next_pos_if_moving)] == 'red'):
+                        
+                #             reward = 20.0  #Reward positivo per aspettare al semaforo rosso
+                #             print(f"Reward: agente aspetta al semaforo rosso in {next_pos_if_moving}")
+                        
                 else:
-                    reward = -100  #Penalty se collide
+                    reward += -100  #Penalty se collide
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
@@ -143,18 +131,26 @@ def train_agent(env, font):
                 is_valid = env.get_next_location(action_index)
 
                 if is_valid:
-                    
                     current_position = tuple(env.agent_position)
 
-                    if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals and current_position not in env.visited_goals:
-                        reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-                        env.visited_goals.add(current_position)  #Marca come visitato
-                        print(f"Obiettivo intermedio raggiunto in {current_position}!")
+                    if env.reward_matrix[env.agent_position[1]][env.agent_position[0]] == -1:
+                        reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                        total_steps_reward += -1
+
+                    #Controlla se è un obiettivo intermedio non ancora visitato e in caso gli da il reward
+                    if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals:
+                        
+                        if current_position not in env.visited_goals:
+                            reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]  
+                            env.visited_goals.add(current_position)
+                            print(f"Obiettivo intermedio raggiunto in {current_position}!")
+                        else:
+                            print(f"Obiettivo già visitato in {current_position}, nessun reward aggiuntivo")
 
                 elif not env.check_loss():
-                    reward = -10
+                    reward += -10
                 else:
-                    reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+                    reward += -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index]
@@ -169,15 +165,22 @@ def train_agent(env, font):
             pygame.time.wait(1)  #Breve pausa per gestire gli eventi
 
             total_reward += reward
-            total_reward = round(total_reward, 1) #approssima a 1 decimale
+            total_reward = round(total_reward, 2) #approssima a 2 decimali
             steps += 1
 
             if steps > 1000:  #Previene loop infiniti
-                collision_count += 1
+                print("Episodio terminato per superamento step massimi.")
                 break
+        
+        #Conta le collisioni solo se l'agente non ha raggiunto l'obiettivo
+        fail = steps > 1000 or env.check_loss()
 
-        if env.check_loss():
+        if fail:  # L'agente non ha raggiunto il traguardo
             collision_count += 1
+            esito_episodio = "Collisione"
+        else:
+            esito_episodio = "Successo"
+
 
         collision_list.append(collision_count)
         
@@ -186,8 +189,14 @@ def train_agent(env, font):
 
         print(f"Episodio: {episode}")
         print(f"Steps: {steps}")
-        print(f"Total Reward: {total_reward}")
+        print(f"Reward step totali: {total_steps_reward:.2f}")
+
+        if env.realistic_mode:
+            print(f"Right Edge Penalty totale: {total_right_penalty:.2f}")
+        
+        print(f"Total Reward: {total_reward:.2f}")
         print(f"Collisioni totali: {collision_count}")
+        print(f"Esito episodio: {esito_episodio}")
         print(f"---------------------")
         
         pygame.display.flip()
