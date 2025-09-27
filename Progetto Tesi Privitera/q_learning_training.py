@@ -110,8 +110,10 @@ def train_agent(env, font):
                 #             reward = 20.0  #Reward positivo per aspettare al semaforo rosso
                 #             print(f"Reward: agente aspetta al semaforo rosso in {next_pos_if_moving}")
                         
+                elif not env.check_loss():
+                    reward = -10
                 else:
-                    reward = -100  #Penalty se collide
+                    reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
