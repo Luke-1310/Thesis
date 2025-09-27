@@ -32,6 +32,10 @@ class BaseEnvironment:
         self.seed = seed
         self.rng = np.random.default_rng(seed)
 
+        #Contatore per i reward del tenere la destra
+        self.right_edge_rewards_given = 0
+        self.max_right_edge_rewards = 1
+
     #Carica immagini e risorse
     def load_assets(self):
         raise NotImplementedError("Questo metodo non è stato implementato correttamente.")
@@ -195,7 +199,7 @@ class BaseEnvironment:
 
     def get_next_action(self, epsilon, traffic_light=None):
         
-        if np.random.random() < epsilon:   #ESPLORAZIONE
+        if np.random.random() > epsilon:   #ESPLORAZIONE
             return np.random.randint(5)
         
         else:   #SFRUTTAMENTO
@@ -390,6 +394,8 @@ class BaseEnvironment:
             self.car_in_vision = False
             self.prev_car_position = [car['position'] for car in self.cars]
             self.prev_agent_position = self.agent_position[:]
+
+            self.right_edge_rewards_given = 0
 
             #Rigenera i pedoni con nuove posizioni e percorsi (qui inizializzo i pedoni)
             self.pedoni = []
@@ -586,8 +592,13 @@ class BaseEnvironment:
             return 0
         
         if self.is_on_right_edge():
-            return 0.45  #Nessuna penalità se è sul bordo destro
+            #Assegna reward positivo solo se non è stato già dato il massimo numero di volte
+            if self.right_edge_rewards_given < self.max_right_edge_rewards:
+                self.right_edge_rewards_given += 1
+                return 0.4  
+            else:
+                return 0 
         else:
-            return -0.9  #Penalità se non è sul bordo destro
+            return -0.9  #Penalità se non è sul bordo destro (sempre applicata)
     
    
