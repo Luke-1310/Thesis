@@ -595,10 +595,10 @@ class BaseEnvironment:
             #Assegna reward positivo solo se non è stato già dato il massimo numero di volte
             if self.right_edge_rewards_given < self.max_right_edge_rewards:
                 self.right_edge_rewards_given += 1
-                return 0.4  
+                return 0.5  
             else:
                 return 0 
         else:
-            return -0.9  #Penalità se non è sul bordo destro (sempre applicata)
+            return -0.5  #Penalità se non è sul bordo destro (sempre applicata)
     
    
