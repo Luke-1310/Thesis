@@ -60,23 +60,24 @@ def train_agent(env, font):
 
                 is_valid = env.get_next_location(action_index)
 
-                if is_valid:
+                current_position = tuple(env.agent_position)
+                old_position_tuple = tuple(old_position)
 
-                    current_position = tuple(env.agent_position)
-                    old_position_tuple = tuple(old_position)
+                if is_valid:    
+
+                    reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
 
                     if env.reward_matrix[env.agent_position[1]][env.agent_position[0]] == -1:
-                        reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
                         total_steps_reward += -1
 
-                    #Controlla se è un obiettivo intermedio non ancora visitato e in caso gli da il reward
                     if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals:
-                        if current_position not in env.visited_goals:
-                            reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                        
+                        if current_position in env.visited_goals:
+                            reward -= env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
+                            print(f"Obiettivo già visitato in {current_position}, nessun reward aggiuntivo")
+                        else:
                             env.visited_goals.add(current_position)  
                             print(f"Obiettivo intermedio raggiunto in {current_position}!")
-                        else:
-                            print(f"Obiettivo già visitato in {current_position}, nessun reward aggiuntivo")
 
                     right_penalty = env.right_edge_penalty()
                     reward += right_penalty
@@ -110,7 +111,7 @@ def train_agent(env, font):
                 #             print(f"Reward: agente aspetta al semaforo rosso in {next_pos_if_moving}")
                         
                 else:
-                    reward += -100  #Penalty se collide
+                    reward = -100  #Penalty se collide
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
@@ -130,27 +131,29 @@ def train_agent(env, font):
 
                 is_valid = env.get_next_location(action_index)
 
+                current_position = tuple(env.agent_position)
+                old_position_tuple = tuple(old_position)
+
                 if is_valid:
-                    current_position = tuple(env.agent_position)
+
+                    reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
 
                     if env.reward_matrix[env.agent_position[1]][env.agent_position[0]] == -1:
-                        reward = env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
                         total_steps_reward += -1
 
-                    #Controlla se è un obiettivo intermedio non ancora visitato e in caso gli da il reward
                     if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals:
                         
-                        if current_position not in env.visited_goals:
-                            reward += env.reward_matrix[env.agent_position[1]][env.agent_position[0]]  
-                            env.visited_goals.add(current_position)
-                            print(f"Obiettivo intermedio raggiunto in {current_position}!")
-                        else:
+                        if current_position in env.visited_goals:
+                            reward -= env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
                             print(f"Obiettivo già visitato in {current_position}, nessun reward aggiuntivo")
+                        else:
+                            env.visited_goals.add(current_position)  
+                            print(f"Obiettivo intermedio raggiunto in {current_position}!")
 
                 elif not env.check_loss():
-                    reward += -10
+                    reward = -10
                 else:
-                    reward += -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+                    reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index]
