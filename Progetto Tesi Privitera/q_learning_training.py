@@ -92,23 +92,17 @@ def train_agent(env, font):
                                                       current_position in env.traffic_lights)   #Verifica se è un PRIMO ingresso nell'incrocio e se passa col rosso lo penalizza
                             
                             if is_entering_intersection and env.traffic_lights[current_position] == 'red':
-                                reward += -100.0
+                                reward += -200.0
                                 print(f"Penalità semaforo: entrato in {current_position} con rosso")
 
-                # elif not env.check_loss():
-                #     old_position_tuple = tuple(old_position) #Reward per aspettare davanti al semaforo rosso
-                    
-                #     if env.actions[action_index] == "stay":
-                        
-                #         # Controlla se c'è un semaforo rosso nella direzione di movimento
-                #         next_pos_if_moving = env._get_next_position_in_direction(old_position, env.agent_rotation)
-                        
-                #         if (next_pos_if_moving and 
-                #             tuple(next_pos_if_moving) in env.traffic_lights and 
-                #             env.traffic_lights[tuple(next_pos_if_moving)] == 'red'):
-                        
-                #             reward = 20.0  #Reward positivo per aspettare al semaforo rosso
-                #             print(f"Reward: agente aspetta al semaforo rosso in {next_pos_if_moving}")
+                            elif is_entering_intersection and env.traffic_lights[current_position] == 'green':
+                                reward += 20.0  # Bonus per attraversare l'incrocio al verde
+                                print(f"Bonus attraversamento: entrato in {current_position} con verde")
+                            
+                            # Ricompensa per fermarsi al semaforo rosso
+                            elif current_position == old_position_tuple and env.traffic_lights[current_position] == 'red':
+                                reward += 2.0  # Piccolo premio per fermarsi al rosso
+                                print(f"Premio per fermarsi al semaforo rosso in {current_position}")
                         
                 elif not env.check_loss():
                     reward = -10
