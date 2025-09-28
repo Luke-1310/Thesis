@@ -199,7 +199,7 @@ class BaseEnvironment:
 
     def get_next_action(self, epsilon, traffic_light=None):
         
-        if np.random.random() > epsilon:   #ESPLORAZIONE
+        if np.random.random() < epsilon:   #ESPLORAZIONE
             return np.random.randint(5)
         
         else:   #SFRUTTAMENTO
