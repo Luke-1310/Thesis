@@ -15,7 +15,7 @@ class Map1Environment(BaseEnvironment):
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
         self.agent_position = self.start_position
-        self.intermediate_goals = [(14, 20), (34, 10), (34,15), (39,10)]  # Obiettivi intermedi
+        #self.intermediate_goals = [(14, 20), (34, 10), (34,15), (39,10)]  # Obiettivi intermedi
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
 
         # Carica le risorse specifiche della mappa
@@ -236,13 +236,13 @@ class Map1Environment(BaseEnvironment):
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
         
-        for pos in self.intermediate_goals:
-            intermediate_reward = 10
-            self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
+        # for pos in self.intermediate_goals:
+        #     intermediate_reward = 10
+        #     self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
 
     def reset_game(self):
         super().reset_game()
-        self.visited_goals = set()  # Resetta gli obiettivi visitati ad ogni nuovo episodio
+        #self.visited_goals = set()  # Resetta gli obiettivi visitati ad ogni nuovo episodio
         self.cars = [
             {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
             {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
