@@ -13,6 +13,7 @@ class Map2Environment(BaseEnvironment):
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[22, 23]
         self.agent_position = self.start_position
+        self.intermediate_goals = [(22, 19), (14, 9)]  # Obiettivi intermedi
         self.goal_positions = [(8, 5)]  # Posizione di arrivo
 
         # Carica le risorse specifiche della mappa
@@ -224,8 +225,13 @@ class Map2Environment(BaseEnvironment):
         for pos in self.goal_positions:
             self.reward_matrix[pos[1]][pos[0]] = 10000
 
+        for pos in self.intermediate_goals:
+            intermediate_reward = 10
+            self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
+
     def reset_game(self):
         super().reset_game()
+        self.visited_goals = set()  # Resetta gli obiettivi visitati ad ogni nuovo episodio
         self.cars = [
             {'position': [46, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
             {'position': [33, 1], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
