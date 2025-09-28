@@ -44,38 +44,33 @@ class Pedone:
         x, y = self.position
         
         if self.position == self.goal:
-
-            #Quando arriva, sceglie una nuova destinazione e un nuovo path
-            if self.path_callback:       
-                
+            # Quando arriva, rigenera SEMPRE un nuovo percorso (anche se la cella è non valida)
+            if self.path_callback:
                 try:
-                    result = self.path_callback(tuple(self.position))        
-                    
-                    #Verifica che il risultato sia una tupla valida
+                    result = self.path_callback(tuple(self.position))
                     if result and isinstance(result, tuple) and len(result) == 2:
                         new_goal, new_path = result
-                        
-                        if new_path and len(new_path) > 1: #per essere sicuri che il percorso non sia vuoto
+                        if new_path and len(new_path) > 1:
                             self.goal = list(new_goal)
                             self.path = new_path
                             self.arrived = False
                             self.wait_counter = 0
                             self.pre_cross_wait = 0
-                            self.waiting_for_light = False  # Reset lo stato di attesa
+                            self.waiting_for_light = False
                             return
-                        
                         else:
-                            #Gestisci eventuali eccezioni
+                            # Se il percorso non è valido, riprova subito
                             self.arrived = False
                             self.path = []
-                    
+                            return
                     else:
                         self.arrived = False
                         self.path = []
-                
+                        return
                 except Exception as e:
                     self.arrived = False
                     self.path = []
+                    return
             else:
                 self.arrived = True
             return
