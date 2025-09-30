@@ -23,6 +23,8 @@ def train_agent(env, font):
     episode_data = []  #Lista che contiene (episodio, step, reward)
     collision_list = []  #Lista per tenere traccia delle collisioni cumulative
     collision_count = 0
+    goal_reached_count = 0
+    goal_already_visited_count = 0
 
     for episode in range(num_episodes):
         env.reset_game()
@@ -74,10 +76,10 @@ def train_agent(env, font):
                         
                         if current_position in env.visited_goals:
                             reward -= env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-                            print(f"Obiettivo già visitato in {current_position}, nessun reward aggiuntivo")
+                            goal_already_visited_count += 1
                         else:
                             env.visited_goals.add(current_position)  
-                            print(f"Obiettivo intermedio raggiunto in {current_position}!")
+                            goal_reached_count += 1
 
                     right_penalty = env.right_edge_penalty()
                     reward += right_penalty
@@ -141,10 +143,10 @@ def train_agent(env, font):
                         
                         if current_position in env.visited_goals:
                             reward -= env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-                            print(f"Obiettivo già visitato in {current_position}, nessun reward aggiuntivo")
+                            goal_already_visited_count += 1
                         else:
                             env.visited_goals.add(current_position)  
-                            print(f"Obiettivo intermedio raggiunto in {current_position}!")
+                            goal_reached_count += 1
 
                 elif not env.check_loss():
                     reward = -10
@@ -179,9 +181,6 @@ def train_agent(env, font):
             esito_episodio = "Collisione"
         else:
             esito_episodio = "Successo"
-
-
-        collision_list.append(collision_count)
         
         screen = env.screen
         screen.fill((255, 255, 255))  #Pulisce lo schermo per il prossimo episodio
@@ -193,6 +192,8 @@ def train_agent(env, font):
         if env.realistic_mode:
             print(f"Right Edge Penalty totale: {total_right_penalty:.2f}")
         
+        print(f"Obiettivi intermedi raggiunti: {goal_reached_count}/{len(env.intermediate_goals)}")
+        print(f"Obiettivi intermedi già visitati: {goal_already_visited_count}")
         print(f"Total Reward: {total_reward:.2f}")
         print(f"Collisioni totali: {collision_count}")
         print(f"Esito episodio: {esito_episodio}")
@@ -202,6 +203,10 @@ def train_agent(env, font):
         epsilon = max(0.01, epsilon * gamma)  #Decadimento di epsilon, mai sotto 0.01
 
         episode_data.append((episode, steps, total_reward))
+        collision_list.append(collision_count)
+
+        goal_reached_count = 0
+        goal_already_visited_count = 0
 
     if show_yes_no_dialog(env.screen, font, "Vuoi visualizzare i risultati?"):
         evaluate_agent(env, font)
