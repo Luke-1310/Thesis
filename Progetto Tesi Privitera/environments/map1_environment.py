@@ -15,7 +15,7 @@ class Map1Environment(BaseEnvironment):
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
         self.agent_position = self.start_position
-        self.intermediate_goals = [(2,20),(14, 20), (34, 10), (34,15), (39,10)]  # Obiettivi intermedi
+        self.intermediate_goals = [(14, 20), (34, 10), (34,15), (39,10)]  # Obiettivi intermedi
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
 
         # Carica le risorse specifiche della mappa
