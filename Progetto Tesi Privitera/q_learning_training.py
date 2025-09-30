@@ -18,7 +18,7 @@ def train_agent(env, font):
     epsilon = 1 #Esplorazione iniziale
     discount_factor = 0.9 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
     learning_rate = 0.1 #Tasso di apprendimento
-    gamma = 0.9999 #Fattore di decadimento per epsilon
+    rho = 0.9999 #Fattore di decadimento per epsilon
     num_episodes = getattr(env, 'num_episodes', 5000)
     episode_data = []  #Lista che contiene (episodio, step, reward)
     collision_list = []  #Lista per tenere traccia delle collisioni cumulative
@@ -200,7 +200,7 @@ def train_agent(env, font):
         print(f"---------------------")
         
         pygame.display.flip()
-        epsilon = max(0.01, epsilon * gamma)  #Decadimento di epsilon, mai sotto 0.01
+        epsilon = max(0.01, epsilon * rho)  #Decadimento di epsilon, mai sotto 0.01
 
         episode_data.append((episode, steps, total_reward))
         collision_list.append(collision_count)
