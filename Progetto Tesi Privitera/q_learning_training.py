@@ -108,7 +108,7 @@ def train_agent(env, font):
                                 traffic_light_pos = env.traffic_light_approach_zones[old_position_tuple]
                                 
                                 if traffic_light_pos in env.traffic_lights and env.traffic_lights[traffic_light_pos] == 'red':
-                                    reward += 20.0  # Premio per essersi fermato correttamente al semaforo rosso
+                                    reward += 100.0  # Premio per essersi fermato correttamente al semaforo rosso
                                     print(f"Bonus fermata: in attesa del verde in {old_position_tuple}")
 
                         
@@ -147,7 +147,6 @@ def train_agent(env, font):
 
                     if hasattr(env, 'intermediate_goals') and current_position in env.intermediate_goals: 
                         reward -= env.reward_matrix[env.agent_position[1]][env.agent_position[0]]
-                        
 
                 elif not env.check_loss():
                     reward = -10
