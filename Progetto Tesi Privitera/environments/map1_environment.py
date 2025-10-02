@@ -144,7 +144,28 @@ class Map1Environment(BaseEnvironment):
         # Zone "sicure" dove fermarsi anche se il semaforo è rosso
         self.safe_zones = [(14, 10), (13, 10),(14, 9), (13, 9),
                       (34, 19), (33, 19),(34, 20), (33, 20)]
-        #praticamente qui si passa alla transizione e poi al percorso successivo4
+        
+        self.traffic_light_approach_zones = {
+            (14, 12): (14, 11),  #(posizione) : (semaforo corrispondente)
+            (13, 12): (13, 11),
+
+            (11, 9): (12, 9),
+            (11, 10): (12, 10),
+            
+            (16, 9): (15, 9),
+            (16, 10): (15, 10),
+
+            (31, 19): (32, 19),
+            (31, 20): (32, 20),
+            
+            (36, 19): (35, 19),
+            (36, 20): (35, 20),
+            
+
+            (33, 17): (33, 18),
+            (34, 17): (34, 18)
+        }
+        
         self.incroci = {
             (34, 10): [self.percorso2, self.percorso1],
             (2, 9): [self.percorso3, self.percorso1],

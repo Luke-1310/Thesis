@@ -128,6 +128,28 @@ class Map2Environment(BaseEnvironment):
         self.safe_zones = [(13, 19), (14, 19),(14, 20), (13, 20),
                     (36, 1), (37, 1),(36, 2), (37, 2)]
         
+        self.traffic_light_approach_zones = {
+            (13, 19): (13, 18),  #(posizione) : (semaforo corrispondente)
+            (14, 19): (14, 18),
+
+            (11, 19): (12, 19),
+            (11, 20): (12, 20),
+            
+            (16, 19): (15, 19),
+            (16, 20): (15, 20),
+
+            (34, 1): (35, 1),
+            (34, 2): (35, 2),
+            
+            (39, 1): (38, 1),
+            (39, 2): (38, 2),
+            
+
+            (36, 4): (36, 3),
+            (37, 4): (37, 3)
+        }
+        
+        
         self.incroci = {
             (13, 1): [self.percorso2, self.percorso3],
             (13, 20): [self.percorso3, self.percorso1],
