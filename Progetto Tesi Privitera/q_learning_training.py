@@ -32,6 +32,11 @@ def train_agent(env, font):
         total_steps_reward = 0.0
         total_right_penalty = 0.0
         total_reward = 0.0
+        
+        #Contatori eventi semaforo
+        red_light_crossings = 0
+        green_light_crossings = 0
+        waiting_at_red_light = 0
 
         while not (env.check_loss() or env.check_goal()):
            
@@ -95,23 +100,22 @@ def train_agent(env, font):
                             
                             if is_entering_intersection and env.traffic_lights[current_position] == 'red':
                                 reward += -1000.0
-                                print(f"Penalità semaforo: entrato in {current_position} con rosso")
+                                red_light_crossings += 1  
 
                             elif is_entering_intersection and env.traffic_lights[current_position] == 'green':
-                                reward += 80.0  #Aumentato da 50.0 a 80.0
-                                print(f"Bonus attraversamento: entrato in {current_position} con verde")
+                                reward += 80.0  
+                                green_light_crossings += 1  
                     else:
-                        # Premia l'agente per fermarsi prima di un semaforo rosso
-                        if old_position_tuple == current_position and action_index == 4:  # Se ha scelto di stare fermo (azione 'stay')
+                        #Premia l'agente per fermarsi prima di un semaforo rosso
+                        if old_position_tuple == current_position and action_index == 4:  #Se ha scelto di stare fermo (azione 'stay')
                             
                             if old_position_tuple in env.traffic_light_approach_zones:
                                 traffic_light_pos = env.traffic_light_approach_zones[old_position_tuple]
                                 
                                 if traffic_light_pos in env.traffic_lights and env.traffic_lights[traffic_light_pos] == 'red':
-                                    if action_index == 4:  # Se ha scelto di stare fermo
-                                        reward += 50.0  #Ridotto da 100.0 a 50.0
-                                        print(f"Bonus fermata: in attesa del verde in {old_position_tuple}")
-
+                                    if action_index == 4:  #Se ha scelto di stare fermo
+                                        reward += 50.0  
+                                        waiting_at_red_light += 1  
                         
                 elif not env.check_loss():
                     reward = -10
@@ -170,12 +174,12 @@ def train_agent(env, font):
             total_reward = round(total_reward, 2) #approssima a 2 decimali
             steps += 1
 
-            if steps > 1000:  #Previene loop infiniti
+            if steps > 1500:  #Previene loop infiniti
                 print("Episodio terminato per superamento step massimi.")
                 break
         
         #Conta le collisioni solo se l'agente non ha raggiunto l'obiettivo
-        fail = steps > 1000 or env.check_loss()
+        fail = steps > 1500 or env.check_loss()
 
         if fail:  # L'agente non ha raggiunto il traguardo
             collision_count += 1
@@ -194,6 +198,14 @@ def train_agent(env, font):
             print(f"Right Edge Penalty totale: {total_right_penalty:.2f}")
             print(f"Obiettivi intermedi raggiunti: {goal_reached_count}/{len(env.intermediate_goals)}")
             print(f"Obiettivi intermedi già visitati: {goal_already_visited_count}")
+            
+            #Stampa riassuntiva degli eventi semaforo
+            if red_light_crossings > 0:
+                print(f"Semaforo rosso attraversato: {red_light_crossings} volte")
+            if green_light_crossings > 0:
+                print(f"Semaforo verde attraversato: {green_light_crossings} volte")
+            if waiting_at_red_light > 0:
+                print(f"In attesa al semaforo rosso: {waiting_at_red_light} volte")
 
         print(f"Total Reward: {total_reward:.2f}")
         print(f"Collisioni totali: {collision_count}")
@@ -692,7 +704,7 @@ def show_settings(screen, font, env):
     num_pedoni = env.num_pedoni
     error_prob_pedoni = env.pedone_error_prob
     prob_change_auto = env.route_change_probability
-    num_episodi = getattr(env, 'num_episodes', 2000) #Valore predefinito se non esiste
+    num_episodi = getattr(env, 'num_episodes', 10000) #Valore predefinito se non esiste
     
     editing_episodi = False
     episodi_input = str(num_episodi)
