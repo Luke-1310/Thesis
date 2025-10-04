@@ -37,6 +37,8 @@ def train_agent(env, font):
         red_light_crossings = 0
         green_light_crossings = 0
         waiting_at_red_light = 0
+        bypass_count = 0  # Nuovo contatore bypass
+        lane_invasion_count = 0  # Nuovo contatore invasione corsia
 
         while not (env.check_loss() or env.check_goal()):
            
@@ -97,7 +99,7 @@ def train_agent(env, font):
                             #STA USCENDO dall'incrocio passando sul semaforo
                             #Questo è VIETATO! Sta invadendo la corsia opposta!
                             reward += -1000.0
-                            print(f"INVASIONE CORSIA! Agente uscito su semaforo {current_position}")
+                            lane_invasion_count += 1  # Incrementa contatore invece di print
                         
                         else:
                             #Sta entrando ADESSO nell'incrocio
@@ -130,7 +132,7 @@ def train_agent(env, font):
                                     reward += -1500.0  
                                     red_light_crossings += 1
                                     bypassed = True
-                                    print(f"BYPASS! Agente in {current_position} ha evitato semaforo {traffic_light_pos}")
+                                    bypass_count += 1  # Incrementa contatore invece di print
                                     break
                                 
                                 #else: sta USCENDO dall'incrocio, è OK passare sulle celle adiacenti
@@ -246,6 +248,10 @@ def train_agent(env, font):
                 print(f"Semaforo verde attraversato: {green_light_crossings} volte")
             if waiting_at_red_light > 0:
                 print(f"In attesa al semaforo rosso: {waiting_at_red_light} volte")
+            if bypass_count > 0:
+                print(f"Bypass semaforo: {bypass_count} volte")
+            if lane_invasion_count > 0:
+                print(f"Invasione corsia: {lane_invasion_count} volte")
 
         print(f"Total Reward: {total_reward:.2f}")
         print(f"Collisioni totali: {collision_count}")
