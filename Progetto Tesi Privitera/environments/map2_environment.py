@@ -108,17 +108,17 @@ class Map2Environment(BaseEnvironment):
 
         self.actions = ['up', 'down', 'right', 'left', 'stay']
         self.traffic_lights = {
-            (14, 18): 'green',
+            #(14, 18): 'green',
             (13, 18): 'green',
-            (12, 19): 'red',
+            #(12, 19): 'red',
             (12, 20): 'red',
             (15, 19): 'red',
-            (15, 20): 'red',
-            (35, 1): 'green',
+            #(15, 20): 'red',
+            #(35, 1): 'green',
             (35, 2): 'green',
             (38, 1): 'green',
-            (38, 2): 'green',
-            (36, 3): 'red',
+            #(38, 2): 'green',
+            #(36, 3): 'red',
             (37, 3): 'red'
         }
         self.traffic_light_cycle = 0  # Contatore per il ciclo dei semafori
@@ -130,25 +130,46 @@ class Map2Environment(BaseEnvironment):
         
         self.traffic_light_approach_zones = {
             (13, 19): (13, 18),  #(posizione) : (semaforo corrispondente)
-            (14, 19): (14, 18),
+            #(14, 19): (14, 18),
 
-            (11, 19): (12, 19),
+            #(11, 19): (12, 19),
             (11, 20): (12, 20),
             
             (16, 19): (15, 19),
-            (16, 20): (15, 20),
+            #(16, 20): (15, 20),
 
-            (34, 1): (35, 1),
+            #(34, 1): (35, 1),
             (34, 2): (35, 2),
             
             (39, 1): (38, 1),
-            (39, 2): (38, 2),
+            #(39, 2): (38, 2),
             
 
-            (36, 4): (36, 3),
+            #(36, 4): (36, 3),
             (37, 4): (37, 3)
         }
         
+        #CELLE ADIACENTI AI SEMAFORI (per penalità bypass)
+        #Include tutte le celle attorno a ogni semaforo per evitare bypass laterali
+        self.traffic_light_adjacent_cells = {
+            #semaoforo: cella adiacente
+            (15, 19): [(15, 20)],
+            
+            
+            (12, 20): [(12, 19)],
+            
+            
+            (13, 18): [(14, 18)],
+            
+           
+            (35, 2): [(35, 1)],
+            
+           
+            (38, 1): [(38, 2)],
+            
+            
+            (37, 3): [(36, 3)]
+        }
         
         self.incroci = {
             (13, 1): [self.percorso2, self.percorso3],
