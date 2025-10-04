@@ -92,6 +92,7 @@ def train_agent(env, font):
 
                     #Logica semafori
                     if current_position in env.traffic_lights:
+                        
                         if old_position_tuple in env.safe_zones:   #Se era in una safe zone, non penalizza
                             pass
                         else:
