@@ -92,31 +92,70 @@ def train_agent(env, font):
 
                     #Logica semafori
                     if current_position in env.traffic_lights:
+                        #L'agente è SU una cella semaforo
+                        if old_position_tuple in env.safe_zones:
+                            #STA USCENDO dall'incrocio passando sul semaforo
+                            #Questo è VIETATO! Sta invadendo la corsia opposta!
+                            reward += -1000.0
+                            print(f"INVASIONE CORSIA! Agente uscito su semaforo {current_position}")
                         
-                        if old_position_tuple in env.safe_zones:   #Se era in una safe zone, non penalizza
-                            pass
                         else:
+                            #Sta entrando ADESSO nell'incrocio
                             is_entering_intersection = (old_position_tuple not in env.traffic_lights and 
-                                                      current_position in env.traffic_lights)   #Verifica se è un PRIMO ingresso nell'incrocio e se passa col rosso lo penalizza
+                                                      current_position in env.traffic_lights)
                             
-                            if is_entering_intersection and env.traffic_lights[current_position] == 'red':
-                                reward += -1000.0
-                                red_light_crossings += 1  
+                            if is_entering_intersection:
+                                if env.traffic_lights[current_position] == 'red':
+                                    reward += -1500.0  #Attraversamento col rosso
+                                    red_light_crossings += 1  
 
-                            elif is_entering_intersection and env.traffic_lights[current_position] == 'green':
-                                reward += 80.0  
-                                green_light_crossings += 1  
+                                elif env.traffic_lights[current_position] == 'green':
+                                    reward += 100.0  #Attraversamento col verde
+                                    green_light_crossings += 1
+                    
                     else:
-                        #Premia l'agente per fermarsi prima di un semaforo rosso
-                        if old_position_tuple == current_position and action_index == 4:  #Se ha scelto di stare fermo (azione 'stay')
+                        #L'agente NON è su un semaforo
+                        
+                        #CONTROLLO: Sta passando su una cella adiacente IN ENTRATA?
+                        bypassed = False
+                        
+                        for traffic_light_pos, adjacent_cells in env.traffic_light_adjacent_cells.items():
                             
-                            if old_position_tuple in env.traffic_light_approach_zones:
-                                traffic_light_pos = env.traffic_light_approach_zones[old_position_tuple]
+                            if current_position in adjacent_cells:
                                 
-                                if traffic_light_pos in env.traffic_lights and env.traffic_lights[traffic_light_pos] == 'red':
-                                    if action_index == 4:  #Se ha scelto di stare fermo
-                                        reward += 50.0  
-                                        waiting_at_red_light += 1  
+                                #Controlla se sta ENTRANDO o USCENDO dall'incrocio
+                                if old_position_tuple not in env.safe_zones:
+                                    # STA ENTRANDO dalla cella adiacente (bypass del semaforo)
+                                    # Penalizza SEMPRE, sia col rosso che col verde
+                                    reward += -1500.0  
+                                    red_light_crossings += 1
+                                    bypassed = True
+                                    print(f"BYPASS! Agente in {current_position} ha evitato semaforo {traffic_light_pos}")
+                                    break
+                                
+                                #else: sta USCENDO dall'incrocio, è OK passare sulle celle adiacenti
+                        
+                        #Gestione attesa al semaforo (solo se NON ha bypassato)
+                        if not bypassed:
+                            
+                            # Se l'agente ha scelto 'stay'
+                            if old_position_tuple == current_position and action_index == 4:
+                                
+                                # È in una zona di approccio?
+                                if old_position_tuple in env.traffic_light_approach_zones:
+                                    traffic_light_pos = env.traffic_light_approach_zones[old_position_tuple]
+                                    
+                                    if traffic_light_pos in env.traffic_lights:
+                                        light_state = env.traffic_lights[traffic_light_pos]
+                                        
+                                        #Premia se si ferma col ROSSO
+                                        if light_state == 'red':
+                                            reward += 50.0
+                                            waiting_at_red_light += 1
+                                        
+                                        #Penalizza se si ferma col VERDE
+                                        elif light_state == 'green':
+                                            reward += -30.0
                         
                 elif not env.check_loss():
                     reward = -10
