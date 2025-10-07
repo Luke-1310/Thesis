@@ -69,7 +69,7 @@ class BaseEnvironment:
 
         ax, ay = self.agent_position
         rot = self.agent_rotation
-        ahead = 1  #profondità di vista in celle
+        ahead = 2  #profondità di vista in celle
 
         for pedone in self.pedoni:
             px, py = pedone.position
@@ -109,7 +109,7 @@ class BaseEnvironment:
         
         ax, ay = self.agent_position
         rot = self.agent_rotation
-        ahead = 2  #Stessa profondità di vista in celle usata per i pedoni
+        ahead = 2
         
         #Determina le celle davanti all'agente in base alla rotazione
         cells_to_check = []
