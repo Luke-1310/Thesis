@@ -69,7 +69,7 @@ class BaseEnvironment:
 
         ax, ay = self.agent_position
         rot = self.agent_rotation
-        ahead = 2  #profondità di vista in celle
+        ahead = 1  #profondità di vista in celle
 
         for pedone in self.pedoni:
             px, py = pedone.position
@@ -101,25 +101,48 @@ class BaseEnvironment:
 
         return False
     
+    #Controlla se ci sono i semafori
+    def is_traffic_light_in_vision(self):
+        
+        if not hasattr(self, 'traffic_lights') or not self.traffic_lights:
+            return 0  #0=nessun semaforo
+        
+        ax, ay = self.agent_position
+        rot = self.agent_rotation
+        ahead = 2  #Stessa profondità di vista in celle usata per i pedoni
+        
+        #Determina le celle davanti all'agente in base alla rotazione
+        cells_to_check = []
+        if rot == 0:        # su
+            cells_to_check = [(ax, ay-i) for i in range(1, ahead+1)]
+        elif rot == 180:    # giù
+            cells_to_check = [(ax, ay+i) for i in range(1, ahead+1)]
+        elif rot == -90:    # destra
+            cells_to_check = [(ax+i, ay) for i in range(1, ahead+1)]
+        elif rot == 90:     # sinistra
+            cells_to_check = [(ax-i, ay) for i in range(1, ahead+1)]
+        
+        #Controlla se c'è un semaforo in una delle celle davanti
+        for cell in cells_to_check:
+            if cell in self.traffic_lights:
+                return 2 if self.traffic_lights[cell] == 'red' else 1
+        
+        return 0  #Nessun semaforo visibile
+
     #Ottieni stato completo della visione (auto + pedoni)
     def get_vision_state(self):
-        
+    
         cars_visible = int(self.is_car_in_vision()) 
         pedestrians_visible = int(self.are_pedestrians_in_vision())
 
-        #Se si imposta la modalità realistica si devono considerare anche altre regole
         if getattr(self, 'realistic_mode', False):
 
             #Semafori: #0=nessuno, 1=verde, 2=rosso
-            traffic_light = 0
-            agent_pos_tuple = tuple(self.agent_position)
-            
-            if agent_pos_tuple in self.traffic_lights:
-                traffic_light = 2 if self.traffic_lights[agent_pos_tuple] == 'red' else 1
-            
+            traffic_light = self.is_traffic_light_in_vision()
+
             return cars_visible, pedestrians_visible, traffic_light
         else:
-            return cars_visible, pedestrians_visible  
+            return cars_visible, pedestrians_visible
     
     #Aggiorna la posizione di una singola auto secondo il suo percorso
     def update_car_position(self):
@@ -595,10 +618,10 @@ class BaseEnvironment:
             #Assegna reward positivo solo se non è stato già dato il massimo numero di volte
             if self.right_edge_rewards_given < self.max_right_edge_rewards:
                 self.right_edge_rewards_given += 1
-                return 0.5  
+                return 1  
             else:
                 return 0 
         else:
-            return -0.5  #Penalità se non è sul bordo destro (sempre applicata)
+            return -1  #Penalità se non è sul bordo destro (sempre applicata)
     
    
