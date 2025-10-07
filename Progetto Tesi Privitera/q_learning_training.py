@@ -98,7 +98,7 @@ def train_agent(env, font):
                         if old_position_tuple in env.safe_zones:
                             #STA USCENDO dall'incrocio passando sul semaforo
                             #Questo è VIETATO! Sta invadendo la corsia opposta!
-                            reward += -1000.0
+                            reward += -120.0
                             lane_invasion_count += 1  # Incrementa contatore invece di print
                         
                         else:
@@ -108,11 +108,11 @@ def train_agent(env, font):
                             
                             if is_entering_intersection:
                                 if env.traffic_lights[current_position] == 'red':
-                                    reward += -1000.0  #Attraversamento col rosso
+                                    reward += -180.0  #Attraversamento col rosso
                                     red_light_crossings += 1  
 
                                 elif env.traffic_lights[current_position] == 'green':
-                                    reward += 100.0  #Attraversamento col verde
+                                    reward += 30.0  #Attraversamento col verde
                                     green_light_crossings += 1
                     
                     else:
@@ -129,8 +129,7 @@ def train_agent(env, font):
                                 if old_position_tuple not in env.safe_zones:
                                     # STA ENTRANDO dalla cella adiacente (bypass del semaforo)
                                     # Penalizza SEMPRE, sia col rosso che col verde
-                                    reward += -1000.0  
-                                    red_light_crossings += 1
+                                    reward += -250.0  
                                     bypassed = True
                                     bypass_count += 1  # Incrementa contatore invece di print
                                     break
@@ -158,7 +157,7 @@ def train_agent(env, font):
                                         #Penalizza se si ferma col VERDE
                                         elif light_state == 'green':
                                             reward += -30.0
-                        
+
                 elif not env.check_loss():
                     reward = -10
                 else:
@@ -484,8 +483,6 @@ def evaluate_agent(env, font):
         #Aggiorna le auto nemiche
         if hasattr(env, "update_car_position"):
             env.update_car_position()
-        
-        #env.update_pedoni(env.pedoni)
 
         if hasattr(env, "pedoni"):
             env.update_pedoni(env.pedoni)
