@@ -13,7 +13,7 @@ class Map2Environment(BaseEnvironment):
         # Posizione iniziale e obiettivo dell'agente
         self.start_position=[22, 23]
         self.agent_position = self.start_position
-        self.intermediate_goals = [(22, 19), (14, 9), (14,14), (9,9), (14,15)]  # Obiettivi intermedi
+        self.intermediate_goals = [(22, 19), (14, 9), (14,14), (9,9), (14,15),(14,16), (14,11)]  # Obiettivi intermedi
         self.goal_positions = [(8, 5)]  # Posizione di arrivo
 
         # Carica le risorse specifiche della mappa
@@ -218,7 +218,7 @@ class Map2Environment(BaseEnvironment):
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
         ]
 
-        #griglia per il pedone (PROBABILMENTE CORRETTA MA DA VEDERE) #2 = striscia pedonale #3 = edificio
+        #griglia per il pedone #2 = striscia pedonale #3 = edificio
         self.map_pedone = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -269,7 +269,7 @@ class Map2Environment(BaseEnvironment):
             self.reward_matrix[pos[1]][pos[0]] = 10000
 
         for pos in self.intermediate_goals:
-            intermediate_reward = 100
+            intermediate_reward = 150
             self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
 
     def reset_game(self):
