@@ -156,7 +156,7 @@ def train_agent(env, font):
                                         
                                         #Penalizza se si ferma col VERDE
                                         elif light_state == 'green':
-                                            reward += -30.0
+                                            reward += -50.0
 
                 elif not env.check_loss():
                     reward = -10
