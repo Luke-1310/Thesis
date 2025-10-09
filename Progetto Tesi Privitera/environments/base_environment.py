@@ -271,14 +271,17 @@ class BaseEnvironment:
                 
                 # Blocca TUTTI i semafori (rossi E verdi)
                 if hasattr(self, 'traffic_lights') and tuple(new_position) in self.traffic_lights:
-                    return False  # BLOCCO FISICO - non può andare sui semafori
-            
-            # In modalità realistica: può andare sui semafori
-            # (le regole rosso/verde saranno gestite nel training tramite ricompense)
+                    return False  
+            else: 
+                #Blocca SOLO i semafori ROSSI
+                if (hasattr(self, 'traffic_lights') and 
+                    tuple(new_position) in self.traffic_lights and 
+                    self.traffic_lights[tuple(new_position)] == 'red'):
+                    return False 
                 
             self.prev_agent_position = self.agent_position[:]
             self.agent_position = new_position
-        return is_valid   
+        return is_valid  
 
     def check_goal(self):
         if tuple(self.agent_position) in self.goal_positions:

@@ -107,11 +107,11 @@ def train_agent(env, font):
                                                       current_position in env.traffic_lights)
                             
                             if is_entering_intersection:
-                                if env.traffic_lights[current_position] == 'red':
-                                    reward += -180.0  #Attraversamento col rosso
-                                    red_light_crossings += 1  
+                                # if env.traffic_lights[current_position] == 'red':
+                                #     reward += -180.0  #Attraversamento col rosso
+                                #     red_light_crossings += 1  
 
-                                elif env.traffic_lights[current_position] == 'green':
+                                if env.traffic_lights[current_position] == 'green':
                                     reward += 30.0  #Attraversamento col verde
                                     green_light_crossings += 1
                     
