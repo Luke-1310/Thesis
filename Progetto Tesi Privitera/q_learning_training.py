@@ -134,8 +134,8 @@ def train_agent(env, font):
                                     bypass_count += 1  # Incrementa contatore invece di print
                                     break
                                 
-                                #else: sta USCENDO dall'incrocio, è OK passare sulle celle adiacenti
-                        
+                                else: #sta USCENDO dall'incrocio, è OK passare sulle celle adiacenti
+                                    pass
                         #Gestione attesa al semaforo (solo se NON ha bypassato)
                         if not bypassed:
                             
