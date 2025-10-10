@@ -266,10 +266,10 @@ class Map2Environment(BaseEnvironment):
         self.reward_matrix = [[-1 for _ in range(self.width)] for _ in range(self.height)]
 
         for pos in self.goal_positions:
-            self.reward_matrix[pos[1]][pos[0]] = 15000
+            self.reward_matrix[pos[1]][pos[0]] = 10000
 
         for pos in self.intermediate_goals:
-            intermediate_reward = 150
+            intermediate_reward = 100
             self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
 
     def reset_game(self):
