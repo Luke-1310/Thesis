@@ -112,7 +112,7 @@ def train_agent(env, font):
                                 #     red_light_crossings += 1  
 
                                 if env.traffic_lights[current_position] == 'green':
-                                    reward += 30.0  #Attraversamento col verde
+                                    reward += 5.0  #Attraversamento col verde
                                     green_light_crossings += 1
                     
                     else:
@@ -129,7 +129,7 @@ def train_agent(env, font):
                                 if old_position_tuple not in env.safe_zones:
                                     # STA ENTRANDO dalla cella adiacente (bypass del semaforo)
                                     # Penalizza SEMPRE, sia col rosso che col verde
-                                    reward += -250.0  
+                                    reward += -500.0  
                                     bypassed = True
                                     bypass_count += 1  # Incrementa contatore invece di print
                                     break
@@ -151,7 +151,7 @@ def train_agent(env, font):
                                         
                                         #Premia se si ferma col ROSSO
                                         if light_state == 'red':
-                                            reward += 50.0
+                                            reward += 12.0
                                             waiting_at_red_light += 1
                                         
                                         #Penalizza se si ferma col VERDE
@@ -480,7 +480,6 @@ def evaluate_agent(env, font):
     
         env.update_traffic_lights()
         
-        #Aggiorna le auto nemiche
         if hasattr(env, "update_car_position"):
             env.update_car_position()
 
