@@ -5,7 +5,7 @@ from environments.pedone import Pedone
 
 class BaseEnvironment:
 
-    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodi=2000, realistic_mode=False, seed=None):
+    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodes=10000, realistic_mode=False, seed=None):
 
         #Inizializzazione dei parametri di base dell'ambiente
         self.width = width
@@ -23,8 +23,8 @@ class BaseEnvironment:
 
         self.num_pedoni = num_pedoni #numero di pedoni nell'ambiente
         self.pedone_error_prob = pedone_error_prob #probabilità che un pedone sbagli il percorso
-        self.route_change_probability = route_change_probability  #Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre 
-        self.num_episodi = num_episodi  #Numero di episodi per l'addestramento
+        self.route_change_probability = route_change_probability  #Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
+        self.num_episodes = num_episodes  #Numero di episodi per l'addestramento
 
         #Modalità realistica (con regole della strada)
         self.realistic_mode = realistic_mode #Parametro per la modalità realistica
@@ -450,7 +450,8 @@ class BaseEnvironment:
                     error_prob = float(self.rng.random()) * self.pedone_error_prob
                     self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
     
-    #Funzione per calcolare la distanza tra due punti, utilizza la distanza di Manhattan, che è la somma delle differenze assolute delle coordinate x e y
+    #Funzione per calcolare la distanza tra due punti, utilizza la distanza di 
+    # nhattan, che è la somma delle differenze assolute delle coordinate x e y
     #Quindi quelle che andiamo a valutare solo le celle adiacenti (su, giù, sinistra, destra) e non quelle diagonali
     def heuristic(self, a, b):
 
