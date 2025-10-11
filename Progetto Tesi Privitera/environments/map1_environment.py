@@ -9,20 +9,18 @@ class Map1Environment(BaseEnvironment):
 
     def __init__(self, width, height, cell_size, screen=None, num_pedoni=0, pedone_error_prob=0.0, route_change_probability=0, num_episodes=5000, realistic_mode=False, seed = None):
 
-        # Inizializza tutto ciò che serve nella superclasse
+        #Inizializza tutto ciò che serve nella superclasse
         super().__init__(width, height, cell_size, screen, num_pedoni, pedone_error_prob, route_change_probability, num_episodes, realistic_mode, seed)
 
-        # Posizione iniziale e obiettivo dell'agente
+        #Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
         self.agent_position = self.start_position
         self.intermediate_goals = [(14, 20), (34, 10), (34,15), (39,10)]  # Obiettivi intermedi
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
 
-        # Carica le risorse specifiche della mappa
         self.load_assets()
         self.create_grid()
 
-        #Mi voglio creare un attributo per capire che mappa sto trattando
         self.map_name = "Città"
 
         self.realistic_mode = realistic_mode
@@ -34,11 +32,8 @@ class Map1Environment(BaseEnvironment):
             #Q-table estesa: [y, x, auto_visibili, pedoni_visibili, azioni] 0 = non visibile, 1 = visibile
             self.q_values = np.zeros((self.height, self.width, 2, 2, 5))
 
-        # self.visited_goals = set()  #Insieme per tracciare gli obiettivi intermedi visitati
-
     def load_assets(self):
 
-        #Inizializza Pygame
         pygame.init()
         self.screen = pygame.display.set_mode((self.width * self.cell_size, self.height * self.cell_size))
 
@@ -76,14 +71,11 @@ class Map1Environment(BaseEnvironment):
         self.map_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/città_map.png")
         self.map_image = pygame.transform.scale(self.map_image, (self.width * self.cell_size, self.height * self.cell_size))
 
-        # Font
         pygame.font.init()
         self.font = pygame.font.Font('Progetto Tesi Privitera/assets/PixeloidSansBold.ttf', 20)
 
-
     def create_grid(self):
 
-        #Crea la mappa e carico i percorsi delle auto nemiche con l'agente
         self.percorso1=[[14, 24],[14, 23],[14, 22],[14, 21],[14, 20],[15, 20],[16, 20],[17, 20],[18, 20],[19, 20],[20, 20],
                         [21, 20],[22, 20],[23, 20],[24, 20],[25, 20],[26, 20],[27, 20],[28, 20],[29, 20],[30, 20],
                         [31, 20],[32, 20],[33, 20],[34, 20],[35, 20],[36, 20],[37, 20],[38, 20],[39, 20],[40, 20],
@@ -98,15 +90,6 @@ class Map1Environment(BaseEnvironment):
                         [1, 20],[2, 20],[3, 20],[4, 20],[5, 20],[6, 20],[7, 20],[8, 20],[9, 20],[10, 20],[11, 20],[12, 20],
                         [13, 20], [13, 21], [13, 22], [13, 23], [13, 24]]
        
-        # self.percorso2 = [[15, 15],[16, 15],[17, 15],[18, 15],[19, 15],[20, 15],[21, 15],[22, 15],[23, 15],[24, 15],[25, 15],[26, 15],
-        #                    [27, 15],[28, 15],[29, 15],[30, 15],[31, 15],[32, 15],[33, 15],[34, 15],[34, 14],[34, 13],[34, 12],[34, 11],
-        #                    [34, 10],[34, 9],[33, 9],[32, 9],[32,8],[32,7],[32,6],[32,5],[32,4],[32,3],[32,2],[32,1],[31,1],[30,1],[29,1],
-        #                    [28,1],[27,1],[26,1],[25,1],[24,1],[23,1],[22,1],[21,1],[20,1],[19,1],[18,1],[17,1],[16,1],[15,1],[14,1],
-        #                    [13,1],[12,1],[11,1],[10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],
-        #                     [1,7],[1,8],[1,9],[1,10],[2,10],[3,10],[4,10],[5,10],[6,10],[7,10],[8,10],[9,10],[10,10],[11,10],[12,10],[13,10],
-        #                     [13,11],[13,12],[13,13],[13,14],[13,15],[14,15]]
-
-        #MODALITA' SERIA 
         self.percorso2 = [[15, 15],[16, 15],[17, 15],[18, 15],[19, 15],[20, 15],[21, 15],[22, 15],[23, 15],[24, 15],[25, 15],[26, 15],
                            [27, 15],[28, 15],[29, 15],[30, 15],[31, 15],[32, 15],[33, 15],[34, 15],[34, 14],[34, 13],[34, 12],[34, 11],
                            [34, 10],[34, 9],[33, 9],[32, 9],[31, 9],[30, 9],[29, 9],[28, 9],[27, 9],[26, 9],[25, 9],[24, 9],[23, 9],
@@ -116,7 +99,6 @@ class Map1Environment(BaseEnvironment):
         self.percorso3 = [[2, 8],[2, 7],[2, 6],[2, 5],[2, 4],[2, 3],[2, 2],[3, 2],[4, 2],[5, 2],[6, 2],[7, 2],[8, 2],[9, 2],[9, 3],
                            [9, 4],[9, 5],[9, 6],[9, 7],[9, 8],[9, 9],[8, 9],[7, 9],[6, 9],[5, 9],[4, 9],[3, 9],[2, 9]]
 
-        # Mappa dei percorsi
         self.percorsi = {
             1: self.percorso1,
             2: self.percorso2,
@@ -126,48 +108,39 @@ class Map1Environment(BaseEnvironment):
         self.actions = ['up', 'down', 'right', 'left', 'stay']
         self.traffic_lights = {
             (14, 11): 'green',
-            #(13, 11): 'green',
+
             (12, 10): 'red',
-            #(12, 9): 'red',
+ 
             (15, 9): 'red',
-            #(15, 10): 'red',
+
             (32, 20): 'green',
-            #(32, 19): 'green',
+
             (35, 19): 'green',
-            #(35, 20): 'green',
+
             (33, 18): 'red',
-            #(34, 18): 'red'
+
         }
-        self.traffic_light_cycle = 0  # Contatore per il ciclo dei semafori
-        self.traffic_light_duration = 40  # Durata del ciclo del semaforo in frame
+        self.traffic_light_cycle = 0  #Contatore per il ciclo dei semafori
+        self.traffic_light_duration = 40  #Durata del ciclo del semaforo in frame
         
-        # Zone "sicure" dove fermarsi anche se il semaforo è rosso
         self.safe_zones = [(14, 10), (13, 10),(14, 9), (13, 9),
                       (34, 19), (33, 19),(34, 20), (33, 20)]
         
         self.traffic_light_approach_zones = {
             (14, 12): (14, 11),  #(posizione) : (semaforo corrispondente)
-            #(13, 12): (13, 11),
 
-            #(11, 9): (12, 9),
             (11, 10): (12, 10),
             
             (16, 9): (15, 9),
-            #(16, 10): (15, 10),
 
-            #(31, 19): (32, 19),
             (31, 20): (32, 20),
             
-            (36, 19): (35, 19),
-            #(36, 20): (35, 20),
-            
+            (36, 19): (35, 19),     
 
             (33, 17): (33, 18),
-            #(34, 17): (34, 18)
         }
         
         #CELLE ADIACENTI AI SEMAFORI (per penalità bypass)
-        #Include tutte le celle attorno a ogni semaforo per evitare bypass laterali
         self.traffic_light_adjacent_cells = {
             #semaoforo: cella adiacente
             (14, 11): [(13, 11)],
@@ -193,29 +166,21 @@ class Map1Environment(BaseEnvironment):
             (2, 9): [self.percorso3, self.percorso1],
             (21,1): [self.percorso1, self.percorso2],
             (1,3): [self.percorso1, self.percorso3]
-            # (34,10): [self.percorso2, self.percorso1],
-            # (33,20): [self.percorso1, self.percorso2]
         }
 
         #Percorsi di transizione
-        #stai passando dal percorso x al y (x,y) mediante questi passaggi 
         self.transizioni = {
-            #SERIO
             (2, 1): [(34, 10),(35, 10),(36, 10),(37, 10),(38, 10),(39, 10),(40, 10),(41, 10),(42, 10),(43, 10),(44, 10),(45, 10),(46, 10)],
             (3, 1): [(2, 9),(1, 9)],
             (1, 2): [(21,1),(21,2),(21,3),(21,4),(21,5),(21,6),(21,7),(21,8),(21,9)],
             (1, 3): [(1,9), (2,9)]
-
-            # (1,2): [(46,10),(45,10),(44,10),(43,10),(42,10),(41,10),(40,10),(39,10),(38,10),(37,10),(36,10),(35,10),(34,10)],
-            # (2,1): [(33,14),(33,15),(33,16),(33,17),(33,18),(33,19),(33,20)]
         }
         self.cars = [
             {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
             {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []},
             {'position': [2, 8], 'route': 3, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': []}
         ]
-        
-        #griglia per la mappa
+
         self.map = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -244,7 +209,7 @@ class Map1Environment(BaseEnvironment):
             [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
-        #griglia per il pedone #2 = striscia pedonale #3 = edificio
+        #2 = striscia pedonale #3 = edificio
         self.map_pedone = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -300,7 +265,7 @@ class Map1Environment(BaseEnvironment):
 
     def reset_game(self):
         super().reset_game()
-        self.visited_goals = set()  # Resetta gli obiettivi visitati ad ogni nuovo episodio
+        self.visited_goals = set()
         self.cars = [
             {'position': [14, 24], 'route': 1, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
             {'position': [15, 15], 'route': 2, 'route_index': 0, 'in_transition': False, 'transition_index': 0, 'transition_route': [], 'rotation': 0},
