@@ -6,7 +6,10 @@ import sys
 from environments.map1_environment import Map1Environment
 from environments.map2_environment import Map2Environment
 
-import matplotlib.pyplot as plt       #Per disegnare i grafici
+import matplotlib
+matplotlib.use('Agg')                 # Backend Agg: non interattivo, renderizza in memoria e ottimizzato per salvare immagini
+import matplotlib.pyplot as plt       #Sottomodulo per disegnare i grafici
+
 import pandas as pd                   #Per gestire e analizzare dati in modo ordinato
 
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
@@ -20,8 +23,8 @@ def train_agent(env, font):
     learning_rate = 0.1 #Tasso di apprendimento
     rho = 0.9999 #Fattore di decadimento per epsilon
     num_episodes = getattr(env, 'num_episodes', 5000)
-    episode_data = []  #Lista che contiene (episodio, step, reward)
-    collision_list = []  #Lista per tenere traccia delle collisioni cumulative
+    episode_data = []  #episodio, step, reward
+    collision_list = []  #Collisioni cumulative
     collision_count = 0
     goal_reached_count = 0
     goal_already_visited_count = 0
@@ -37,8 +40,8 @@ def train_agent(env, font):
         red_light_crossings = 0
         green_light_crossings = 0
         waiting_at_red_light = 0
-        bypass_count = 0  # Nuovo contatore bypass
-        lane_invasion_count = 0  # Nuovo contatore invasione corsia
+        bypass_count = 0  
+        lane_invasion_count = 0
 
         while not (env.check_loss() or env.check_goal()):
            
@@ -50,14 +53,13 @@ def train_agent(env, font):
             pygame.event.pump() #.pump serve per aggiornare lo stato degli eventi di pygame
 
             if hasattr(env, "update_traffic_lights"):
-                env.update_traffic_lights()  #Aggiorna lo stato dei semafori
+                env.update_traffic_lights()
 
             if hasattr(env, "update_car_position"):
-                env.update_car_position() #Aggiorna le auto nemiche
+                env.update_car_position() 
             
             if hasattr(env, "pedoni"):
-                env.update_pedoni(env.pedoni) #Aggiorna i pedoni
-            
+                env.update_pedoni(env.pedoni)            
             reward = 0.0
 
             if env.realistic_mode:
@@ -94,74 +96,66 @@ def train_agent(env, font):
 
                     #Logica semafori
                     if current_position in env.traffic_lights:
-                        #L'agente è SU una cella semaforo
+                        
                         if old_position_tuple in env.safe_zones:
-                            #STA USCENDO dall'incrocio passando sul semaforo
-                            #Questo è VIETATO! Sta invadendo la corsia opposta!
+                            #Sta uscendo dall'incrocio passando sul semaforo, ergo sta invadendo la corsia opposta -> penalty
                             reward += -120.0
-                            lane_invasion_count += 1  # Incrementa contatore invece di print
+                            lane_invasion_count += 1
                         
                         else:
-                            #Sta entrando ADESSO nell'incrocio
+                            #Sta entrando nell'incrocio
                             is_entering_intersection = (old_position_tuple not in env.traffic_lights and 
                                                       current_position in env.traffic_lights)
                             
                             if is_entering_intersection:
-                                # if env.traffic_lights[current_position] == 'red':
-                                #     reward += -180.0  #Attraversamento col rosso
-                                #     red_light_crossings += 1  
+
+                                #Passare col rosso è una mossa invalida
 
                                 if env.traffic_lights[current_position] == 'green':
                                     reward += 5.0  #Attraversamento col verde
                                     green_light_crossings += 1
                     
                     else:
-                        #L'agente NON è su un semaforo
-                        
-                        #CONTROLLO: Sta passando su una cella adiacente IN ENTRATA?
                         bypassed = False
                         
                         for traffic_light_pos, adjacent_cells in env.traffic_light_adjacent_cells.items():
                             
                             if current_position in adjacent_cells:
                                 
-                                #Controlla se sta ENTRANDO o USCENDO dall'incrocio
+                                #Controlla se sta entrando o uscendo dall'incrocio
                                 if old_position_tuple not in env.safe_zones:
-                                    # STA ENTRANDO dalla cella adiacente (bypass del semaforo)
-                                    # Penalizza SEMPRE, sia col rosso che col verde
+                                    
+                                    #Sta entrando nell'incrocio dalla cella adiacente (bypass del semaforo), penalizzo
                                     reward += -500.0  
                                     bypassed = True
-                                    bypass_count += 1  # Incrementa contatore invece di print
+                                    bypass_count += 1
                                     break
                                 
-                                else: #sta USCENDO dall'incrocio, è OK passare sulle celle adiacenti
+                                else: #sta uscendo dall'incrocio -> va bene
                                     pass
-                        #Gestione attesa al semaforo (solo se NON ha bypassato)
+                        
+                        #Gestione attesa al semaforo
                         if not bypassed:
                             
-                            # Se l'agente ha scelto 'stay'
                             if old_position_tuple == current_position and action_index == 4:
                                 
-                                # È in una zona di approccio?
                                 if old_position_tuple in env.traffic_light_approach_zones:
                                     traffic_light_pos = env.traffic_light_approach_zones[old_position_tuple]
                                     
                                     if traffic_light_pos in env.traffic_lights:
                                         light_state = env.traffic_lights[traffic_light_pos]
                                         
-                                        #Premia se si ferma col ROSSO
                                         if light_state == 'red':
                                             reward += 12.0
                                             waiting_at_red_light += 1
                                         
-                                        #Penalizza se si ferma col VERDE
                                         elif light_state == 'green':
                                             reward += -50.0
 
                 elif not env.check_loss():
                     reward = -10
                 else:
-                    reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+                    reward = -100
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, old_traffic_light, action_index]
@@ -197,7 +191,7 @@ def train_agent(env, font):
                 elif not env.check_loss():
                     reward = -10
                 else:
-                    reward = -100  #Questo reward viene usato nell'aggiornamento della Q-table in caso di perdita
+                    reward = -100
 
                 #Q-learning update
                 old_q_value = env.q_values[old_position[1], old_position[0], old_cars_visible, old_pedestrians_visible, action_index]
@@ -215,14 +209,14 @@ def train_agent(env, font):
             total_reward = round(total_reward, 2) #approssima a 2 decimali
             steps += 1
 
-            if steps > 1500:  #Previene loop infiniti
+            if steps > 1500:
                 print("Episodio terminato per superamento step massimi.")
                 break
         
         #Conta le collisioni solo se l'agente non ha raggiunto l'obiettivo
         fail = steps > 1500 or env.check_loss()
 
-        if fail:  # L'agente non ha raggiunto il traguardo
+        if fail:  #L'agente non ha raggiunto il traguardo
             collision_count += 1
             esito_episodio = "Collisione"
         else:
@@ -239,8 +233,7 @@ def train_agent(env, font):
             print(f"Right Edge Penalty totale: {total_right_penalty:.2f}")
             print(f"Obiettivi intermedi raggiunti: {goal_reached_count}/{len(env.intermediate_goals)}")
             print(f"Obiettivi intermedi già visitati: {goal_already_visited_count}")
-            
-            #Stampa riassuntiva degli eventi semaforo
+        
             if red_light_crossings > 0:
                 print(f"Semaforo rosso attraversato: {red_light_crossings} volte")
             if green_light_crossings > 0:
@@ -305,15 +298,14 @@ def train_agent(env, font):
 
 def show_results(env, font):
 
-    #Carichiamo le Q-table disponibili
+    #Carica le Q-table disponibili
     qtables_info = []
     qtables_dir = "Progetto Tesi Privitera/q_tables"
 
     try:
         files = os.listdir(qtables_dir)
 
-        #è necessario un filtro in base alla modalità
-
+        #Filtro
         if getattr(env, 'realistic_mode', False):
 
             #Modalità realistica: cerca Q-table con suffisso "_realistic"
@@ -376,19 +368,18 @@ def show_results(env, font):
         screen = env.screen
         screen.fill((245, 245, 245))
         
-        # Titolo
         draw_text(screen, f"Seleziona Q-table per {env.map_name}", 0, 50, font, (0, 0, 0), center=True)
         draw_text(screen, f"Trovate {len(qtables_info)} Q-table", 0, 80, font, (100, 100, 100), center=True)
         
-        # Lista Q-table (max 8 visibili)
+        #Lista Q-table (max 12 visibili)
         y_start = 140
-        max_visible = 8
+        max_visible = 12
         visible_items = qtables_info[:max_visible]
         
         for i, qtable_info in enumerate(visible_items):
             y_pos = y_start + i * 60
             
-            # Background per item selezionato
+            #Background per l'item selezionato
             item_rect = pygame.Rect(200, y_pos - 5, screen.get_width() - 400, 50)
             if i == selected_index:
                 pygame.draw.rect(screen, (200, 230, 255), item_rect, border_radius=5)
@@ -397,17 +388,15 @@ def show_results(env, font):
                 pygame.draw.rect(screen, (255, 255, 255), item_rect, border_radius=5)
                 pygame.draw.rect(screen, (200, 200, 200), item_rect, 1, border_radius=5)
             
-            # Info Q-table: solo data/ora pulita
+            #Info Q-table: solo data/ora pulita
             clean_name = qtable_info['display_name']
             draw_text(screen, clean_name, item_rect.centerx, y_pos + 15, font, (0, 0, 0), center=True)
         
-        # Istruzioni
         draw_text(screen, "↑↓: Naviga | INVIO: Seleziona | ESC: Torna al menu", 
                  0, screen.get_height() - 40, font, (0, 0, 0), center=True)
         
         pygame.display.flip()
         
-        # Gestione eventi
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
@@ -417,14 +406,14 @@ def show_results(env, font):
                     return
                 
                 elif event.key == pygame.K_RETURN:
-                    # Carica Q-table selezionata
+                    #Carica Q-table selezionata
                     selected_qtable = qtables_info[selected_index]
                     
                     try:
-                        # Carica Q-table
+                        #Carica Q-table
                         q_table = np.load(selected_qtable['filepath'])
                         
-                        # Verifica compatibilità
+                        #Verifica compatibilità
                         if q_table.shape != env.q_values.shape:
                             screen = env.screen
                             screen.fill((255, 255, 255))
@@ -432,12 +421,11 @@ def show_results(env, font):
                             draw_text(screen, f"Forma: {q_table.shape} vs {env.q_values.shape}", 0, screen.get_height() // 2 + 20, font, (255, 0, 0), center=True)
                             pygame.display.flip()
                             pygame.time.wait(3000)
-                            continue  # Torna al menu selezione
+                            continue  #Torna al menu selezione
                         
-                        # Carica Q-table
+                        #Carica Q-table
                         env.q_values = q_table
                         
-                        # Messaggio caricamento
                         screen = env.screen
                         screen.fill((255, 255, 255))
                         draw_text(screen, f"Q-table caricata!", 0, screen.get_height() // 2 - 20, font, (0, 150, 0), center=True)
@@ -445,7 +433,7 @@ def show_results(env, font):
                         pygame.display.flip()
                         pygame.time.wait(1500)
                         
-                        # Avvia evaluation e esci
+                        #Avvia evaluation e esci
                         evaluate_agent(env, font)
                         return
                         
@@ -540,8 +528,8 @@ def show_menu(screen, font):
 
     for button in buttons:
         rect = pygame.Rect(screen.get_width() // 2 - 200, y, 380, 50)
-        pygame.draw.rect(screen, (0, 128, 255), rect)  # Rettangolo blu
-        text_surface = font.render(button["text"], True, (255, 255, 255))  # Solo testo bianco
+        pygame.draw.rect(screen, (0, 128, 255), rect)  #Rettangolo blu
+        text_surface = font.render(button["text"], True, (255, 255, 255))  #Solo testo bianco
         screen.blit(text_surface, (rect.x + 20, rect.y + 10))
         button_rects.append((rect, button["action"]))
         y += 80
@@ -700,17 +688,17 @@ def show_training_results(screen, font, episode_data):
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                if event.button == 1:  # Click sinistro
+                if event.button == 1:  #Click sinistro
                     
                     for rect, action in button_rects:
                         
                         if rect.collidepoint(event.pos) and action == "menu":
-                            running = False  # Torna al menu
+                            running = False  #Torna al menu
                 
-                elif event.button == 4:  # Scroll up
+                elif event.button == 4:  #Scroll up
                     scroll_y = min(scroll_y + scroll_speed, 0)
                 
-                elif event.button == 5:  # Scroll down
+                elif event.button == 5:  #Scroll down
                     scroll_y -= scroll_speed
 
         screen.fill((255, 255, 255))
@@ -721,7 +709,6 @@ def show_training_results(screen, font, episode_data):
 
         pygame.draw.line(screen, (0, 0, 0), (20, 50 + scroll_y), (screen.get_width() - 20, 50 + scroll_y), 2)
 
-        #Dati
         for idx, (episode, steps, reward) in enumerate(episode_data):
             text = font.render(f"{episode:<10}{steps:<10}{reward}", True, (0, 0, 0))
             screen.blit(text, (20, 60 + idx * 30 + scroll_y))
@@ -746,7 +733,7 @@ def show_settings(screen, font, env):
     num_pedoni = env.num_pedoni
     error_prob_pedoni = env.pedone_error_prob
     prob_change_auto = env.route_change_probability
-    num_episodes = getattr(env, 'num_episodes', 5000) #Valore predefinito se non esiste
+    num_episodes = getattr(env, 'num_episodes', 5000)
 
     editing_episodes = False
     episodes_input = str(num_episodes)
@@ -766,7 +753,6 @@ def show_settings(screen, font, env):
         y_start = 100
         draw_text(screen, f"Numero Pedoni: {num_pedoni}", 0, y_start, font, (0, 0, 0), center=True)
         
-        #Bottoni pedoni
         pedoni_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         pedoni_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         
@@ -780,7 +766,6 @@ def show_settings(screen, font, env):
         y_start += 120
         draw_text(screen, f"Prob. Errore Pedoni: {error_prob_pedoni:.0%}", 0, y_start, font, (0, 0, 0), center=True)
         
-        #Bottoni errore pedoni
         err_ped_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         err_ped_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         
@@ -794,7 +779,6 @@ def show_settings(screen, font, env):
         y_start += 120
         draw_text(screen, f"Prob. Cambio Percorso Auto: {prob_change_auto:.0%}", 0, y_start, font, (0, 0, 0), center=True)
         
-        #Bottoni cambio percorso auto
         auto_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         auto_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
 
@@ -807,8 +791,7 @@ def show_settings(screen, font, env):
         #Sezione per il numero degli episodi
         y_start += 90
         draw_text(screen, f"Numero Episodi: {num_episodes}", 0, y_start, font, (0, 0, 0), center=True)
-        
-        #Bottoni numero episodi
+
         episodes_less_rect = pygame.Rect(center_x - button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
         episodes_more_rect = pygame.Rect(center_x + button_spacing//2 - button_width//2, y_start + 40, button_width, button_height)
 
@@ -858,15 +841,13 @@ def show_settings(screen, font, env):
             screen.blit(help_surface, (episodes_input_rect.centerx - help_surface.get_width() // 2,
                                      episodes_input_rect.bottom + 5))
 
-        #SEZIONE MODALITÀ REALISTICA 
+        #Sezione per la modalità realistica
         y_start += 120  #Spazio dopo la sezione episodi
         
-        #Stato attuale della modalità
         mode_text = "ATTIVATA" if getattr(env, 'realistic_mode', False) else "DISATTIVATA"
         
         draw_text(screen, f"Modalità Realistica: {mode_text}", 0, y_start, font, (0,0,0), center=True)
         
-        #Bottone toggle
         toggle_width = 150  
         toggle_height = 45
         toggle_rect = pygame.Rect(center_x - toggle_width//2, y_start + 40, toggle_width, toggle_height)
@@ -876,7 +857,6 @@ def show_settings(screen, font, env):
         
         pygame.draw.rect(screen, button_color, toggle_rect)
     
-        
         button_text_surface = font.render(button_text, True, (255, 255, 255))
         text_x = toggle_rect.centerx - button_text_surface.get_width() // 2
         text_y = toggle_rect.centery - button_text_surface.get_height() // 2
@@ -885,13 +865,11 @@ def show_settings(screen, font, env):
         #Si definisce y_final dopo tutte le sezioni
         y_final = y_start + 120 
         
-        #Bottone Conferma
         confirm_rect = pygame.Rect(screen.get_width() // 2 - 220, y_final, 180, 50)
         pygame.draw.rect(screen, (0, 150, 0), confirm_rect)          # Verde
         confirm_text = font.render("Conferma", True, (255, 255, 255))
         screen.blit(confirm_text, (confirm_rect.centerx - confirm_text.get_width() // 2, confirm_rect.centery - confirm_text.get_height() // 2))
-        
-        #Bottone Annulla
+
         cancel_rect = pygame.Rect(screen.get_width() // 2 + 40, y_final, 180, 50)
         pygame.draw.rect(screen, (150, 0, 0), cancel_rect)           # Rosso
         cancel_text = font.render("Annulla", True, (255, 255, 255))
@@ -908,13 +886,13 @@ def show_settings(screen, font, env):
             if event.type == pygame.KEYDOWN and editing_episodes:
                 if event.key == pygame.K_RETURN:
                     try:
-                        if episodes_input.strip():  #Solo se c'è del testo
+                        if episodes_input.strip():  #strip() rimuove spazi, tabulazioni e ritorni a capo all'inizio/fine di una stringa
                             val = int(episodes_input)
-                            num_episodes = max(1, min(5000, val))  #Range esteso
-                        
-                        #Se vuoto, mantieni valore attuale
+                            num_episodes = max(1, min(5000, val))
+
                     except ValueError:
                         pass
+
                     editing_episodes = False
 
                 elif event.key == pygame.K_ESCAPE:
@@ -925,7 +903,7 @@ def show_settings(screen, font, env):
                     episodes_input = episodes_input[:-1]
 
                 else:
-                    # Accetta solo cifre, max 5 caratteri (fino a 3000)
+                    # Accetta solo cifre, max 5 caratteri
                     if event.unicode.isdigit() and len(episodes_input) < 5:
                         episodes_input += event.unicode
             
@@ -968,15 +946,13 @@ def show_settings(screen, font, env):
                 if episodes_more_rect.collidepoint(pos):
                     num_episodes = min(5000, num_episodes + step)
 
-                #BOTTONE TOGGLE MODALITÀ REALISTICA
                 if toggle_rect.collidepoint(pos):
                     env.realistic_mode = not getattr(env, 'realistic_mode', False)
                     
-                    #Reinizializza la Q-table per evitare shape mismatch (5D vs 6D)
+                    #Reinizializza la Q-table per evitare mismatch (5D vs 6D)
                     if hasattr(env, 'reinitialize_q_values'):
                         env.reinitialize_q_values()
 
-                #Bottone per la conferma
                 if confirm_rect.collidepoint(pos):
                     if editing_episodes:
                         try:
@@ -986,13 +962,12 @@ def show_settings(screen, font, env):
                             pass
                         editing_episodes = False
 
-                    # Applica le modifiche all'ambiente
+                    #Applica le modifiche all'ambiente
                     env.num_pedoni = num_pedoni
                     env.pedone_error_prob = error_prob_pedoni
                     env.route_change_probability = prob_change_auto
                     env.num_episodes = num_episodes
                     
-                    #Messaggio di conferma delle modifiche
                     screen.fill((255, 255, 255))
                     draw_text(screen, "Impostazioni salvate con successo!", 0, screen.get_height() // 2 - 20, font, (0, 150, 0), center=True)
                     pygame.display.flip()
@@ -1002,52 +977,44 @@ def show_settings(screen, font, env):
                 
                 #Bottone per annullare le modifiche
                 if cancel_rect.collidepoint(pos):
-                    # Messaggio di annullamento
+                
                     screen.fill((255, 255, 255))
                     draw_text(screen, "Modifiche annullate.", 0, screen.get_height() // 2 - 20, font, (200, 0, 0), center=True)
                     pygame.display.flip()
                     pygame.time.wait(1000)
-                    
                     return
 
 def show_training_charts(screen, font, episode_data, cumulative_collisions, env):
-    
-    #Salva la modalità di visualizzazione corrente
-    current_mode = pygame.display.get_surface().get_size()
-    
-    #Usa il backend Agg di matplotlib che non interferisce con la visualizzazione
-    import matplotlib
-    matplotlib.use('Agg')
 
     #Estrai i dati
-    # episodes = [data[0] for data in episode_data]
-    # steps = [data[1] for data in episode_data]
+    #episodes = [data[0] for data in episode_data]
+    #steps = [data[1] for data in episode_data]
     rewards = [data[2] for data in episode_data]
 
-    # Raccolta dati da aggiungere al grafico
+    #Raccolta dati da aggiungere al grafico
     map_name = env.map_name
     num_pedoni = len(env.pedoni)
     prob_change_percorso = env.route_change_probability
     error_prob_pedoni = env.pedone_error_prob
     
-    # Calcola statistiche
+    #Calcola statistiche
     num_episodes = len(episode_data)
     total_collisions = cumulative_collisions[-1] if cumulative_collisions else 0
     avg_reward = sum(rewards) / len(rewards) if rewards else 0
     max_reward = max(rewards) if rewards else 0
     
-    # Conta goal raggiunti (reward molto alto)
+    #Conta goal raggiunti
     goals_reached = sum(1 for _, _, reward in episode_data if reward > 1000)
     success_rate = (goals_reached / num_episodes * 100) if num_episodes > 0 else 0
 
-    # Crea due grafici (uno sopra l'altro)
+    #Crea due grafici (uno sopra l'altro)
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
 
-    # Converti la lista dei rewards in una Series di pandas
+    #Converti la lista dei rewards in una Series di pandas
     rewards_series = pd.Series(rewards)
     rewards_rolling = rewards_series.rolling(window=50, min_periods=1).mean()
 
-    # Grafico delle ricompense con media mobile
+    #Grafico delle ricompense con media mobile
     ax1.plot(range(1, len(rewards) + 1), rewards, alpha=0.3, label='Ricompensa')
     ax1.plot(range(1, len(rewards) + 1), rewards_rolling, label='Media mobile')
     ax1.set_title('Ricompensa Totale per Episodio')
@@ -1056,7 +1023,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     ax1.legend()
     ax1.grid(True)
 
-    # Grafico delle collisioni cumulative
+    #Grafico delle collisioni cumulative
     ax2.plot(range(1, len(cumulative_collisions) + 1), cumulative_collisions)
     ax2.set_title('Collisioni Cumulative')
     ax2.set_xlabel('Episodio')
@@ -1087,15 +1054,14 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     if not os.path.exists(results_folder):
         os.makedirs(results_folder)
 
-    #Nome file più descrittivo
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"training_{map_name}_{num_episodes}ep_{timestamp}.png"
     
-    result_path = f"{results_folder}/{filename}"  # ← Versione semplice
+    result_path = f"{results_folder}/{filename}"
     
     plt.savefig(result_path, dpi=300, bbox_inches='tight')
     
-    #Chiudi la figura per liberare memoria
+    #Chiude la figura per liberare memoria
     plt.close(fig)
     plt.close('all')
     
@@ -1111,7 +1077,7 @@ def main():
 
     episode_data = []
     
-    os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centra la finestra
+    os.environ['SDL_VIDEO_CENTERED'] = '1'  #Centra la finestra
     pygame.init()
     
     screen = pygame.display.set_mode((1536, 800))
@@ -1120,7 +1086,7 @@ def main():
     pygame.event.pump()#Forza aggiornamento della finestra
     font =  pygame.font.Font("Progetto Tesi Privitera/assets/PixeloidSansBold.ttf", 20)
 
-    #Inizializzo l'ambiente
+    #Inizializza l'ambiente
     env = Map1Environment(48, 25, 32, screen,                    
         num_pedoni=0,           
         pedone_error_prob=0.0,              
@@ -1180,6 +1146,7 @@ def main():
 
                 env = selected_environment_class(
                     48, 25, 32, screen,
+                    
                     #Le successive cinque righe mantengono le impostazioni correnti
                     num_pedoni=current_num_pedoni,           
                     pedone_error_prob=current_error_prob,    
