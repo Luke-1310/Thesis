@@ -44,7 +44,7 @@ class Pedone:
         x, y = self.position
         
         if self.position == self.goal:
-            # Quando arriva, rigenera SEMPRE un nuovo percorso (anche se la cella è non valida)
+            #Quando arriva, rigenera SEMPRE un nuovo percorso (anche se la cella è non valida)
             if self.path_callback:
                 try:
                     result = self.path_callback(tuple(self.position))

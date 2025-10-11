@@ -3,7 +3,7 @@ import pygame
 from environments.base_environment import BaseEnvironment
 from environments.pedone import Pedone
 
-#Il formato delle coordinate è [riga, colonna] (0-indexed)
+
 
 class Map1Environment(BaseEnvironment):
 
@@ -41,24 +41,24 @@ class Map1Environment(BaseEnvironment):
         self.agent_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car.png")
         self.agent_image = pygame.transform.scale(self.agent_image, (self.cell_size // 2, self.cell_size))
 
-        # Carica l'immagine del pedone
+        #Carica l'immagine del pedone
         self.pedone_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/pedone.png")
 
         scale_factor = 0.9  # Fattore di scala per il pedone
         size = int(self.cell_size * scale_factor)  # Calcola la dimensione in base alla cella
         self.pedone_image = pygame.transform.scale(self.pedone_image, (size, size))
 
-        # Carica l'immagine originale
+        #Carica l'immagine originale
         self.car_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
 
-        # Ottieni le dimensioni originali dell'immagine
+        #Ottieni le dimensioni originali dell'immagine
         original_width, original_height = self.car_image.get_size()
 
-        # Calcola le nuove dimensioni
+        #Calcola le nuove dimensioni
         new_width = int(original_width * 0.08)
         new_height = int(original_height * 0.08)
 
-        # Scala l'immagine
+        #Scala l'immagine
         self.car_image = pygame.transform.scale(self.car_image, (new_width, new_height))
 
         self.car2_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
@@ -67,7 +67,7 @@ class Map1Environment(BaseEnvironment):
         self.car3_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/car2.png")
         self.car3_image = pygame.transform.scale(self.car3_image, (new_width, new_height))
 
-        # Carica l'immagine della mappa
+        #Carica l'immagine della mappa
         self.map_image = pygame.image.load("Progetto Tesi Privitera/assets/imgs/città_map.png")
         self.map_image = pygame.transform.scale(self.map_image, (self.width * self.cell_size, self.height * self.cell_size))
 
@@ -168,7 +168,7 @@ class Map1Environment(BaseEnvironment):
             (1,3): [self.percorso1, self.percorso3]
         }
 
-        #Percorsi di transizione
+        #Percorsi di transizione (in rosso sullo schema su Photoshop, per passare da un pezzo all'altro)
         self.transizioni = {
             (2, 1): [(34, 10),(35, 10),(36, 10),(37, 10),(38, 10),(39, 10),(40, 10),(41, 10),(42, 10),(43, 10),(44, 10),(45, 10),(46, 10)],
             (3, 1): [(2, 9),(1, 9)],
@@ -209,7 +209,7 @@ class Map1Environment(BaseEnvironment):
             [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
-        #2 = striscia pedonale #3 = edificio
+        #0 non valida #1 valida #2 = striscia pedonale #3 = edificio
         self.map_pedone = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -246,11 +246,11 @@ class Map1Environment(BaseEnvironment):
                 if val == 0:
                     cost_row.append(float('inf'))  # Non percorribile
                 elif x == 0 or x == self.width-1 or y == 0 or y == self.height-1:
-                    cost_row.append(10)  # Costo alto per i bordi
+                    cost_row.append(10)  #Costo alto per i bordi
                 elif val == 2:
-                    cost_row.append(2)  # Costo intermedio per le strisce
+                    cost_row.append(2)  #Costo intermedio per le strisce
                 else:
-                    cost_row.append(1)  # Costo normale
+                    cost_row.append(1)  #Costo normale
             self.cost_matrix.append(cost_row) 
 
         #Creo una matrice con tutti -1 e poi modifico i reward delle posizioni di goal e intermediate 
