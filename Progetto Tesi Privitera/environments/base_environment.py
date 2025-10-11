@@ -19,28 +19,24 @@ class BaseEnvironment:
         self.clock= pygame.time.Clock()
         self.prev_agent_position = []
         self.prev_car_position = []
-        self.car_in_vision = False #flag che indica se un'auto è nella zona visiva dell'agente
+        self.car_in_vision = False 
 
         self.num_pedoni = num_pedoni #numero di pedoni nell'ambiente
         self.pedone_error_prob = pedone_error_prob #probabilità che un pedone sbagli il percorso
         self.route_change_probability = route_change_probability  #Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
-        self.num_episodes = num_episodes  #Numero di episodi per l'addestramento
+        self.num_episodes = num_episodes
 
-        #Modalità realistica (con regole della strada)
-        self.realistic_mode = realistic_mode #Parametro per la modalità realistica
+        self.realistic_mode = realistic_mode
 
         self.seed = seed
         self.rng = np.random.default_rng(seed)
 
-        #Contatore per i reward del tenere la destra
         self.right_edge_rewards_given = 0
         self.max_right_edge_rewards = 1
 
-    #Carica immagini e risorse
     def load_assets(self):
         raise NotImplementedError("Questo metodo non è stato implementato correttamente.")
 
-    #Crea la griglia dell'ambiente
     def create_grid(self):
         raise NotImplementedError("Questo metodo non è stato implementato correttamente.")
 
@@ -60,7 +56,6 @@ class BaseEnvironment:
                 return True
         return False
 
-    #Controlla se ci sono pedoni
     def are_pedestrians_in_vision(self):
         
         # Vede solo pedoni davanti (allineati) e su carreggiata o strisce
@@ -74,7 +69,6 @@ class BaseEnvironment:
         for pedone in self.pedoni:
             px, py = pedone.position
 
-            #Devono essere DAVANTI e ALLINEATI alla corsia (niente laterali)
             in_front = False
 
             if rot == 0:        #su
@@ -98,14 +92,12 @@ class BaseEnvironment:
 
             if on_road or on_cross:
                 return True
-
         return False
     
-    #Controlla se ci sono i semafori
     def is_traffic_light_in_vision(self):
         
         if not hasattr(self, 'traffic_lights') or not self.traffic_lights:
-            return 0  #0=nessun semaforo
+            return 0  #0 = nessun semaforo
         
         ax, ay = self.agent_position
         rot = self.agent_rotation
@@ -127,8 +119,8 @@ class BaseEnvironment:
             if cell in self.traffic_lights:
                 return 2 if self.traffic_lights[cell] == 'red' else 1
         
-        return 0  #Nessun semaforo visibile
-
+        return 0 
+    
     #Ottieni stato completo della visione (auto + pedoni)
     def get_vision_state(self):
     
@@ -176,7 +168,7 @@ class BaseEnvironment:
                 
                 car['route_index'] = next_index
 
-            # Aggiorna la posizione in tutti i casi
+            #Aggiorna la posizione in tutti i casi
             car['position'] = next_position
             
             # Calcola e aggiorna la rotazione
@@ -267,7 +259,7 @@ class BaseEnvironment:
         is_valid = self.is_valid_move(new_position)
         
         if is_valid:
-            if not getattr(self, 'realistic_mode', False):  # Modalità SEMPLIFICATA
+            if not getattr(self, 'realistic_mode', False):
                 
                 # Blocca TUTTI i semafori (rossi E verdi)
                 if hasattr(self, 'traffic_lights') and tuple(new_position) in self.traffic_lights:
@@ -290,21 +282,18 @@ class BaseEnvironment:
     
     def check_loss(self):
 
-        #Controlla se l'agente è in collisione con un'auto
         for car in self.cars:
             
             #Controlla se l'agente e la macchina sono nella stessa posizione
             if self.agent_position == car['position']:
                 return True
-            
-            #Controlla se la posizione precedente della macchina è uguale alla posizione precedente dell'agente
+
             car_index = self.cars.index(car)
             
             #Tale controllo è necessario perché se due auto si incrociano, la collisione non viene rilevata visto che sono in due celle diverse, ma in realtà sono passate una sopra l'altra
             if (self.agent_position == self.prev_car_position[car_index] and car['position'] == self.prev_agent_position):
                 return True
         
-        #Collisione con pedoni
         for pedone in self.pedoni:
             if self.agent_position == pedone.position:
                 return True
@@ -365,7 +354,6 @@ class BaseEnvironment:
     
     def pedone_path_callback(self, start, can_make_errors=True):
 
-        #Ogni pedone ha una probabilità di errore da 0 a 1 scelto dal menu
         try:
             make_error = can_make_errors and (float(self.rng.random()) < self.pedone_error_prob) #Se il pedone può fare errori e se la probabilità casuale è inferiore alla probabilità di errore del pedone
 
@@ -382,13 +370,12 @@ class BaseEnvironment:
                     if self.map_pedone[goal[1]][goal[0]] == 1 and goal != start:
                         break
             
-            #Modifica temporaneamente la mappa per trovare un percorso anche se include celle non percorribili
             if make_error:
                 
                 #Trova la cella percorribile più vicina alla destinazione
                 nearest_valid = self._find_nearest_valid_cell(goal)
                 
-                #Partendo dalla posizione attuale del pedone, trova un percorso verso la cella percorribile più vicina (SEGUE LE REGOLE NORMALI) 
+                #Partendo dalla posizione attuale del pedone, trova un percorso verso la cella percorribile più vicina
                 valid_path = self.find_path(self.map_pedone, start, nearest_valid, walkable_value=(1, 2), cost_matrix=self.cost_matrix)
                 
                 if valid_path:
@@ -396,7 +383,7 @@ class BaseEnvironment:
                     #Dall'ultima cella valida, va direttamente verso l'errore
                     error_segment = self._create_error_segment(valid_path[-1], goal)
                     if error_segment:
-                        full_path = valid_path + error_segment[1:]  # Unisci i percorsi
+                        full_path = valid_path + error_segment[1:]
                         return goal, full_path
             
             #Percorso normale (senza errori)
@@ -423,7 +410,6 @@ class BaseEnvironment:
 
             self.right_edge_rewards_given = 0
 
-            #Rigenera i pedoni con nuove posizioni e percorsi (qui inizializzo i pedoni)
             self.pedoni = []
             
             for i in range(self.num_pedoni):
@@ -450,8 +436,7 @@ class BaseEnvironment:
                     error_prob = float(self.rng.random()) * self.pedone_error_prob
                     self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
     
-    #Funzione per calcolare la distanza tra due punti, utilizza la distanza di 
-    # nhattan, che è la somma delle differenze assolute delle coordinate x e y
+    #Funzione per calcolare la distanza tra due punti, utilizza la distanza di Manhattan, che è la somma delle differenze assolute delle coordinate x e y
     #Quindi quelle che andiamo a valutare solo le celle adiacenti (su, giù, sinistra, destra) e non quelle diagonali
     def heuristic(self, a, b):
 
@@ -491,7 +476,7 @@ class BaseEnvironment:
                         #Aggiunge il nodo alla lista di priorità con il costo totale (costo attuale + costo del passo + distanza al goal)
                         heapq.heappush(open_set, (cost + step_cost + self.heuristic(next_pos, goal), cost + step_cost, next_pos, path + [next_pos])) 
 
-        return None  #Nessun percorso trovato
+        return None
 
     #Muovo il pedone lungo il percorso calcolato
     def move_pedone_along_path(self, pedone, path):
@@ -538,7 +523,6 @@ class BaseEnvironment:
                     if dist < min_dist:
                         min_dist = dist
                         nearest = (x, y)
-        
         return nearest
 
     #Crea un segmento di percorso che porta dall'ultima cella valida al target di errore
@@ -577,7 +561,7 @@ class BaseEnvironment:
             # [y, x, auto_visibili, pedoni_visibili, azione]
             self.q_values = np.zeros((self.height, self.width, 2, 2, 5))
     
-    #Restituisce True/False se la cella a destra dell'agente è/non è un bordo strada  
+ 
     def is_on_right_edge(self, position=None, rotation=None):
         
         if position is None:
@@ -613,8 +597,7 @@ class BaseEnvironment:
 
     #Penalità o ricompensa per essere sul bordo destro della strada
     def right_edge_penalty(self):
-
-        #Controllo modalità realistica
+        
         if not getattr(self, 'realistic_mode', False):
             return 0
         
