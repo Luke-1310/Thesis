@@ -26,6 +26,10 @@ def train_agent(env, font):
     episode_data = []  #episodio, step, reward
     collision_list = []  #Collisioni cumulative
     collision_count = 0
+    timeout_list = []  #Timeout cumulativi
+    timeout_count = 0
+    success_list = []  #Successi cumulativi
+    success_count = 0
     goal_reached_count = 0
     goal_already_visited_count = 0
 
@@ -42,6 +46,8 @@ def train_agent(env, font):
         waiting_at_red_light = 0
         bypass_count = 0  
         lane_invasion_count = 0
+
+        timeout = False
 
         while not (env.check_loss() or env.check_goal()):
            
@@ -209,19 +215,20 @@ def train_agent(env, font):
             total_reward = round(total_reward, 2) #approssima a 2 decimali
             steps += 1
 
-            if steps > 1500:
-                print("Episodio terminato per superamento step massimi.")
+            if steps > 1200:
+                timeout = True
                 break
         
-        #Conta le collisioni solo se l'agente non ha raggiunto l'obiettivo
-        fail = steps > 1500 or env.check_loss()
-
-        if fail:  #L'agente non ha raggiunto il traguardo
+        if timeout:  
+            timeout_count += 1
+            esito_episodio = "Timeout"
+        elif env.check_loss():
             collision_count += 1
             esito_episodio = "Collisione"
-        else:
+        elif env.check_goal():
+            success_count += 1
             esito_episodio = "Successo"
-        
+
         screen = env.screen
         screen.fill((255, 255, 255))  #Pulisce lo schermo per il prossimo episodio
 
@@ -246,7 +253,9 @@ def train_agent(env, font):
                 print(f"Invasione corsia: {lane_invasion_count} volte")
 
         print(f"Total Reward: {total_reward:.2f}")
+        print(f"Successi totali: {success_count}")
         print(f"Collisioni totali: {collision_count}")
+        print(f"Timeout totali: {timeout_count}")
         print(f"Esito episodio: {esito_episodio}")
         print(f"---------------------")
         
@@ -255,6 +264,8 @@ def train_agent(env, font):
 
         episode_data.append((episode, steps, total_reward))
         collision_list.append(collision_count)
+        timeout_list.append(timeout_count)
+        success_list.append(success_count) 
 
         goal_reached_count = 0
         goal_already_visited_count = 0
@@ -292,7 +303,7 @@ def train_agent(env, font):
         pygame.time.wait(1500)
 
     if show_yes_no_dialog(env.screen, font, "Vuoi salvare i grafici del training?"):
-        show_training_charts(env.screen, font, episode_data, collision_list, env)
+        show_training_charts(env.screen, font, episode_data, collision_list, timeout_list, success_list, env)
 
     return episode_data
 
@@ -984,11 +995,9 @@ def show_settings(screen, font, env):
                     pygame.time.wait(1000)
                     return
 
-def show_training_charts(screen, font, episode_data, cumulative_collisions, env):
+def show_training_charts(screen, font, episode_data, cumulative_collisions, timeout_list, success_list, env):
 
     #Estrai i dati
-    #episodes = [data[0] for data in episode_data]
-    #steps = [data[1] for data in episode_data]
     rewards = [data[2] for data in episode_data]
 
     #Raccolta dati da aggiungere al grafico
@@ -1000,11 +1009,13 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     #Calcola statistiche
     num_episodes = len(episode_data)
     total_collisions = cumulative_collisions[-1] if cumulative_collisions else 0
+    total_timeouts = timeout_list[-1] if timeout_list and timeout_list else 0
+    total_success = success_list[-1] if success_list and success_list else 0
     avg_reward = sum(rewards) / len(rewards) if rewards else 0
     max_reward = max(rewards) if rewards else 0
     
     #Conta goal raggiunti
-    goals_reached = sum(1 for _, _, reward in episode_data if reward > 1000)
+    goals_reached = total_success
     success_rate = (goals_reached / num_episodes * 100) if num_episodes > 0 else 0
 
     #Crea due grafici (uno sopra l'altro)
@@ -1040,7 +1051,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
     else:    
         modalita = "Semplificata"
 
-    info_line2 = f"Episodi: {num_episodes} | Goal raggiunti: {goals_reached} ({success_rate:.1f}%) | Collisioni: {total_collisions} | Reward medio: {avg_reward:.1f} | Reward max: {max_reward:.1f} | Modalità: {modalita}"
+    info_line2 = f"Episodi: {num_episodes} | Goal raggiunti: {goals_reached} ({success_rate:.1f}%) | Collisioni: {total_collisions} | Timeout: {total_timeouts} | Reward medio: {avg_reward:.1f} | Reward max: {max_reward:.1f} | Modalità: {modalita}"
 
     #Aggiungi le informazioni sotto i grafici
     fig.text(0.5, 0.06, info_line1, fontsize=10, ha='center', fontweight='bold')
@@ -1048,7 +1059,7 @@ def show_training_charts(screen, font, episode_data, cumulative_collisions, env)
 
     #Aggiusta il layout per lasciare spazio sotto
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.20)  # Lascia spazio sotto per le informazioni
+    plt.subplots_adjust(bottom=0.20)  #Lascia spazio sotto per le informazioni
 
     results_folder = "Progetto Tesi Privitera/training_charts"  #Nome cartella per i risultati
     if not os.path.exists(results_folder):
