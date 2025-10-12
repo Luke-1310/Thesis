@@ -899,7 +899,7 @@ def show_settings(screen, font, env):
                     try:
                         if episodes_input.strip():  #strip() rimuove spazi, tabulazioni e ritorni a capo all'inizio/fine di una stringa
                             val = int(episodes_input)
-                            num_episodes = max(1, min(5000, val))
+                            num_episodes = max(1, min(10000, val))
 
                     except ValueError:
                         pass
