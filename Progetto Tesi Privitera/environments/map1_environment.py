@@ -15,7 +15,7 @@ class Map1Environment(BaseEnvironment):
         #Posizione iniziale e obiettivo dell'agente
         self.start_position=[2, 24]
         self.agent_position = self.start_position
-        self.intermediate_goals = [(14, 20), (34, 10), (34,15), (39,10)]  # Obiettivi intermedi
+        self.intermediate_goals = [(14, 20), (34, 10), (34,15), (39,10), (14,15), (19,15), (24,15), (30,15)]  # Obiettivi intermedi
         self.goal_positions = [(41, 5)]  # Posizione di arrivo
 
         self.load_assets()
@@ -260,7 +260,7 @@ class Map1Environment(BaseEnvironment):
             self.reward_matrix[pos[1]][pos[0]] = 10000
         
         for pos in self.intermediate_goals:
-            intermediate_reward = 10
+            intermediate_reward = 100
             self.reward_matrix[pos[1]][pos[0]] = intermediate_reward
 
     def reset_game(self):
