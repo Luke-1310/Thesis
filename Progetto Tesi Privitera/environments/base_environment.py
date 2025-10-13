@@ -64,7 +64,7 @@ class BaseEnvironment:
 
         ax, ay = self.agent_position
         rot = self.agent_rotation
-        ahead = 2  #profondità di vista in celle
+        ahead = 1  #profondità di vista in celle
 
         for pedone in self.pedoni:
             px, py = pedone.position
@@ -101,7 +101,7 @@ class BaseEnvironment:
         
         ax, ay = self.agent_position
         rot = self.agent_rotation
-        ahead = 2
+        ahead = 1
         
         #Determina le celle davanti all'agente in base alla rotazione
         cells_to_check = []
@@ -237,6 +237,10 @@ class BaseEnvironment:
     
     def get_next_location(self, action_index):
         new_position = self.agent_position[:]
+        
+        # Salva la rotazione corrente PRIMA di eventuali modifiche
+        previous_rotation = self.agent_rotation
+        
         if self.actions[action_index] == "up":
             new_position[1] = max(0, self.agent_position[1] - 1)
             self.agent_rotation = 0
@@ -254,26 +258,33 @@ class BaseEnvironment:
             self.agent_rotation = 90
         
         elif self.actions[action_index] == "stay":
+            # NON modificare la rotazione quando sta fermo
             new_position = self.agent_position[:]
+            # Mantieni la rotazione precedente (già salvata sopra)
 
         is_valid = self.is_valid_move(new_position)
         
         if is_valid:
             if not getattr(self, 'realistic_mode', False):
-                
-                # Blocca TUTTI i semafori (rossi E verdi)
                 if hasattr(self, 'traffic_lights') and tuple(new_position) in self.traffic_lights:
+                    #Ripristina la rotazione se la mossa è bloccata
+                    self.agent_rotation = previous_rotation
                     return False  
             else: 
-                #Blocca SOLO i semafori ROSSI
                 if (hasattr(self, 'traffic_lights') and 
                     tuple(new_position) in self.traffic_lights and 
                     self.traffic_lights[tuple(new_position)] == 'red'):
+                    #Ripristina la rotazione se la mossa è bloccata
+                    self.agent_rotation = previous_rotation
                     return False 
                 
             self.prev_agent_position = self.agent_position[:]
             self.agent_position = new_position
-        return is_valid  
+        else:
+            #Se la mossa non è valida, ripristina la rotazione precedente
+            self.agent_rotation = previous_rotation
+            pass
+        return is_valid
 
     def check_goal(self):
         if tuple(self.agent_position) in self.goal_positions:
@@ -610,5 +621,4 @@ class BaseEnvironment:
                 return 0 
         else:
             return -1  #Penalità se non è sul bordo destro (sempre applicata)
-    
-   
+
