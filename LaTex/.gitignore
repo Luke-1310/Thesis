@@ -1,0 +1,5 @@
+# Ignora tutto dentro la cartella LaTex
+LaTex/*
+
+# Ma non ignorare la cartella in sé
+!LaTex/.gitkeep
