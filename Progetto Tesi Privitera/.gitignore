@@ -159,3 +159,9 @@ Thumbs.db
 
 # # Grafici di training (opzionale - rimuovi questa riga se vuoi tracciare i grafici)
 # training_charts/*.png
+
+# Ignora tutto dentro la cartella LaTex
+LaTex/*
+
+# Ma non ignorare la cartella in sé
+!LaTex/.gitkeep
