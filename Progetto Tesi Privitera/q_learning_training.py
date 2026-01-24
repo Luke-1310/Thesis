@@ -1,16 +1,15 @@
-import numpy as np #Impostata con alias np, essa è una libreria che serve per gestire array multidimensionali e funzioni matematiche
-import pygame
-import os
 from datetime import datetime
+import matplotlib
+matplotlib.use('Agg')                 #Backend Agg: non interattivo, renderizza in memoria e ottimizzato per salvare immagini
+import matplotlib.pyplot as plt       #Sottomodulo per disegnare i grafici
+import numpy as np                    #gestisce array multidimensionali e funzioni matematiche
+import os
+import pandas as pd                   #Per gestire e analizzare dati in modo ordinato
+import pygame
 import sys
+
 from environments.map1_environment import Map1Environment
 from environments.map2_environment import Map2Environment
-
-import matplotlib
-matplotlib.use('Agg')                 # Backend Agg: non interattivo, renderizza in memoria e ottimizzato per salvare immagini
-import matplotlib.pyplot as plt       #Sottomodulo per disegnare i grafici
-
-import pandas as pd                   #Per gestire e analizzare dati in modo ordinato
 
 os.environ['SDL_VIDEO_CENTERED'] = '1' #Necessario perché, senza ulteriori precisazioni, la finestra viene creata in basso a destra
 
@@ -18,17 +17,17 @@ np.set_printoptions(precision=3, suppress=True, linewidth=200)
 
 def train_agent(env, font):
 
-    epsilon = 1 #Esplorazione iniziale
-    discount_factor = 0.9 #Fattore di sconto, ovvero quanto ci si fida del reward futuro
-    learning_rate = 0.1 #Tasso di apprendimento
-    rho = 0.9999 #Fattore di decadimento per epsilon
+    epsilon = 1                     #Esplorazione iniziale
+    discount_factor = 0.9           #Fattore di sconto, ovvero quanto ci si fida del reward futuro
+    learning_rate = 0.1             #Tasso di apprendimento
+    rho = 0.9999                    #Fattore di decadimento per epsilon
     num_episodes = getattr(env, 'num_episodes', 5000)
-    episode_data = []  #episodio, step, reward
-    collision_list = []  #Collisioni cumulative
+    episode_data = []               #episodio, step, reward
+    collision_list = []             #Collisioni cumulative
     collision_count = 0
-    timeout_list = []  #Timeout cumulativi
+    timeout_list = []               #Timeout cumulativi
     timeout_count = 0
-    success_list = []  #Successi cumulativi
+    success_list = []               #Successi cumulativi
     success_count = 0
     goal_reached_count = 0
     goal_already_visited_count = 0
