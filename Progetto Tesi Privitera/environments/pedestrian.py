@@ -1,7 +1,7 @@
-class Pedone:
+class Pedestrian:
     def __init__(self, start, goal, path=None, wait_steps = 5, path_callback=None, error_prob=0.0):
         
-        self.path = path or [] #Se non viene fornito un percorso, inizia da una lista vuota
+        self.path = path or []
         self.position = list(self.path[0]) if self.path else list(start) 
         self.goal = list(goal) 
         self.arrived = False

@@ -1,29 +1,33 @@
 import numpy as np
 import pygame
 import heapq
-from environments.pedone import Pedone
+from pedestrian import Pedestrian
 
 class BaseEnvironment:
+    """ Abstract class used for the environment that contains all the parameters and infos that will be inherited by other classes  """
 
-    def __init__(self, width, height, cell_size, screen = None, num_pedoni = 0, pedone_error_prob=0.0, route_change_probability=0, num_episodes=10000, realistic_mode=False, seed=None):
+    def __init__(self, width, height, cell_size, screen = None, num_pedestrians: int = 0, pedestrian_error_prob: float = 0.0, route_change_probability: int = 0, num_episodes: int = 10000, realistic_mode: bool = False, seed: bool = None):
 
-        #Inizializzazione dei parametri di base dell'ambiente
+        #Display and Training settings
+        self.cars: None = None
         self.width = width
         self.height = height
         self.cell_size = cell_size
         self.external_screen = screen is not None
         self.screen = screen or pygame.display.set_mode((width * cell_size, height * cell_size))
 
-        self.agent_rotation = 0  #orientamento iniziale dell'agente (0 = su)
-        self.FPS=5 #numero di frame per secondo per la simulazione
+        self.agent_rotation: int = 0  #Starting agent position (0 = up)
+        self.FPS: int = 5
         self.clock= pygame.time.Clock()
-        self.prev_agent_position = []
-        self.prev_car_position = []
-        self.car_in_vision = False 
+        self.prev_agent_position: list = []
+        self.prev_car_position: list = []
+        self.car_in_vision: bool = False
 
-        self.num_pedoni = num_pedoni #numero di pedoni nell'ambiente
-        self.pedone_error_prob = pedone_error_prob #probabilità che un pedone sbagli il percorso
-        self.route_change_probability = route_change_probability  #Valore tra 0.0 e 1.0 -> 0.0 = non sbagliano mai, 1.0 = sbagliano sempre
+
+        #Pedestrains variables
+        self.num_pedestrians = num_pedestrians
+        self.pedestrian_error_prob = pedestrian_error_prob
+        self.route_change_probability = route_change_probability  #Between 0.0 and 1.0
         self.num_episodes = num_episodes
 
         self.realistic_mode = realistic_mode
@@ -35,127 +39,158 @@ class BaseEnvironment:
         self.max_right_edge_rewards = 1
 
     def load_assets(self):
-        raise NotImplementedError("Questo metodo non è stato implementato correttamente.")
+        """ Function to load the assets like images and font """
+        raise NotImplementedError("This method wasn't implemented correctly")
 
     def create_grid(self):
-        raise NotImplementedError("Questo metodo non è stato implementato correttamente.")
+        """ Function to create the grid of the environment """
+        raise NotImplementedError("This method wasn't implemented correctly")
 
-    #Verifica se una delle auto si trova nel campo visivo dell'agente
-    #MAX → prende il valore più grande → serve per il bound inferiore
-    #MIN → prende il valore più piccolo → serve per il bound superiore
-    def is_car_in_vision(self):
+    def is_car_in_vision(self) -> bool:
+        """ Rules the agent's field of view; it's big 5x5 cells with the agent in the middle of that square """
+
         agent_x, agent_y = self.agent_position
+
         vision_min_x = max(0, agent_x - 2)
         vision_max_x = min(self.width - 1, agent_x + 2)
+
         vision_min_y = max(0, agent_y - 2)
         vision_max_y = min(self.height - 1, agent_y + 2)
         
         for car in self.cars:
             car_x, car_y = car['position']
-            if vision_min_x <= car_x <= vision_max_x and vision_min_y <= car_y <= vision_max_y: #si crea un quadrato 5x5 intorno all'agente
+            if vision_min_x <= car_x <= vision_max_x and vision_min_y <= car_y <= vision_max_y:
                 return True
         return False
 
-    def are_pedestrians_in_vision(self):
-        
-        # Vede solo pedoni davanti (allineati) e su carreggiata o strisce
-        if not hasattr(self, 'pedoni') or not self.pedoni:
+    def are_pedestrians_in_vision(self) -> bool:
+        """ Checks if there are pedestrians in line with the agent"""
+
+        if not hasattr(self, 'pedestrians') or not self.pedestrians:
             return False
 
+        #coordinates x and y of the agent
+        ax: int
+        ay: int
+
         ax, ay = self.agent_position
-        rot = self.agent_rotation
-        ahead = 1  #profondità di vista in celle
 
-        for pedone in self.pedoni:
-            px, py = pedone.position
+        rot: int = self.agent_rotation
+        ahead: int = 1  #num of cells that the agent is able to see in front of iy
 
-            in_front = False
+        for pedestrian in self.pedestrians:
 
-            if rot == 0:        #su
+            #coordinates x and y of the current pedestrian
+            px: int
+            py: int
+
+            px, py = pedestrian.position
+
+            in_front: bool = False
+
+            if rot == 0:        #up
                 in_front = (px == ax and py < ay and ay - py <= ahead)
             
-            elif rot == 180:    #giù
+            elif rot == 180:    #down
                 in_front = (px == ax and py > ay and py - ay <= ahead)
             
-            elif rot == -90:    #destra
+            elif rot == -90:    #right
                 in_front = (py == ay and px > ax and px - ax <= ahead)
             
-            elif rot == 90:     #sinistra
+            elif rot == 90:     #left
                 in_front = (py == ay and px < ax and ax - px <= ahead)
 
             if not in_front:
                 continue
 
-            #Considera solo pedoni su strada o strisce (ignora marciapiede)
-            on_road = (self.map[py][px] == 1)
-            on_cross = (hasattr(self, 'map_pedone') and self.map_pedone[py][px] == 2)
+            #Only pedestrians on the road or at crosswalks are considered
+            on_road: bool = self.map[py][px] == 1
+            on_cross: bool = (hasattr(self, 'map_pedone') and self.map_pedestrian[py][px] == 2)
 
             if on_road or on_cross:
                 return True
+
         return False
     
-    def is_traffic_light_in_vision(self):
-        
+    def is_traffic_light_in_vision(self) -> int:
+        """
+        Function that checks if there's a traffic light in front of the agent
+
+        0 = none
+        1 = green
+        2 = red
+        """
+
         if not hasattr(self, 'traffic_lights') or not self.traffic_lights:
-            return 0  #0 = nessun semaforo
-        
+            return 0
+
+        ax: int
+        ay: int
+
         ax, ay = self.agent_position
-        rot = self.agent_rotation
-        ahead = 1
+
+        rot: int = self.agent_rotation
+        ahead: int = 1
         
-        #Determina le celle davanti all'agente in base alla rotazione
-        cells_to_check = []
-        if rot == 0:        # su
+        #Cells to check based on the agent current rotation
+        cells_to_check: list = []
+
+        if rot == 0:        #up
             cells_to_check = [(ax, ay-i) for i in range(1, ahead+1)]
-        elif rot == 180:    # giù
+
+        elif rot == 180:    #down
             cells_to_check = [(ax, ay+i) for i in range(1, ahead+1)]
-        elif rot == -90:    # destra
+
+        elif rot == -90:    #right
             cells_to_check = [(ax+i, ay) for i in range(1, ahead+1)]
-        elif rot == 90:     # sinistra
+
+        elif rot == 90:     #left
             cells_to_check = [(ax-i, ay) for i in range(1, ahead+1)]
-        
-        #Controlla se c'è un semaforo in una delle celle davanti
+
+        #Checks if there's a traffic light in the check_to_cells list
         for cell in cells_to_check:
             if cell in self.traffic_lights:
                 return 2 if self.traffic_lights[cell] == 'red' else 1
-        
         return 0 
-    
-    #Ottieni stato completo della visione (auto + pedoni)
-    def get_vision_state(self):
-    
-        cars_visible = int(self.is_car_in_vision()) 
-        pedestrians_visible = int(self.are_pedestrians_in_vision())
+
+    def get_vision_state(self) -> tuple[int, int, int] | tuple[int, int]:
+        """ Gets the current vision state of the agent  """
+
+        cars_visible: int = int(self.is_car_in_vision())
+        pedestrians_visible: int = int(self.are_pedestrians_in_vision())
 
         if getattr(self, 'realistic_mode', False):
 
-            #Semafori: #0=nessuno, 1=verde, 2=rosso
-            traffic_light = self.is_traffic_light_in_vision()
+            traffic_light: int = self.is_traffic_light_in_vision()
 
             return cars_visible, pedestrians_visible, traffic_light
         else:
             return cars_visible, pedestrians_visible
-    
-    #Aggiorna la posizione di una singola auto secondo il suo percorso
-    def update_car_position(self):
-        self.prev_car_position = [car['position'][:] for car in self.cars]
-        self.prev_agent_position = self.agent_position[:]
+
+    def update_car_position(self) -> None:
+        """ Update the current position of each car which are not the agent (obstacles)"""
+
+        self.prev_car_position: list = [car['position'][:] for car in self.cars]
+        self.prev_agent_position = self.agent_position[:] #[:] create a copy of agent_position and save it in prev_agent_position
         
         for car in self.cars:
-            prev_pos = car['position'][:]  #Memorizza la posizione precedente
-            
+
+            prev_pos = car['position'][:]
+
             if car['in_transition']:
+
                 if car['transition_index'] < len(car['transition_route']):
                     next_position = car['transition_route'][car['transition_index']]
                     car['transition_index'] += 1
+
                 else:
                     car['in_transition'] = False
                     car['transition_index'] = 0
-                    new_route = self.percorsi[car['route']]
+                    new_route = self.pathsi[car['route']]
                     car['route_index'] = min(range(len(new_route)), key=lambda i: ((new_route[i][0] - car['position'][0])**2 + (new_route[i][1] - car['position'][1])**2)**0.5)
                     next_position = new_route[car['route_index']]
             else:
-                current_route = self.percorsi[car['route']]
+                current_route = self.paths[car['route']]
                 next_index = (car['route_index'] + 1) % len(current_route)
                 next_position = current_route[next_index]
                 
@@ -168,12 +203,13 @@ class BaseEnvironment:
                 
                 car['route_index'] = next_index
 
-            #Aggiorna la posizione in tutti i casi
+            #Actually update the position
             car['position'] = next_position
-            
-            # Calcola e aggiorna la rotazione
+
+            #Update the rotation on screen of the cars
             dx = car['position'][0] - prev_pos[0]
             dy = car['position'][1] - prev_pos[1]
+
             if dx > 0:
                 car['rotation'] = -90
             elif dx < 0:
@@ -185,8 +221,9 @@ class BaseEnvironment:
             
             self.check_and_change_route(car)
 
-    #Verifica se un'auto si trova su un incrocio e, se sì, con una certa probabilità, farle cambiare percorso seguendo una transizione definita
     def check_and_change_route(self, car):
+        """ If a car is approaching an intersection, there is a chance that it might change course  """
+
         current_position = tuple(car['position']) #converte la posizione dell'auto in una tupla per poterla confrontare con le chiavi del dizionario degli incroci
         
         #Controlla se la posizione attuale è un incrocio (presente in self.incroci) e se un numero casuale tra 0 e 1 è inferiore al parametro di probabilità di cambio percorso (ex. 0.4 < 0.6 -> NON CAMBIA PERCORSO HO QUINDI IL 40% DI POSSIBILITÀ DI CAMBIARE PERCORSO)
@@ -421,7 +458,7 @@ class BaseEnvironment:
 
             self.right_edge_rewards_given = 0
 
-            self.pedoni = []
+            self.pedestrians = []
             
             for i in range(self.num_pedoni):
                 
@@ -445,7 +482,7 @@ class BaseEnvironment:
                 if path:
                     #Tendenza all'errore del singolo pedone deterministica dato il seed
                     error_prob = float(self.rng.random()) * self.pedone_error_prob
-                    self.pedoni.append(Pedone(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
+                    self.pedoni.append(Pedestrian(start, goal, path, wait_steps=5, path_callback=self.pedone_path_callback, error_prob=error_prob))
     
     #Funzione per calcolare la distanza tra due punti, utilizza la distanza di Manhattan, che è la somma delle differenze assolute delle coordinate x e y
     #Quindi quelle che andiamo a valutare solo le celle adiacenti (su, giù, sinistra, destra) e non quelle diagonali
